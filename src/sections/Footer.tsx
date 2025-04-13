@@ -23,7 +23,7 @@ export const Footer = () => {
   return (
     <footer className="relative -z-10 overflow-x-clip">
       <div
-        className="absolute bottom-0 left-1/2 h-[400px] w-[1600px] -translate-x-1/2 bg-emerald-300/30 -z-10"
+        className="absolute bottom-0 left-1/2 h-[280px] w-[1600px] -translate-x-1/2 bg-emerald-300/30 -z-10"
         style={{
           WebkitMaskImage:
             "radial-gradient(ellipse at bottom center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 40%, transparent 80%)",
