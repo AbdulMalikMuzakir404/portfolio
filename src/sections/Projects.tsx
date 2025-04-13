@@ -4,7 +4,6 @@ import aiStartupLandingPage from "@/assets/images/ai-startup-landing-page.png";
 import Image from "next/image";
 import CheckCircleIcon from "@/assets/icons/check-circle.svg";
 import ArraowUpRightIcon from "@/assets/icons/arrow-up-right.svg";
-import GrainImage from "@/assets/images/grain.jpg";
 import { Card } from "@/components/Card";
 
 const portfolioProjects = [
