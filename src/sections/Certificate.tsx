@@ -1,8 +1,10 @@
 "use client";
 
-import darkSaasLandingPage from "@/assets/images/dark-saas-landing-page.png";
-import lightSaasLandingPage from "@/assets/images/light-saas-landing-page.png";
-import aiStartupLandingPage from "@/assets/images/ai-startup-landing-page.png";
+import NodeJsCertificate from "@/assets/certificates/nodejs_certificate.jpg";
+import CompetitionCertificate from "@/assets/certificates/competition_certificate.jpeg";
+import FlutterCertificate from "@/assets/certificates/flutter_certificate.jpeg";
+import PKLCertificate from "@/assets/certificates/pkl_certification.jpeg";
+import UjikomCertificate from "@/assets/certificates/ujikom_certification.jpeg";
 import Image from "next/image";
 import CheckCircleIcon from "@/assets/icons/check-circle.svg";
 import ArraowUpRightIcon from "@/assets/icons/arrow-up-right.svg";
@@ -13,40 +15,68 @@ import { LampContainer } from "@/components/ui/LampContainer";
 
 const certificates = [
   {
-    company: "Acme Corp",
-    year: "2022",
-    title: "Dark Saas Landing Page",
+    company: "Inter-School Competition",
+    year: "13 April 2023",
+    title: "Web Technologies",
     results: [
-      { title: "Enhanced user experience by 40%" },
-      { title: "Improved site speed by 50%" },
-      { title: "Increased mobile traffic by 35%" },
+      { title: "Simple Snake Game" },
+      { title: "Create Website Using Wordpress" },
+      { title: "Create Website Using Laravel and Vue.JS" },
     ],
-    link: "https://youtu.be/4k7IdSLxh6w",
-    image: darkSaasLandingPage,
+    link: "https://drive.google.com/drive/folders/123QStjlkDknO4zO02G2fpNgVZ6-7FaET?usp=sharing",
+    image: CompetitionCertificate,
   },
   {
-    company: "Innovative Co",
-    year: "2021",
-    title: "Light Saas Landing Page",
+    company: "Udemy",
+    year: "11 November 2024",
+    title: "NodeJS: Beginner to Advanced",
     results: [
-      { title: "Boosted sales by 20%" },
-      { title: "Expanded customer reach by 35%" },
-      { title: "Increased brand awareness by 15%" },
+      { title: "NodeJS" },
+      { title: "NodeJS Basics" },
+      { title: "NodeJS Standard Library" },
+      { title: "NodeJS RESTful API" },
     ],
-    link: "https://youtu.be/7hi5zwO75yc",
-    image: lightSaasLandingPage,
+    link: "https://www.udemy.com/course/nodejs-pemula-sampai-mahir/learn/lecture/32742654#overview",
+    image: NodeJsCertificate,
   },
   {
-    company: "Quantum Dynamics",
-    year: "2023",
-    title: "AI Startup Landing Page",
+    company: "Udemy",
+    year: "10 April 2024",
+    title: "Flutter Intermediate",
     results: [
-      { title: "Enhanced user experience by 40%" },
-      { title: "Improved site speed by 50%" },
-      { title: "Increased mobile traffic by 35%" },
+      { title: "Scalable Architecture" },
+      { title: "Robust State Management" },
+      { title: "Advanced Features Integration" },
+      { title: "Efficient Networking" },
     ],
-    link: "https://youtu.be/Z7I5uSRHMHg",
-    image: aiStartupLandingPage,
+    link: "https://www.udemy.com/course/flutterindonesiakopianan/?couponCode=ST14MT150425G1",
+    image: FlutterCertificate,
+  },
+  {
+    company: "SINOVATIF",
+    year: "8 August 2022",
+    title: "PKL Certification",
+    results: [
+      { title: "Understanding Professional Work Culture" },
+      { title: "Adapting to New Technologies" },
+      { title: "Web Development with Laravel Breeze" },
+      { title: "Final Project: Student Attendance System" },
+    ],
+    link: "https://www.linkedin.com/company/pt-sinergi-nusa-inovatif/?originalSubdomain=id",
+    image: PKLCertificate,
+  },
+  {
+    company: "SMKN x Inovindo",
+    year: "1 April 2023",
+    title: "Competency Test",
+    results: [
+      { title: "Developed a School Tuition Payment System" },
+      { title: "Implemented Online Payment Integration" },
+      { title: "Presented Project to Mentors" },
+      { title: "Achieved Excellent Competency Scores" },
+    ],
+    link: "https://inovindo.co.id/",
+    image: UjikomCertificate,
   },
 ];
 
@@ -109,9 +139,9 @@ export const CertificatesSection = () => {
                       </li>
                     ))}
                   </ul>
-                  <a href={project.link}>
+                  <a href={project.link} target="_blank">
                     <button className="bg-white text-gray-950 h-12 w-full md:w-auto px-6 rounded-xl font-semibold inline-flex items-center justify-center gap-2 mt-8">
-                      <span>Visit Live Site</span>
+                      <span>Visit The Certification</span>
                       <ArraowUpRightIcon className="size-4 " />
                     </button>
                   </a>
