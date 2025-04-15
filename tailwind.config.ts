@@ -29,6 +29,7 @@ const config: Config = {
         "ping-large": "ping-large 1s ease-in-out infinite",
         "move-left": "move-left 1s linear infinite",
         "move-right": "move-right 1s linear infinite",
+        shimmer: "shimmer 2s linear infinite",
       },
       keyframes: {
         "ping-large": {
@@ -51,6 +52,14 @@ const config: Config = {
           },
           "100%": {
             transform: "translateX(0%)",
+          },
+        },
+        shimmer: {
+          from: {
+            backgroundPosition: "0 0",
+          },
+          to: {
+            backgroundPosition: "-200% 0",
           },
         },
       },
