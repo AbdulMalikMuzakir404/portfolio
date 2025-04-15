@@ -1,3 +1,5 @@
+"use client";
+
 import { HeroOrbit } from "@/components/HeroOrbit";
 import memojiImage from "@/assets/images/memoji-computer.png";
 import Image from "next/image";
@@ -5,12 +7,13 @@ import ArrowDown from "@/assets/icons/arrow-down.svg";
 import GrainImage from "@/assets/images/grain.jpg";
 import StarIcon from "@/assets/icons/star.svg";
 import SparkleIcom from "@/assets/icons/sparkle.svg";
+import { Cover } from "@/components/ui/Cover";
 
 export const HeroSection = () => {
   return (
     <div
       id="home"
-      className="py-32 md:py-48 lg:py-58 relative z-0 overflow-x-clip"
+      className="py-32 md:py-50 lg:py-60 relative z-0 overflow-x-clip"
     >
       <div
         className="absolute inset-0"
@@ -50,6 +53,16 @@ export const HeroSection = () => {
           spinDuration="3s"
         >
           <SparkleIcom className="size-5 text-emerald-300/20" />
+        </HeroOrbit>
+        <HeroOrbit
+          size={460}
+          rotation={-14}
+          shouldOrbit
+          orbitDuration="20s"
+          shouldSpin
+          spinDuration="2s"
+        >
+          <SparkleIcom className="size-8 text-emerald-300/20" />
         </HeroOrbit>
         <HeroOrbit size={520} rotation={-41} shouldOrbit orbitDuration="34s">
           <div className="size-2 rounded-full bg-emerald-300/20" />
@@ -102,7 +115,7 @@ export const HeroSection = () => {
         </HeroOrbit>
         <HeroOrbit
           size={800}
-          rotation={-72}
+          rotation={0}
           shouldOrbit
           orbitDuration="48s"
           shouldSpin
@@ -110,8 +123,38 @@ export const HeroSection = () => {
         >
           <StarIcon className="size-28 text-emerald-300" />
         </HeroOrbit>
+        <HeroOrbit
+          size={980}
+          rotation={-100}
+          shouldOrbit
+          orbitDuration="48s"
+          shouldSpin
+          spinDuration="6s"
+        >
+          <StarIcon className="size-28 text-emerald-300" />
+        </HeroOrbit>
+        <HeroOrbit
+          size={850}
+          rotation={-50}
+          shouldOrbit
+          orbitDuration="40s"
+          shouldSpin
+          spinDuration="6s"
+        >
+          <StarIcon className="size-20 text-emerald-300" />
+        </HeroOrbit>
+        <HeroOrbit
+          size={700}
+          rotation={130}
+          shouldOrbit
+          orbitDuration="40s"
+          shouldSpin
+          spinDuration="6s"
+        >
+          <StarIcon className="size-20 text-emerald-300" />
+        </HeroOrbit>
       </div>
-      <div className="container">
+      <div className="container relative z-[10]">
         <div className="flex flex-col items-center">
           <Image
             src={memojiImage}
@@ -127,9 +170,10 @@ export const HeroSection = () => {
             </div>
           </div>
         </div>
-        <div className="max-w-lg mx-auto">
+        <div className="mx-auto">
           <h1 className="font-serif text-3xl md:text-5xl text-center mt-8 tracking-wide">
-            Building Exceptional User Experiences
+            Bringing your dreams to life with cutting-edge{" "}
+            <Cover>software solutions</Cover>
           </h1>
           <p className="mt-4 text-center text-white/60 md:text-lg">
             I am a software engineer with almost two years of experience,
@@ -145,7 +189,13 @@ export const HeroSection = () => {
           </p>
         </div>
         <div className="flex flex-col md:flex-row justify-center items-center mt-8 gap-4">
-          <button className="inline-flex items-center gap-2 border border-white/15 px-6 h-12 rounded-xl">
+          <button
+            onClick={() => {
+              const el = document.getElementById("projects");
+              el?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="inline-flex items-center gap-2 border border-white/15 px-6 h-12 rounded-xl"
+          >
             <span className="font-semibold">Explore My Work</span>
             <ArrowDown className="size-4" />
           </button>
