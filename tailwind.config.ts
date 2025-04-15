@@ -1,4 +1,3 @@
-import { transform } from "framer-motion";
 import type { Config } from "tailwindcss";
 
 const config: Config = {
