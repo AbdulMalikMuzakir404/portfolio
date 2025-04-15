@@ -201,7 +201,7 @@ export const HeroSection = () => {
           </button>
           <button className="inline-flex items-center gap-2 border border-white bg-white text-gray-900 px-6 h-12 rounded-xl">
             <span>👋</span>
-            <span className="font-semibold">Let’s Connect</span>
+            <span className="font-semibold">My Curriculum Vitae</span>
           </button>
         </div>
       </div>
