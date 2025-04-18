@@ -9,20 +9,27 @@ export const Header = () => {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   useEffect(() => {
-    const sections = document.querySelectorAll("section");
-
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveLink(entry.target.id);
-          }
-        });
+        const visibleEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top); // paling atas dulu
+
+        if (visibleEntries.length > 0) {
+          const topMostEntry = visibleEntries[0];
+          setActiveLink(topMostEntry.target.id);
+        }
       },
-      { threshold: 0.6 }
+      {
+        threshold: 0.3,
+      }
     );
 
-    sections.forEach((section) => observer.observe(section));
+    navItems.forEach((item) => {
+      const element = document.getElementById(item.id);
+      if (element) observer.observe(element);
+    });
+
     return () => observer.disconnect();
   }, []);
 
