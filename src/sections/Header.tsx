@@ -2,17 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { navItems } from "@/utils/const";
 
 export const Header = () => {
   const [activeLink, setActiveLink] = useState("home");
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-
-  const navItems = [
-    { id: "home", label: "Home" },
-    { id: "projects", label: "Projects" },
-    { id: "about", label: "About" },
-    { id: "contact", label: "Contact" },
-  ];
 
   useEffect(() => {
     const sections = document.querySelectorAll("section");

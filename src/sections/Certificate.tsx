@@ -82,7 +82,7 @@ const certificates = [
 
 export const CertificatesSection = () => {
   return (
-    <section id="certificates" className="pb-16 lg:py-24">
+    <section id="skills" className="pb-16 lg:py-24">
       <LampContainer>
         <motion.div
           initial={{ opacity: 0.5, y: 100 }}
