@@ -1,10 +1,5 @@
 "use client";
 
-import NodeJsCertificate from "@/assets/certificates/nodejs_certificate.jpg";
-import CompetitionCertificate from "@/assets/certificates/competition_certificate.jpeg";
-import FlutterCertificate from "@/assets/certificates/flutter_certificate.jpeg";
-import PKLCertificate from "@/assets/certificates/pkl_certification.jpeg";
-import UjikomCertificate from "@/assets/certificates/ujikom_certification.jpeg";
 import Image from "next/image";
 import CheckCircleIcon from "@/assets/icons/check-circle.svg";
 import ArraowUpRightIcon from "@/assets/icons/arrow-up-right.svg";
@@ -12,77 +7,11 @@ import { Card } from "@/components/Card";
 import React from "react";
 import { motion } from "framer-motion";
 import { LampContainer } from "@/components/ui/LampContainer";
-
-const certificates = [
-  {
-    company: "Inter-School Competition",
-    year: "13 April 2023",
-    title: "Web Technologies",
-    results: [
-      { title: "Simple Snake Game" },
-      { title: "Create Website Using Wordpress" },
-      { title: "Create Website Using Laravel and Vue.JS" },
-    ],
-    link: "https://drive.google.com/drive/folders/123QStjlkDknO4zO02G2fpNgVZ6-7FaET?usp=sharing",
-    image: CompetitionCertificate,
-  },
-  {
-    company: "Udemy",
-    year: "11 November 2024",
-    title: "NodeJS: Beginner to Advanced",
-    results: [
-      { title: "NodeJS" },
-      { title: "NodeJS Basics" },
-      { title: "NodeJS Standard Library" },
-      { title: "NodeJS RESTful API" },
-    ],
-    link: "https://www.udemy.com/course/nodejs-pemula-sampai-mahir/learn/lecture/32742654#overview",
-    image: NodeJsCertificate,
-  },
-  {
-    company: "Udemy",
-    year: "10 April 2024",
-    title: "Flutter Intermediate",
-    results: [
-      { title: "Scalable Architecture" },
-      { title: "Robust State Management" },
-      { title: "Advanced Features Integration" },
-      { title: "Efficient Networking" },
-    ],
-    link: "https://www.udemy.com/course/flutterindonesiakopianan/?couponCode=ST14MT150425G1",
-    image: FlutterCertificate,
-  },
-  {
-    company: "SINOVATIF",
-    year: "8 August 2022",
-    title: "PKL Certification",
-    results: [
-      { title: "Understanding Professional Work Culture" },
-      { title: "Adapting to New Technologies" },
-      { title: "Web Development with Laravel Breeze" },
-      { title: "Final Project: Student Attendance System" },
-    ],
-    link: "https://www.linkedin.com/company/pt-sinergi-nusa-inovatif/?originalSubdomain=id",
-    image: PKLCertificate,
-  },
-  {
-    company: "SMKN x Inovindo",
-    year: "1 April 2023",
-    title: "Competency Test",
-    results: [
-      { title: "Developed a School Tuition Payment System" },
-      { title: "Implemented Online Payment Integration" },
-      { title: "Presented Project to Mentors" },
-      { title: "Achieved Excellent Competency Scores" },
-    ],
-    link: "https://inovindo.co.id/",
-    image: UjikomCertificate,
-  },
-];
+import { certificates } from "@/utils/const";
 
 export const CertificatesSection = () => {
   return (
-    <section id="skills" className="pb-16 lg:py-24">
+    <section id="skills" className="pb-16 lg:py-24 min-h-[60vh]">
       <LampContainer>
         <motion.div
           initial={{ opacity: 0.5, y: 100 }}
