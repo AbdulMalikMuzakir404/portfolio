@@ -5,6 +5,7 @@ import SparkleIcom from "@/assets/icons/sparkle.svg";
 import { Cover } from "@/components/ui/Cover";
 import { ExploreMyWorkButton } from "@/components/ExploreMyWorkButton";
 import { CVButton } from "@/components/CVButton";
+import { Border } from "@/components/ui/MovingBorder";
 
 export const HeroSection = () => {
   const openMyCV = () => {
@@ -159,14 +160,16 @@ export const HeroSection = () => {
       </div>
       <div className="container relative z-[10]">
         <div className="flex flex-col items-center md:pb-20 lg:pb-30">
-          <div className="bg-gray-950 border border-gray-800 px-4 py-1.5 inline-flex items-center gap-4 rounded-lg">
-            <div className="bg-green-500 size-2.5 rounded-full relative">
-              <div className="bg-green-500 absolute inset-0 rounded-full animate-ping-large"></div>
+          <Border>
+            <div className="bg-gray-950 px-4 py-1.5 inline-flex items-center gap-4 rounded-full">
+              <div className="bg-green-500 size-2.5 rounded-full relative">
+                <div className="bg-green-500 absolute inset-0 rounded-full animate-ping-large"></div>
+              </div>
+              <div className="text-sm font-medium">
+                Available for new projects
+              </div>
             </div>
-            <div className="text-sm font-medium">
-              Available for new projects
-            </div>
-          </div>
+          </Border>
         </div>
         <div className="mx-auto">
           <h1 className="font-serif text-3xl md:text-5xl text-center mt-8 tracking-wide">
