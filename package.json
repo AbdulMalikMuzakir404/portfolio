@@ -11,7 +11,7 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@react-three/drei": "^10.0.6",
-    "@react-three/fiber": "^9.1.2",
+    "@react-three/fiber": "^8.16.6",
     "@svgr/webpack": "^8.1.0",
     "@tabler/icons-react": "^3.31.0",
     "@tsparticles/engine": "^3.8.1",
@@ -24,8 +24,11 @@
     "react": "^18",
     "react-dom": "^18",
     "react-element-to-jsx-string": "^17.0.0",
+    "react-icons": "^5.5.0",
+    "react-lottie": "^1.2.4",
     "tailwind-merge": "^2.4.0",
-    "three": "^0.175.0"
+    "three": "^0.175.0",
+    "three-globe": "^2.42.4"
   },
   "devDependencies": {
     "@types/node": "^20",
