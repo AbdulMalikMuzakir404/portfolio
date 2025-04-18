@@ -14,6 +14,7 @@ import { ContainerTextFlip } from "@/components/ui/ContainerTextFlip";
 
 import { skills, hobbies } from "@/utils/const";
 import Tech from "@/components/Tech";
+import { Meteors } from "@/components/ui/Meteor";
 
 export const AboutSection = () => {
   const constraintRef = useRef(null);
@@ -92,6 +93,7 @@ export const AboutSection = () => {
                   </motion.div>
                 ))}
               </div>
+              <Meteors number={20} />
             </Card>
             <Card className="h-[320px] p-0 relative md:col-span-2 lg:col-span-1">
               <Image
