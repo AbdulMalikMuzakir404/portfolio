@@ -13,21 +13,21 @@ export const Header = () => {
       (entries) => {
         const visibleEntries = entries
           .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top); // paling atas dulu
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
         if (visibleEntries.length > 0) {
           const topMostEntry = visibleEntries[0];
-          setActiveLink(topMostEntry.target.id);
+          setActiveLink(topMostEntry.target.id.replace("-anchor", ""));
         }
       },
       {
-        threshold: 0.3,
+        threshold: 0.6,
       }
     );
 
     navItems.forEach((item) => {
-      const element = document.getElementById(item.id);
-      if (element) observer.observe(element);
+      const anchorElement = document.getElementById(`${item.id}-anchor`);
+      if (anchorElement) observer.observe(anchorElement);
     });
 
     return () => observer.disconnect();
