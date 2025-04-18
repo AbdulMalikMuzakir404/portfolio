@@ -1,6 +1,5 @@
 import { AboutSection } from "@/sections/About";
 import { ContactSection } from "@/sections/Contact";
-import { Demo } from "@/sections/Demo";
 import { Footer } from "@/sections/Footer";
 import { Header } from "@/sections/Header";
 import { HeroSection } from "@/sections/Hero";
@@ -20,7 +19,6 @@ export default function Home() {
       <TapeSection />
       <Experience />
       {/* <TestimonialsSection /> */}
-      <Demo />
       <Wobble />
       <ContactSection />
       <Footer />
