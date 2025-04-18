@@ -8,6 +8,7 @@ import { SkillsSection } from "@/sections/Skill";
 import { TapeSection } from "@/sections/Tape";
 import { TestimonialsSection } from "@/sections/Testimonials";
 import { Experience } from "@/sections/Experience";
+import { Wobble } from "@/sections/Wobble";
 
 export default function Home() {
   return (
@@ -18,8 +19,9 @@ export default function Home() {
       <AboutSection />
       <TapeSection />
       <Experience />
-      <TestimonialsSection />
+      {/* <TestimonialsSection /> */}
       <Demo />
+      <Wobble />
       <ContactSection />
       <Footer />
     </div>
