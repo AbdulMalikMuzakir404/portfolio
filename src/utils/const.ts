@@ -312,3 +312,26 @@ export const testimonials = [
     avatar: memojiAvatar5,
   },
 ];
+
+export const footerLinks = [
+  {
+    title: "LinkedIn",
+    href: "https://www.linkedin.com/in/abdul-malik-muzakir-aba30a343/",
+  },
+  {
+    title: "Instagram",
+    href: "https://www.instagram.com/abdul.malik.muzakir/",
+  },
+  {
+    title: "GitHub",
+    href: "https://github.com/AbdulMalikMuzakir404",
+  },
+  {
+    title: "Quora",
+    href: "https://id.quora.com/profile/Abdul-Malik-Muzakir",
+  },
+  {
+    title: "Discord",
+    href: "https://discord.com/users/1072893949288644732",
+  },
+];

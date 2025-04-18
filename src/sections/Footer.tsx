@@ -1,27 +1,9 @@
 import ArrowUpRightIcon from "@/assets/icons/arrow-up-right.svg";
-
-const footerLinks = [
-  {
-    title: "Youtube",
-    href: "",
-  },
-  {
-    title: "Twitter",
-    href: "",
-  },
-  {
-    title: "Instagram",
-    href: "",
-  },
-  {
-    title: "LinkedIn",
-    href: "",
-  },
-];
+import { footerLinks } from "@/utils/const";
 
 export const Footer = () => {
   return (
-    <footer className="relative -z-10 overflow-x-clip">
+    <footer className="relative z-10 overflow-x-clip">
       <div
         className="absolute bottom-0 left-1/2 h-[280px] w-[1600px] -translate-x-1/2 bg-emerald-300/30 -z-10"
         style={{
@@ -43,7 +25,8 @@ export const Footer = () => {
           <nav className="flex flex-col md:flex-row items-center gap-8">
             {footerLinks.map((link) => (
               <a
-                href=""
+                target="_blank"
+                href={link.href}
                 key={link.title}
                 className="inline-flex items-center gap-1.5"
               >
