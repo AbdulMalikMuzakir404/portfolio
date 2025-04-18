@@ -14,12 +14,13 @@ export const HeroSection = () => {
     const pdfUrl = "cv/CV2025.pdf";
     window.open(pdfUrl, "_blank");
   };
-  
+
   return (
     <section
       id="home"
-      className="py-32 md:py-50 lg:py-60 relative z-0 overflow-x-clip"
+      className="relative py-32 md:py-50 lg:py-60 z-0 overflow-x-clip"
     >
+      <div id="home-anchor" className="absolute" />
       <div
         className="absolute inset-0"
         style={{
@@ -204,7 +205,10 @@ export const HeroSection = () => {
             <span className="font-semibold">Explore My Work</span>
             <ArrowDown className="size-4" />
           </button>
-          <button onClick={openMyCV} className="inline-flex items-center gap-2 border border-white bg-white text-gray-900 px-6 h-12 rounded-xl">
+          <button
+            onClick={openMyCV}
+            className="inline-flex items-center gap-2 border border-white bg-white text-gray-900 px-6 h-12 rounded-xl"
+          >
             <span>👋</span>
             <span className="font-semibold">My Curriculum Vitae</span>
           </button>
