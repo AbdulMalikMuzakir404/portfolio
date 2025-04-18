@@ -16,7 +16,7 @@ export const HeroSection = () => {
   };
   
   return (
-    <div
+    <section
       id="home"
       className="py-32 md:py-50 lg:py-60 relative z-0 overflow-x-clip"
     >
@@ -210,6 +210,6 @@ export const HeroSection = () => {
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 };

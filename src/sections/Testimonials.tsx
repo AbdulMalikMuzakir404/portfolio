@@ -6,7 +6,7 @@ import { testimonials } from "@/utils/const";
 
 export const TestimonialsSection = () => {
   return (
-    <div className="py-16 lg:py-24">
+    <section className="py-16 lg:py-24">
       <div className="container">
         <SectionHeader
           eyebrow="Happy Clients"
@@ -56,6 +56,6 @@ export const TestimonialsSection = () => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
