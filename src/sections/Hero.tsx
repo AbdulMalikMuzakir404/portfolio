@@ -1,13 +1,10 @@
-"use client";
-
 import { HeroOrbit } from "@/components/HeroOrbit";
-import memojiImage from "@/assets/images/memoji-computer.png";
-import Image from "next/image";
-import ArrowDown from "@/assets/icons/arrow-down.svg";
 import GrainImage from "@/assets/images/grain.jpg";
 import StarIcon from "@/assets/icons/star.svg";
 import SparkleIcom from "@/assets/icons/sparkle.svg";
 import { Cover } from "@/components/ui/Cover";
+import { ExploreMyWorkButton } from "@/components/ExploreMyWorkButton";
+import { CVButton } from "@/components/CVButton";
 
 export const HeroSection = () => {
   const openMyCV = () => {
@@ -161,12 +158,7 @@ export const HeroSection = () => {
         </HeroOrbit>
       </div>
       <div className="container relative z-[10]">
-        <div className="flex flex-col items-center">
-          <Image
-            src={memojiImage}
-            className="size-[100px]"
-            alt="Person peeking front behind laptop"
-          />
+        <div className="flex flex-col items-center md:pb-20 lg:pb-30">
           <div className="bg-gray-950 border border-gray-800 px-4 py-1.5 inline-flex items-center gap-4 rounded-lg">
             <div className="bg-green-500 size-2.5 rounded-full relative">
               <div className="bg-green-500 absolute inset-0 rounded-full animate-ping-large"></div>
@@ -195,23 +187,8 @@ export const HeroSection = () => {
           </p>
         </div>
         <div className="flex flex-col md:flex-row justify-center items-center mt-8 gap-4">
-          <button
-            onClick={() => {
-              const el = document.getElementById("skills");
-              el?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="inline-flex items-center gap-2 border border-white/15 px-6 h-12 rounded-xl"
-          >
-            <span className="font-semibold">Explore My Work</span>
-            <ArrowDown className="size-4" />
-          </button>
-          <button
-            onClick={openMyCV}
-            className="inline-flex items-center gap-2 border border-white bg-white text-gray-900 px-6 h-12 rounded-xl"
-          >
-            <span>👋</span>
-            <span className="font-semibold">My Curriculum Vitae</span>
-          </button>
+          <ExploreMyWorkButton />
+          <CVButton />
         </div>
       </div>
     </section>
