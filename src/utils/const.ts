@@ -40,14 +40,18 @@ import {
 } from "@/assets/tech";
 
 import {
+  bunskill,
   bootstrapskill,
+  coolifyskill,
   cssskill,
+  cpanelskill,
   dartskill,
   digitaloceanskill,
   dockerskill,
   figmaskill,
   firebaseskill,
   flutterskill,
+  gcpskill,
   gitskill,
   htmlskill,
   javascriptskill,
@@ -57,9 +61,12 @@ import {
   nestjsskill,
   nextjsskill,
   nodejsskill,
+  npmskill,
+  oauthskill,
   phpskill,
   prismaskill,
   psqlskill,
+  railskill,
   reactjsskill,
   redisskill,
   tailwindskill,
@@ -333,5 +340,475 @@ export const footerLinks = [
   {
     title: "Discord",
     href: "https://discord.com/users/1072893949288644732",
+  },
+];
+
+export const bprChristaJayaIcons = [
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const smartcoopAcademyIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "NPM",
+    icon: npmskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Tailwind CSS",
+    icon: tailwindskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Vue.js",
+    icon: vueskill,
+  },
+  {
+    title: "OAuth",
+    icon: oauthskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const diabseninIcons = [
+  {
+    title: "Ruby on Rails",
+    icon: railskill,
+  },
+  {
+    title: "PostgreSQL",
+    icon: psqlskill,
+  },
+  {
+    title: "Digital Ocean",
+    icon: digitaloceanskill,
+  },
+  {
+    title: "Coolify",
+    icon: coolifyskill,
+  },
+  {
+    title: "Next.js",
+    icon: nextjsskill,
+  },
+  {
+    title: "Typescript",
+    icon: typescriptskill,
+  },
+  {
+    title: "Bun",
+    icon: bunskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Tailwind CSS",
+    icon: tailwindskill,
+  },
+  {
+    title: "Flutter",
+    icon: flutterskill,
+  },
+  {
+    title: "Docker",
+    icon: dockerskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const bigdataumkmIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "PostgreSQL",
+    icon: psqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "NPM",
+    icon: npmskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Tailwind CSS",
+    icon: tailwindskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Vue.js",
+    icon: vueskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const portalSmartcoopIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "NPM",
+    icon: npmskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Tailwind CSS",
+    icon: tailwindskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Vue.js",
+    icon: vueskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const sekiHalselIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "NPM",
+    icon: npmskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Vue.js",
+    icon: vueskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const silatoKopiSahaIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const neqatIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "jQuery",
+    icon: jqueryskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+  {
+    title: "Flutter",
+    icon: flutterskill,
+  },
+];
+
+export const sipajongaIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "Google Cloud Platform",
+    icon: gcpskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "jQuery",
+    icon: jqueryskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
+export const pmsIcons = [
+  {
+    title: "Laravel",
+    icon: laravelskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "NPM",
+    icon: npmskill,
+  },
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Vue.js",
+    icon: vueskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
   },
 ];
