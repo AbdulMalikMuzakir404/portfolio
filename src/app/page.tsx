@@ -4,20 +4,20 @@ import { Demo } from "@/sections/Demo";
 import { Footer } from "@/sections/Footer";
 import { Header } from "@/sections/Header";
 import { HeroSection } from "@/sections/Hero";
-import { CertificatesSection } from "@/sections/Certificate";
+import { SkillsSection } from "@/sections/Skill";
 import { TapeSection } from "@/sections/Tape";
 import { TestimonialsSection } from "@/sections/Testimonials";
-import { Project } from "@/sections/Project";
+import { Experience } from "@/sections/Experience";
 
 export default function Home() {
   return (
     <div>
       <Header />
       <HeroSection />
-      <CertificatesSection />
+      <SkillsSection />
       <AboutSection />
       <TapeSection />
-      <Project />
+      <Experience />
       <TestimonialsSection />
       <Demo />
       <ContactSection />
