@@ -29,6 +29,7 @@ const config: Config = {
         "ping-large": "ping-large 1s ease-in-out infinite",
         "move-left": "move-left 1s linear infinite",
         "move-right": "move-right 1s linear infinite",
+        "meteor-effect": "meteor 5s linear infinite",
         shimmer: "shimmer 2s linear infinite",
         first: "moveVertical 30s ease infinite",
         second: "moveInCircle 20s reverse infinite",
@@ -57,6 +58,14 @@ const config: Config = {
           },
           "100%": {
             transform: "translateX(0%)",
+          },
+        },
+        meteor: {
+          "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
+          "70%": { opacity: "1" },
+          "100%": {
+            transform: "rotate(215deg) translateX(-500px)",
+            opacity: "0",
           },
         },
         shimmer: {
