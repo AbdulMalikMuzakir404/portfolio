@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+import NoiseImage from "@/assets/images/noise.webp";
+
 export const WobbleCard = ({
   children,
   containerClassName,
@@ -70,7 +72,7 @@ const Noise = () => {
     <div
       className="absolute inset-0 w-full h-full scale-[1.2] transform opacity-10 [mask-image:radial-gradient(#fff,transparent,75%)]"
       style={{
-        backgroundImage: "url(/noise.webp)",
+        backgroundImage: `url(${NoiseImage})`,
         backgroundSize: "30%",
       }}
     ></div>
