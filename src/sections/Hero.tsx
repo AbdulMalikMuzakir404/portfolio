@@ -184,7 +184,7 @@ export const HeroSection = () => {
             experience building mobile applications using Flutter.
           </p>
           <p className="mt-4 text-center text-white/60 md:text-lg">
-            Programming is not just a profession for me—it’s a passion. I am a
+            Programming is not just a profession for me—it&#39;s a passion. I am a
             quick learner who adheres to best practices, consistently delivering
             high-quality solutions efficiently and on time.
           </p>

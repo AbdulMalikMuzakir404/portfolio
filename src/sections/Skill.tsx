@@ -32,7 +32,7 @@ export const SkillsSection = () => {
             Verified Certifications
           </h2>
           <p className="text-center md:text-lg lg:text-xl text-white/60 mt-4 max-w-md mx-auto">
-            Discover the credentials I’ve earned on my journey of continuous
+            Discover the credentials I&#39;ve earned on my journey of continuous
             learning.
           </p>
         </motion.div>

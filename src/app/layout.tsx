@@ -13,7 +13,7 @@ const calistoga = Calistoga({
 export const metadata: Metadata = {
   title: "Abdul - Portfolio",
   description:
-    "I am a software engineer with almost two years of experience, specializing in back-end and mobile development using technologies such as NestJS and Laravel. I am also skilled in front-end development with frameworks like Vue.js and Next.js,and I have experience building mobile applications using Flutter Programming is not just a profession for me—it’s a passion. I am a quick learner who adheres to best practices, consistently delivering high-quality solutions efficiently and on time.",
+    "I am a software engineer with almost two years of experience, specializing in back-end and mobile development using technologies such as NestJS and Laravel. I am also skilled in front-end development with frameworks like Vue.js and Next.js,and I have experience building mobile applications using Flutter Programming is not just a profession for me—it&#39;s a passion. I am a quick learner who adheres to best practices, consistently delivering high-quality solutions efficiently and on time.",
   icons: "/favicon/favicon.ico",
 };
 

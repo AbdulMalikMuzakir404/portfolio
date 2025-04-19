@@ -62,8 +62,8 @@ export const Experience = () => {
         <div className="w-full flex flex-col items-center justify-center overflow-hidden rounded-md">
           <SectionHeader
             eyebrow="Work Experience"
-            title="Projects I’ve Worked On"
-            description="These are some of the projects I’ve completed and ones currently in progress — showcasing my experience and ongoing work."
+            title="Projects I&#39;ve Worked On"
+            description="These are some of the projects I&#39;ve completed and ones currently in progress — showcasing my experience and ongoing work."
           />
           <div className="w-[40rem] h-40 mt-5 relative">
             <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
@@ -112,7 +112,7 @@ export const workexperiences = [
             courses or training programs are awarded digital certificates as
             formal recognition of their achievements. These certificates can
             serve as valuable credentials for personal growth and professional
-            development. Whether you’re a beginner looking to understand the
+            development. Whether you&#39;re a beginner looking to understand the
             basics or a professional seeking advanced insights, SmartCoop
             Academy is your trusted partner in lifelong learning.
           </p>
@@ -340,7 +340,7 @@ export const workexperiences = [
             bridge between MSMEs, government programs, mentors, and potential
             buyers. Whether for data analysis, business development, or
             collaboration, BigDataUMKM is a reliable solution that supports the
-            growth of Indonesia’s MSME sector.
+            growth of Indonesia&#39;s MSME sector.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
@@ -514,7 +514,7 @@ export const workexperiences = [
             the features of the SmartCoop system. By providing structured
             training courses, Silato Kopi Saha ensures that members can
             independently learn how to navigate and make the most of the
-            platform’s functionalities. This not only empowers users to become
+            platform&#39;s functionalities. This not only empowers users to become
             more proficient but also significantly reduces the need for repeated
             explanations from the SmartCoop team—training can be delivered once
             and accessed by all members at any time, improving efficiency and
