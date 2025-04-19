@@ -66,9 +66,6 @@ export function Wobble() {
             className="absolute -right-4 lg:-right-[40%] grayscale filter -bottom-10 object-contain rounded-2xl"
           />
         </WobbleCard>
-
-
-
         <WobbleCard containerClassName="col-span-1 min-h-[300px]">
           <h2 className="font-serif max-w-80 text-left text-balance text-base md:text-xl lg:text-3xl tracking-[-0.015em] text-white">
             Crafted with Precision
@@ -78,8 +75,6 @@ export function Wobble() {
             that each solution is built on a solid foundation.
           </p>
         </WobbleCard>
-
-        
         <WobbleCard containerClassName="col-span-1 lg:col-span-3 bg-blue-900 min-h-[300px] lg:min-h-[300px] xl:min-h-[300px]">
           <div className="max-w-sm">
             <h2 className="font-serif max-w-sm md:max-w-lg text-left text-balance text-base md:text-xl lg:text-3xl tracking-[-0.015em] text-white">

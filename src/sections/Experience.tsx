@@ -584,7 +584,7 @@ export const workexperiences = [
             students informed with the latest school updates. It also includes a
             built-in map feature to help guide students to their school
             location—particularly useful for new students who may be unfamiliar
-            with the area, as the map is centered on each respective school's
+            with the area, as the map is centered on each respective school&#39;s
             location. On the administrative side, the web application enables
             school staff and administrators to efficiently manage student data.
             This includes functionalities such as student registration, data
