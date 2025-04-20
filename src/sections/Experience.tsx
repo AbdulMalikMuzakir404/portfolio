@@ -22,7 +22,7 @@ import {
   BigDataUMKMIndex,
   BigDataUMKMDashboard,
   BigDataUMKMLogin,
-  PortalSmartcoopCoperationData,
+  PortalSmartcoopCooperationData,
   PortalSmartcoopDashboardStatistik,
   PortalSmartcoopLogin,
   PortalSmartcoopStatistik,
@@ -411,7 +411,7 @@ export const workexperiences = [
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
-              src={PortalSmartcoopCoperationData.src}
+              src={PortalSmartcoopCooperationData.src}
               alt="Portal Smartcoop Coperation Data"
               width={500}
               height={500}

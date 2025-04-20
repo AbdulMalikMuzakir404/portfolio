@@ -16,7 +16,7 @@ import BigDataUMKMCatalog from "./BigDataUMKMCatalog.png";
 import BigDataUMKMIndex from "./BigDataUMKMIndex.png";
 import BigDataUMKMDashboard from "./BigDataUMKMDashboard.png";
 import BigDataUMKMLogin from "./BigDataUMKMLogin.png";
-import PortalSmartcoopCoperationData from "./PortalSmartcoopCoperationData.png";
+import PortalSmartcoopCooperationData from "./PortalSmartcoopCooperationData.png";
 import PortalSmartcoopDashboardStatistik from "./PortalSmartcoopDashboardStatistik.png";
 import PortalSmartcoopLogin from "./PortalSmartcoopLogin.png";
 import PortalSmartcoopStatistik from "./PortalSmartcoopStatistik.png";
@@ -54,7 +54,7 @@ export {
   BigDataUMKMIndex,
   BigDataUMKMDashboard,
   BigDataUMKMLogin,
-  PortalSmartcoopCoperationData,
+  PortalSmartcoopCooperationData,
   PortalSmartcoopDashboardStatistik,
   PortalSmartcoopLogin,
   PortalSmartcoopStatistik,
