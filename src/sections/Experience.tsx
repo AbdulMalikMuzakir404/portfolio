@@ -684,7 +684,7 @@ export const workexperiences = [
         </div>
         <div>
           <p className="text-9xl pt-10 font-bold font-sans text-neutral-800 md:text-lg dark:text-neutral-200">
-            PMS (Project Manajemen Sistem)
+            PMS (Project Management System)
           </p>
           <p className="mb-4 text-xs font-normal font-sans text-neutral-800 md:text-sm dark:text-neutral-200">
             PMS (Project Management System) is an internal application designed
