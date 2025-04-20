@@ -123,7 +123,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Abdul - Software Engineer Portfolio",
+        alt: "Abdul Malik Muzakir - Software Engineer Portfolio",
       },
     ],
     locale: "en_US",
