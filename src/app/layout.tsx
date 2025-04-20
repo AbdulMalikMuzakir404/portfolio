@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     "Frontend Developer",
     "Mobile App Developer",
   ],
-  icons: "/favicon/favicon.ico",
+  icons: "/favicon.ico",
   authors: [{ name: "Abdul Malik Muzakir" }],
   metadataBase: new URL("https://www.abdulmalikmuzakir.my.id"),
   openGraph: {
