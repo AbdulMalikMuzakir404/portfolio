@@ -15,21 +15,99 @@ export const metadata: Metadata = {
   description:
     "Abdul is a software engineer specializing in backend (NestJS, Laravel), frontend (Vue.js, Next.js), and mobile development (Flutter). Explore his projects, skills, and experience in building high-performance web and mobile applications.",
   keywords: [
+    // Nama personal
     "Abdul",
     "Abdul Malik",
     "Abdul Malik Muzakir",
     "Abdul Portfolio",
+
+    // Role/profesi umum
     "Software Engineer",
     "Full Stack Developer",
+    "Backend Developer",
+    "Frontend Developer",
+    "Mobile App Developer",
+    "Web Developer",
+    "App Developer",
+
+    // Role + Indonesia
+    "Software Engineer Indonesia",
+    "Full Stack Developer Indonesia",
+    "Backend Developer Indonesia",
+    "Frontend Developer Indonesia",
+    "Mobile App Developer Indonesia",
+    "Web Developer Indonesia",
+
+    // Stack/teknologi
     "NestJS Developer",
     "Laravel Developer",
     "Vue.js Developer",
     "Next.js Developer",
     "Flutter Developer",
-    "Portfolio Developer",
-    "Backend Engineer",
-    "Frontend Developer",
-    "Mobile App Developer",
+    "JavaScript Developer",
+    "TypeScript Developer",
+    "Node.js Developer",
+    "API Developer",
+
+    // Freelance market
+    "Freelance Software Engineer",
+    "Freelance Full Stack Developer",
+    "Freelance Backend Developer",
+    "Freelance Frontend Developer",
+    "Freelance Mobile App Developer",
+    "Freelance Web Developer",
+
+    // Freelance + Lokal
+    "Freelance Software Engineer Indonesia",
+    "Freelance Full Stack Developer Indonesia",
+    "Freelance Backend Developer Indonesia",
+    "Freelance Frontend Developer Indonesia",
+    "Freelance Mobile App Developer Indonesia",
+    "Freelance Web Developer Indonesia",
+
+    // Layanan & project
+    "Jasa Pembuatan Aplikasi",
+    "Jasa Pembuatan Website",
+    "Jasa Pembuatan Aplikasi Mobile",
+    "Jasa Web Developer",
+    "Open Hiring Developer",
+    "Sewa Developer Freelance",
+    "Hire Software Engineer Indonesia",
+    "Hire Full Stack Developer",
+
+    // Portfolio & brand building
+    "Portfolio Software Engineer",
+    "Portfolio Developer Indonesia",
+    "Developer Indonesia Portfolio",
+    "Developer Profesional Indonesia",
+
+    // Lokasi (Local SEO)
+    "Software Engineer Bandung",
+    "Full Stack Developer Bandung",
+    "Backend Developer Bandung",
+    "Frontend Developer Bandung",
+    "Mobile App Developer Bandung",
+    "Web Developer Bandung",
+
+    "Freelance Developer Bandung",
+    "Freelance Software Engineer Bandung",
+    "Freelance Full Stack Developer Bandung",
+    "Freelance Backend Developer Bandung",
+    "Freelance Frontend Developer Bandung",
+    "Freelance Mobile App Developer Bandung",
+    "Freelance Web Developer Bandung",
+
+    "Jasa Pembuatan Website Bandung",
+    "Jasa Pembuatan Aplikasi Bandung",
+    "Hire Developer Bandung",
+    "Sewa Programmer Bandung",
+    "Developer Profesional Bandung",
+    "Developer Terbaik Bandung",
+
+    "Jasa IT Bandung",
+    "Programmer Bandung",
+    "Developer Bandung",
+    "Bandung Full Stack Developer Portfolio",
   ],
   icons: "/favicon.ico",
   authors: [{ name: "Abdul Malik Muzakir" }],
