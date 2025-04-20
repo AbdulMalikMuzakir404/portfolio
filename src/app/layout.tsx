@@ -11,9 +11,9 @@ const calistoga = Calistoga({
 });
 
 export const metadata: Metadata = {
-  title: "Abdul | Software Engineer Portfolio",
+  title: "Abdul Malik Muzakir | Software Engineer Portfolio",
   description:
-    "Abdul is a software engineer specializing in backend (NestJS, Laravel), frontend (Vue.js, Next.js), and mobile development (Flutter). Explore his projects, skills, and experience in building high-performance web and mobile applications.",
+    "Abdul Malik Muzakir is a software engineer specializing in backend (NestJS, Laravel), frontend (Vue.js, Next.js), and mobile development (Flutter). Explore his projects, skills, and experience in building high-performance web and mobile applications.",
   keywords: [
     // Nama personal
     "Abdul",
@@ -113,11 +113,11 @@ export const metadata: Metadata = {
   authors: [{ name: "Abdul Malik Muzakir" }],
   metadataBase: new URL("https://www.abdulmalikmuzakir.my.id"),
   openGraph: {
-    title: "Abdul | Software Engineer Portfolio",
+    title: "Abdul Malik Muzakir | Software Engineer Portfolio",
     description:
       "Explore Abdul's portfolio - full stack developer with expertise in NestJS, Laravel, Vue.js, Next.js, and Flutter.",
     url: "https://www.abdulmalikmuzakir.my.id",
-    siteName: "Abdul Portfolio",
+    siteName: "Abdul Malik Muzakir Portfolio",
     images: [
       {
         url: "/og-image.png",
@@ -131,7 +131,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Abdul | Software Engineer Portfolio",
+    title: "Abdul Malik Muzakir | Software Engineer Portfolio",
     description:
       "Explore Abdul's portfolio - full stack developer with expertise in NestJS, Laravel, Vue.js, Next.js, and Flutter.",
     images: ["/og-image.png"],
