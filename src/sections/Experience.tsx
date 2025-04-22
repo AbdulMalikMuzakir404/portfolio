@@ -160,7 +160,7 @@ export const workexperiences = [
             ))}
           </div>
         </div>
-        <div>
+        {/* <div>
           <p className="text-9xl pt-10 font-bold font-sans text-neutral-800 md:text-lg dark:text-neutral-200">
             BPR Christa Jaya
           </p>
@@ -220,7 +220,7 @@ export const workexperiences = [
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
         <div>
           <p className="text-9xl pt-10 font-bold font-sans text-neutral-800 md:text-lg dark:text-neutral-200">
             Diabsenin
