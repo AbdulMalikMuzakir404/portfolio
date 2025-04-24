@@ -9,10 +9,10 @@ import { motion } from "framer-motion";
 import { LampContainer } from "@/components/ui/LampContainer";
 import { certificates } from "@/utils/const";
 
-export const SkillsSection = () => {
+export const CertificateSection = () => {
   return (
-    <section id="skills" className="relative pb-16 lg:py-24">
-      <div id="skills-anchor" className="absolute" />
+    <section id="certificates" className="relative pb-16 lg:py-24">
+      <div id="certificates-anchor" className="absolute" />
       <LampContainer>
         <motion.div
           initial={{ opacity: 0.5, y: 100 }}

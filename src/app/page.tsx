@@ -3,7 +3,7 @@ import { ContactSection } from "@/sections/Contact";
 import { Footer } from "@/sections/Footer";
 import { Header } from "@/sections/Header";
 import { HeroSection } from "@/sections/Hero";
-import { SkillsSection } from "@/sections/Skill";
+import { CertificateSection } from "@/sections/Certificate";
 import { TapeSection } from "@/sections/Tape";
 import { TestimonialsSection } from "@/sections/Testimonials";
 import { Experience } from "@/sections/Experience";
@@ -14,7 +14,7 @@ export default function Home() {
     <div>
       <Header />
       <HeroSection />
-      <SkillsSection />
+      <CertificateSection />
       <AboutSection />
       <TapeSection />
       <Experience />

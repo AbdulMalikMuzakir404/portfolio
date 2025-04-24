@@ -76,7 +76,7 @@ import {
 
 export const navItems = [
   { id: "home", label: "Home" },
-  { id: "skills", label: "Skills" },
+  { id: "certificates", label: "Certificates" },
   { id: "about", label: "About" },
   { id: "experience", label: "Experience" },
   { id: "contact", label: "Contact" },

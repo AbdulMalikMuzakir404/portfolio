@@ -7,7 +7,7 @@ export const ExploreMyWorkButton = () => {
     <BackgroundGradient rounded="rounded-xl">
       <button
         onClick={() => {
-          const el = document.getElementById("skills");
+          const el = document.getElementById("certificates");
           el?.scrollIntoView({ behavior: "smooth" });
         }}
         className="inline-flex items-center gap-2 border border-white/15 px-6 h-12 rounded-xl"
