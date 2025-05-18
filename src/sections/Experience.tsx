@@ -8,10 +8,10 @@ import {
   SmartcoopAcademyQuiz,
   SmartcoopAcademyRegister,
   SmartcoopAcademyTrainingModule,
-  BprChristaJayaDashboard,
-  BprChristaJayaIndex,
-  BprChristaJayaInformation,
-  BprChristaJayaLogin,
+  BprChristaJayaHome,
+  BprChristaJayaFinancialReport,
+  BprChristaJayaNews,
+  BprChristaJayaAboutUs,
   DiabseninAnnouncement,
   DiabseninAnnouncementDetail,
   DiabseninLogin,
@@ -22,6 +22,10 @@ import {
   BigDataUMKMIndex,
   BigDataUMKMDashboard,
   BigDataUMKMLogin,
+  MiuraHome1,
+  MiuraHome2,
+  MiuraHome3,
+  MiuraNews,
   PortalSmartcoopCooperationData,
   PortalSmartcoopDashboardStatistik,
   PortalSmartcoopLogin,
@@ -51,7 +55,8 @@ import {
   silatoKopiSahaIcons,
   neqatIcons,
   sipajongaIcons,
-  pmsIcons
+  pmsIcons,
+  miuraIcons,
 } from "@/utils/const";
 
 export const Experience = () => {
@@ -160,7 +165,7 @@ export const workexperiences = [
             ))}
           </div>
         </div>
-        {/* <div>
+        <div>
           <p className="text-9xl pt-10 font-bold font-sans text-neutral-800 md:text-lg dark:text-neutral-200">
             BPR Christa Jaya
           </p>
@@ -179,28 +184,28 @@ export const workexperiences = [
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
-              src={BprChristaJayaDashboard.src}
+              src={BprChristaJayaHome.src}
               alt="Smartcoop Academy Index"
               width={500}
               height={500}
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
-              src={BprChristaJayaIndex.src}
+              src={BprChristaJayaFinancialReport.src}
               alt="Smartcoop Academy Quiz"
               width={500}
               height={500}
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
-              src={BprChristaJayaInformation.src}
+              src={BprChristaJayaNews.src}
               alt="Smartcoop Academy Register"
               width={500}
               height={500}
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
-              src={BprChristaJayaLogin.src}
+              src={BprChristaJayaAboutUs.src}
               alt="Smartcoop Academy Training Module"
               width={500}
               height={500}
@@ -220,7 +225,67 @@ export const workexperiences = [
               </div>
             ))}
           </div>
-        </div> */}
+        </div>
+        <div>
+          <p className="text-9xl pt-10 font-bold font-sans text-neutral-800 md:text-lg dark:text-neutral-200">
+            Miura
+          </p>
+          <p className="mb-4 text-xs font-normal font-sans text-neutral-800 md:text-sm dark:text-neutral-200">
+            Miura is a content management system (CMS) application developed to
+            manage the digital presence of the institution efficiently. It
+            allows administrators to customize and control key website
+            components such as the logo, SEO settings, navigation bar, and other
+            interface elements. While tailored for the specific needs of Miura,
+            the platform functions much like a general-purpose CMS, offering
+            familiar tools for managing content and site structure. This enables
+            the organization to maintain a professional and up-to-date website
+            without requiring advanced technical expertise, supporting both
+            branding and communication needs in a modern and accessible way.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <Image
+              src={MiuraHome1.src}
+              alt="Smartcoop Academy Index"
+              width={500}
+              height={500}
+              className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
+            />
+            <Image
+              src={MiuraHome2.src}
+              alt="Smartcoop Academy Quiz"
+              width={500}
+              height={500}
+              className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
+            />
+            <Image
+              src={MiuraHome3.src}
+              alt="Smartcoop Academy Register"
+              width={500}
+              height={500}
+              className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
+            />
+            <Image
+              src={MiuraNews.src}
+              alt="Smartcoop Academy Training Module"
+              width={500}
+              height={500}
+              className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
+            />
+          </div>
+          <div className="flex items-center mt-4">
+            {miuraIcons.map((icon, index) => (
+              <div
+                key={index}
+                className="border border-black/[.2] rounded-full bg-gradient-to-r from-emerald-200 to-sky-300 lg:w-10 lg:h-10 w-8 h-8 flex justify-center items-center"
+                style={{
+                  transform: `translateX(-${5 * index + 2}px)`,
+                }}
+              >
+                <icon.icon className="w-6 h-6" />
+              </div>
+            ))}
+          </div>
+        </div>
         <div>
           <p className="text-9xl pt-10 font-bold font-sans text-neutral-800 md:text-lg dark:text-neutral-200">
             Diabsenin
@@ -514,11 +579,11 @@ export const workexperiences = [
             the features of the SmartCoop system. By providing structured
             training courses, Silato Kopi Saha ensures that members can
             independently learn how to navigate and make the most of the
-            platform&#39;s functionalities. This not only empowers users to become
-            more proficient but also significantly reduces the need for repeated
-            explanations from the SmartCoop team—training can be delivered once
-            and accessed by all members at any time, improving efficiency and
-            scalability in cooperative education and onboarding.
+            platform&#39;s functionalities. This not only empowers users to
+            become more proficient but also significantly reduces the need for
+            repeated explanations from the SmartCoop team—training can be
+            delivered once and accessed by all members at any time, improving
+            efficiency and scalability in cooperative education and onboarding.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
@@ -584,14 +649,14 @@ export const workexperiences = [
             students informed with the latest school updates. It also includes a
             built-in map feature to help guide students to their school
             location—particularly useful for new students who may be unfamiliar
-            with the area, as the map is centered on each respective school&#39;s
-            location. On the administrative side, the web application enables
-            school staff and administrators to efficiently manage student data.
-            This includes functionalities such as student registration, data
-            import and export, announcement creation, and more. Neqat provides a
-            practical and centralized solution for schools to streamline
-            attendance tracking and internal communication in a modern,
-            accessible way.
+            with the area, as the map is centered on each respective
+            school&#39;s location. On the administrative side, the web
+            application enables school staff and administrators to efficiently
+            manage student data. This includes functionalities such as student
+            registration, data import and export, announcement creation, and
+            more. Neqat provides a practical and centralized solution for
+            schools to streamline attendance tracking and internal communication
+            in a modern, accessible way.
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Image
