@@ -7,6 +7,7 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: ["text-[4rem]", "text-[3rem]", "text-[2rem]", "text-[1rem]"],
   theme: {
     screens: {
       sm: "375px",
@@ -21,6 +22,16 @@ const config: Config = {
       },
     },
     extend: {
+      fontSize: {
+        "safe-4xl": "4rem",
+        "safe-3xl": "3rem",
+        "safe-2xl": "2rem",
+        "safe-xl": "1.5rem",
+        "safe-lg": "1.25rem",
+        "safe-md": "1rem",
+        "safe-sm": "0.875rem",
+        "safe-xs": "0.75rem",
+      },
       fontFamily: {
         sans: "var(--font-sans)",
         serif: "var(--font-serif)",
