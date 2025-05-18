@@ -378,6 +378,41 @@ export const bprChristaJayaIcons = [
   },
 ];
 
+export const miuraIcons = [
+  {
+    title: "PHP",
+    icon: phpskill,
+  },
+  {
+    title: "MySQL",
+    icon: mysqlskill,
+  },
+  {
+    title: "cPanel",
+    icon: cpanelskill,
+  },
+  {
+    title: "JavaScript",
+    icon: javascriptskill,
+  },
+  {
+    title: "HTML",
+    icon: htmlskill,
+  },
+  {
+    title: "CSS",
+    icon: cssskill,
+  },
+  {
+    title: "Bootstrap",
+    icon: bootstrapskill,
+  },
+  {
+    title: "Git",
+    icon: gitskill,
+  },
+];
+
 export const smartcoopAcademyIcons = [
   {
     title: "Laravel",
