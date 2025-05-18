@@ -2,10 +2,10 @@ import SmartcoopAcademyIndex from "./SmartcoopAcademyIndex.png";
 import SmartcoopAcademyQuiz from "./SmartcoopAcademyQuiz.png";
 import SmartcoopAcademyRegister from "./SmartcoopAcademyRegister.png";
 import SmartcoopAcademyTrainingModule from "./SmartcoopAcademyTrainingModule.png";
-import BprChristaJayaDashboard from "./BprChristaJayaDashboard.png";
-import BprChristaJayaIndex from "./BprChristaJayaIndex.png";
-import BprChristaJayaInformation from "./BprChristaJayaInformation.png";
-import BprChristaJayaLogin from "./BprChristaJayaLogin.png";
+import BprChristaJayaAboutUs from "./BprChristaJayaAboutUs.png";
+import BprChristaJayaFinancialReport from "./BprChristaJayaFinancialReport.png";
+import BprChristaJayaHome from "./BprChristaJayaHome.png";
+import BprChristaJayaNews from "./BprChristaJayaNews.png";
 import DiabseninAnnouncement from "./DiabseninAnnouncement.png";
 import DiabseninAnnouncementDetail from "./DiabseninAnnouncementDetail.png";
 import DiabseninLogin from "./DiabseninLogin.png";
@@ -16,6 +16,10 @@ import BigDataUMKMCatalog from "./BigDataUMKMCatalog.png";
 import BigDataUMKMIndex from "./BigDataUMKMIndex.png";
 import BigDataUMKMDashboard from "./BigDataUMKMDashboard.png";
 import BigDataUMKMLogin from "./BigDataUMKMLogin.png";
+import MiuraHome1 from "./MiuraHome1.png";
+import MiuraHome2 from "./MiuraHome2.png";
+import MiuraHome3 from "./MiuraHome3.png";
+import MiuraNews from "./MiuraNews.png";
 import PortalSmartcoopCooperationData from "./PortalSmartcoopCooperationData.png";
 import PortalSmartcoopDashboardStatistik from "./PortalSmartcoopDashboardStatistik.png";
 import PortalSmartcoopLogin from "./PortalSmartcoopLogin.png";
@@ -40,10 +44,10 @@ export {
   SmartcoopAcademyQuiz,
   SmartcoopAcademyRegister,
   SmartcoopAcademyTrainingModule,
-  BprChristaJayaDashboard,
-  BprChristaJayaIndex,
-  BprChristaJayaInformation,
-  BprChristaJayaLogin,
+  BprChristaJayaHome,
+  BprChristaJayaFinancialReport,
+  BprChristaJayaNews,
+  BprChristaJayaAboutUs,
   DiabseninAnnouncement,
   DiabseninAnnouncementDetail,
   DiabseninLogin,
@@ -54,6 +58,10 @@ export {
   BigDataUMKMIndex,
   BigDataUMKMDashboard,
   BigDataUMKMLogin,
+  MiuraHome1,
+  MiuraHome2,
+  MiuraHome3,
+  MiuraNews,
   PortalSmartcoopCooperationData,
   PortalSmartcoopDashboardStatistik,
   PortalSmartcoopLogin,
