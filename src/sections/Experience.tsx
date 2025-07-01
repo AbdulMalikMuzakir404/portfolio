@@ -45,6 +45,7 @@ import {
   PmsDetailTask,
   PmsTask,
 } from "@/assets/experiences/index";
+
 import {
   bprChristaJayaIcons,
   smartcoopAcademyIcons,
@@ -127,6 +128,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Index"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -134,6 +136,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Quiz"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -141,6 +144,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Register"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -148,6 +152,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Training Module"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -188,6 +193,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Index"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -195,6 +201,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Quiz"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -202,6 +209,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Register"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -209,6 +217,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Training Module"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -248,6 +257,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Index"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -255,6 +265,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Quiz"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -262,6 +273,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Register"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -269,6 +281,7 @@ export const workexperiences = [
               alt="Smartcoop Academy Training Module"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -324,6 +337,8 @@ export const workexperiences = [
               alt="Diabsenin Announcement"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -331,6 +346,8 @@ export const workexperiences = [
               alt="Diabsenin Announcement Detail"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -338,6 +355,8 @@ export const workexperiences = [
               alt="Diabsenin Login"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -345,6 +364,8 @@ export const workexperiences = [
               alt="Diabsenin Maps"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -352,6 +373,8 @@ export const workexperiences = [
               alt="Diabsenin Notification"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -359,6 +382,7 @@ export const workexperiences = [
               alt="Diabsenin Signin"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -413,6 +437,7 @@ export const workexperiences = [
               alt="BIG DATA UMKM Catalog"
               width={1200}
               height={600}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -420,6 +445,7 @@ export const workexperiences = [
               alt="BIG DATA UMKM Index"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -427,6 +453,7 @@ export const workexperiences = [
               alt="BIG DATA UMKM Dashboard"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -434,6 +461,7 @@ export const workexperiences = [
               alt="BIG DATA UMKM Login"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -480,6 +508,7 @@ export const workexperiences = [
               alt="Portal Smartcoop Coperation Data"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -487,6 +516,7 @@ export const workexperiences = [
               alt="Portal Smartcoop Dashboard Statistik"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -494,6 +524,7 @@ export const workexperiences = [
               alt="Portal Smartcoop Login"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -501,6 +532,7 @@ export const workexperiences = [
               alt="Portal Smartcoop Statistik"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -543,6 +575,7 @@ export const workexperiences = [
               alt="Seki Halsel Dashboard"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -550,6 +583,7 @@ export const workexperiences = [
               alt="Seki Halsel Login"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -591,6 +625,7 @@ export const workexperiences = [
               alt="Silato Kopi Saha Dashboard"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -598,6 +633,7 @@ export const workexperiences = [
               alt="Silato Kopi Saha Index"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -605,6 +641,7 @@ export const workexperiences = [
               alt="Silato Kopi Saha Index"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -612,6 +649,7 @@ export const workexperiences = [
               alt="Silato Kopi Saha Training"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -664,6 +702,8 @@ export const workexperiences = [
               alt="NeQat Announcement"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -671,6 +711,8 @@ export const workexperiences = [
               alt="NeQat Checkin"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -678,6 +720,8 @@ export const workexperiences = [
               alt="NeQat Maps"
               width={600}
               height={1200}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              loading="lazy"
               className="w-full rounded-lg object-scale-down shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -685,6 +729,7 @@ export const workexperiences = [
               alt="NeQat Config"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -723,6 +768,7 @@ export const workexperiences = [
               alt="Sipajongan Payment"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -730,6 +776,7 @@ export const workexperiences = [
               alt="Sipajongan Statistik"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>
@@ -769,6 +816,7 @@ export const workexperiences = [
               alt="PMS Detail Task"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
             <Image
@@ -776,6 +824,7 @@ export const workexperiences = [
               alt="PMS Task"
               width={500}
               height={500}
+              loading="lazy"
               className="w-full rounded-lg object-cover shadow-[0_0_24px_rgba(34,42,53,0.06),0_1px_1px_rgba(0,0,0,0.05),0_0_0_1px_rgba(34,42,53,0.04),0_0_4px_rgba(34,42,53,0.08),0_16px_68px_rgba(47,48,55,0.05),0_1px_0_rgba(255,255,255,0.1)_inset] h-20 md:h-44 lg:h-60"
             />
           </div>

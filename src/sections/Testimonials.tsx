@@ -37,6 +37,7 @@ export const TestimonialsSection = () => {
                           src={testimonial.avatar}
                           className="max-h-full"
                           alt={testimonial.name}
+                          loading="lazy"
                         />
                       </div>
                       <div className="">

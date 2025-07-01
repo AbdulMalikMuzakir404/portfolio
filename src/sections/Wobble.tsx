@@ -64,6 +64,7 @@ export function Wobble() {
             alt="linear demo image"
             style={{ width: "500px", height: "300px" }}
             className="absolute -right-4 lg:-right-[40%] grayscale filter -bottom-10 object-contain rounded-2xl"
+            loading="lazy"
           />
         </WobbleCard>
         <WobbleCard containerClassName="col-span-1 min-h-[300px]">
@@ -91,6 +92,7 @@ export function Wobble() {
             style={{ width: "500px", height: "300px" }}
             alt="linear demo image"
             className="absolute -right-10 md:-right-[40%] lg:-right-[20%] -bottom-10 object-contain rounded-2xl"
+            loading="lazy"
           />
         </WobbleCard>
       </div>

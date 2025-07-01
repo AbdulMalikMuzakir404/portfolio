@@ -81,6 +81,7 @@ export const CertificateSection = () => {
                     src={project.image}
                     className="mt-8 -mb-4 md:-mb-0 lg:mt-0 lg:absolute lg:h-full lg:w-auto lg:max-w-none"
                     alt={project.title}
+                    loading="lazy"
                   />
                 </div>
               </div>
