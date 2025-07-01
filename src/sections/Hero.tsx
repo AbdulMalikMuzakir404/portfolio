@@ -172,7 +172,10 @@ export const HeroSection = () => {
           </Border>
         </div>
         <div className="mx-auto">
-          <h1 className="font-serif text-3xl md:text-5xl text-center mt-8 tracking-wide">
+          <h1
+            style={{ fontSize: "1.875rem" }}
+            className="text-3xl md:text-5xl font-serif text-center mt-8 tracking-wide"
+          >
             Bringing your dreams to life with cutting-edge{" "}
             <Cover>software solutions</Cover>
           </h1>
@@ -184,9 +187,9 @@ export const HeroSection = () => {
             experience building mobile applications using Flutter.
           </p>
           <p className="mt-4 text-center text-white/60 md:text-lg">
-            Programming is not just a profession for me—it&#39;s a passion. I am a
-            quick learner who adheres to best practices, consistently delivering
-            high-quality solutions efficiently and on time.
+            Programming is not just a profession for me—it&#39;s a passion. I am
+            a quick learner who adheres to best practices, consistently
+            delivering high-quality solutions efficiently and on time.
           </p>
         </div>
         <div className="flex flex-col md:flex-row justify-center items-center mt-8 gap-4">
