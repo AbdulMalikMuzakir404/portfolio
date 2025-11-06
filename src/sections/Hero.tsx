@@ -180,16 +180,15 @@ export const HeroSection = () => {
             <Cover>software solutions</Cover>
           </h1>
           <p className="mt-4 text-center text-white/60 md:text-lg">
-            I am a software engineer with almost two years of experience,
-            specializing in back-end and mobile development using technologies
-            such as NestJS and Laravel. I am also skilled in front-end
-            development with frameworks like Vue.js and Next.js,and I have
-            experience building mobile applications using Flutter.
-          </p>
-          <p className="mt-4 text-center text-white/60 md:text-lg">
-            Programming is not just a profession for me—it&#39;s a passion. I am
-            a quick learner who adheres to best practices, consistently
-            delivering high-quality solutions efficiently and on time.
+            Software Engineer with nearly 3 years of experience specializing in
+            back-end and mobile development. Proficient in NestJS, Ruby on
+            Rails, Flutter, Vue.js, and Next.js. Skilled in designing scalable
+            APIs, managing robust databases, and implementing secure
+            authentication and authorization systems. Experienced in working
+            with cross-functional teams, delivering high-quality,
+            production-ready solutions, and optimizing system performance.
+            Adaptable, fast-learning, and committed to clean code,
+            maintainability, and industry best practices.
           </p>
         </div>
         <div className="flex flex-col md:flex-row justify-center items-center mt-8 gap-4">
