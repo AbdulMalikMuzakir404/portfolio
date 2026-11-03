@@ -28,12 +28,13 @@ empty and what remains is the actual site.
 - **Per-cursor clocks.** Each step starts at `max(cursor.t, at, end of after)` plus a 0.12 beat,
   and advances only that cursor's clock. Cursors therefore work in parallel, each one sequential.
   `who: "*"` steps (exit, publish) wait for everyone.
-- **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6` on
-  native browser scrolling (no smooth-scroll library, no section pinning except the hero).
+- **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6`. No
+  section pins except the hero. While the swarm runs, a gentle Lenis (`lerp 0.12`,
+  `wheelMultiplier 0.85`) smooths the wheel slightly; keyboard, anchors and focus stay native.
   Contact, the last section, scrubs from "top 60%" to the end of the page; while the swarm runs it
-  gets extra bottom padding so there is room to scroll through its whole build, and the closing
-  Publish button, toast and closing orbit sit in the open space under the social links, which is
-  what is on screen when the scene reaches its end.
+  gets 32rem of bottom padding so there is room to scroll through its whole build. Publish happens
+  right after the heading and buttons, beside the heading (or under the buttons when the heading
+  fills the width), so it is on screen; the closing orbit lives under the social links.
   Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
   the interactive Stage 1 (agents fly in and orbit the centre like a galaxy, inner ones faster,
   while the whole system leans toward the visitor's pointer, each agent with its own lag). It moves a separate wrapper (`.sw-inner`) and is released on the first scroll.

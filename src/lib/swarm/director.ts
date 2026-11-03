@@ -107,7 +107,8 @@ export class Director {
       const t0 = start > 0 ? start + 0.12 : 0;
       const end = this.task(a, s, t0);
       if (s.say) this.say(a, s.say, t0, end);
-      a.t = end;
+      // Never rewind a clock: a thread can book this agent for a reply later than the step's end.
+      a.t = Math.max(a.t, end);
       if (s.id) this.ends.set(s.id, end);
     }
     if (this.cue) this.tl.to(this.cue, { autoAlpha: 0, duration: 0.25, ease: "none" }, 0);
@@ -716,18 +717,16 @@ export class Director {
   }
 
   /**
-   * The empty area for the closing orbit, next to the Publish button under the social links.
+   * The empty area for the closing orbit: under the social links, which is what is on screen when
+   * the contact scene reaches the end of the page.
    * Insets leave room for a cursor's name tag (it hangs right and down).
    */
   private freeBox(minRx: number, minRy: number) {
-    const p = this.publishChip;
     const socials = this.el("contact.socials");
-    if (!p || !socials) return undefined;
-    const chip = this.rects.get(p.chip)!;
+    if (!this.publishChip || !socials) return undefined;
     const sr = this.rect(socials);
-    // Left of the Publish button and its toast, under the socials, above the section's end.
-    const left = Math.min(chip.x, chip.x + chip.w - p.toast.offsetWidth);
-    const box = { l: sr.x + 40, r: left - 120, t: sr.y + sr.h + 40, b: this.size.h - 56 };
+    // Under the social links, above the end of the section (the extra bottom padding).
+    const box = { l: sr.x + 40, r: sr.x + sr.w - 110, t: sr.y + sr.h + 40, b: this.size.h - 56 };
     return box.r - box.l >= minRx * 2 && box.b - box.t >= minRy * 2 ? box : undefined;
   }
 
@@ -869,19 +868,26 @@ export class Director {
   }
 
   /**
-   * The Publish button and its toast sit in the open space under the social links, right-aligned:
-   * that is what is on screen when the scrubbed contact scene reaches its end.
+   * Publish button and toast, right-aligned beside the contact heading's lines. If the heading is
+   * too wide to leave room, they sit just under the action buttons instead.
    */
   private publishChrome() {
     const page = this.root.querySelector(".page");
-    const socials = this.el("contact.socials");
-    if (!page || !socials) return;
+    const kicker = this.el("contact.kicker");
+    const title = this.el("contact.title");
+    if (!page || !kicker || !title) return;
     const pr = this.measure(page);
-    const sr = this.rect(socials);
+    const kr = this.rect(kicker);
+    const tr = this.rect(title);
     const chip = div("sw-chip", this.overlay, '<span>Publish</span><span class="sw-chip-done">✓ Published</span>');
     const toast = div("sw-toast", this.overlay, "Portfolio is live · abdulmalikmuzakir.my.id");
     const right = pr.x + pr.w - 32;
-    gsap.set(chip, { x: right - chip.offsetWidth, y: sr.y + sr.h + 40, autoAlpha: 0 });
+    const roomBeside = right - Math.max(chip.offsetWidth, toast.offsetWidth) > tr.x + tr.w + 24;
+    // No room beside the heading: go under the action buttons, still on screen when Publish lands.
+    const actions = this.el("contact.actions");
+    const below = actions ? this.rect(actions) : kr;
+    const y = roomBeside ? tr.y + tr.h * 0.5 - chip.offsetHeight - 6 : below.y + below.h + 28;
+    gsap.set(chip, { x: right - chip.offsetWidth, y, autoAlpha: 0 });
     gsap.set(toast, { x: right - toast.offsetWidth, autoAlpha: 0 });
     this.rects.set(chip, this.measure(chip));
     const done = chip.querySelector<HTMLElement>(".sw-chip-done")!;

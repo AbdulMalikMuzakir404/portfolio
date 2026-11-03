@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+import Lenis from "lenis";
 import { Director } from "./director";
 import { cursors, scenes, tabletAlias } from "./scenes";
 
@@ -64,6 +65,13 @@ export function startSwarm(): () => void {
           return;
         }
         const mode: Mode = desktop ? "desktop" : "tablet";
+        // A touch of smoothing and ~15% slower wheel scrolling. Kept light on purpose: a stronger
+        // setting (0.7x, lerp 0.07) read as laggy. Keyboard, anchors and focus stay native.
+        const lenis = new Lenis({ lerp: 0.12, wheelMultiplier: 0.85, anchors: true });
+        lenis.on("scroll", ScrollTrigger.update);
+        const raf = (time: number) => lenis.raf(time * 1000);
+        gsap.ticker.add(raf);
+        gsap.ticker.lagSmoothing(0);
         let built = mount(mode);
         jumpToHash();
 
@@ -83,6 +91,9 @@ export function startSwarm(): () => void {
         addEventListener("resize", onResize);
 
         return () => {
+          gsap.ticker.remove(raf);
+          gsap.ticker.lagSmoothing(500, 33);
+          lenis.destroy();
           clearTimeout(timer);
           removeEventListener("resize", onResize);
           built.revert();

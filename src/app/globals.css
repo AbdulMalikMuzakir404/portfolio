@@ -378,8 +378,20 @@ html.swarm:not(.swarm-ready) [data-build] {
   }
 }
 
-/* When the contact heading leaves no room beside it, the closing orbit uses open space under the
-   social links. Only while the swarm runs; set before first paint, so no layout shift. */
+/* Contact is the last section: extra room below it gives its scrubbed build enough scroll, and the
+   closing orbit lives there. Only while the swarm runs; set before first paint, so no layout shift. */
 html.swarm #contact {
-  padding-bottom: 20rem;
+  padding-bottom: 32rem;
+}
+
+/* Lenis (gentle smooth scroll), active only while the swarm runs. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
