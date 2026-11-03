@@ -7,6 +7,7 @@ import { Experience } from "@/components/sections/Experience";
 import { Projects } from "@/components/sections/Projects";
 import { Credentials } from "@/components/sections/Credentials";
 import { Contact } from "@/components/sections/Contact";
+import { SwarmLoader } from "@/components/swarm/SwarmLoader";
 
 export default function Home() {
   return (
@@ -28,6 +29,7 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
+      <SwarmLoader />
     </>
   );
 }

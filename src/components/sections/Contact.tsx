@@ -15,7 +15,7 @@ export function Contact() {
           Ready to bring your next project to life? Let&rsquo;s connect and discuss how I can help you achieve your goals.
         </p>
 
-        <ul className="mt-12 flex flex-wrap gap-3" data-build="contact.actions">
+        <ul className="mt-12 flex w-fit flex-wrap gap-3" data-build="contact.actions">
           <li>
             <a href={`mailto:${profile.email}`} className="btn-primary">
               {profile.email}

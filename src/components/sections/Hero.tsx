@@ -6,7 +6,7 @@ export function Hero() {
   return (
     <section id="home" aria-labelledby="hero-name" data-swarm-scene="hero" className="dot-grid relative overflow-hidden">
       <div className="page relative flex min-h-[100svh] flex-col justify-center pb-16 pt-28 md:pb-20">
-        <div className="grid items-center gap-12 md:grid-cols-12 md:gap-8">
+        <div data-swarm-frame className="grid items-center gap-12 md:grid-cols-12 md:gap-8">
           <div className="md:col-span-7">
             <p
               data-build="hero.status"
