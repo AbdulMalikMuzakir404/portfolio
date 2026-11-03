@@ -103,7 +103,9 @@ export class Director {
       if (!a) continue;
       const start = Math.max(a.t, s.at ?? 0, after);
       // A short beat before each action reads as intent rather than a mechanical chain.
-      const end = this.task(a, s, start > 0 ? start + 0.12 : 0);
+      const t0 = start > 0 ? start + 0.12 : 0;
+      const end = this.task(a, s, t0);
+      if (s.say) this.say(a, s.say, t0, end);
       a.t = end;
       if (s.id) this.ends.set(s.id, end);
     }
@@ -140,6 +142,8 @@ export class Director {
         return this.line(a, s.target, t);
       case "select":
         return this.select(a, s.target, t);
+      case "comment":
+        return this.comment(a, s.target, s.text, t);
       case "deselect":
         return this.deselect(a, t);
       case "wait":
@@ -406,6 +410,37 @@ export class Director {
     return t + 0.35;
   }
 
+  private comment(a: Agent, target: string, text: string, t: number): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const r = this.rect(el);
+    const p = { x: r.x + r.w * 0.82, y: r.y + Math.min(r.h * 0.2, 24) };
+    t = this.move(a, p, t);
+    t = this.press(a, t);
+    const pin = div("sw-pin", this.overlay, a.spec.label[0]);
+    pin.style.background = a.spec.color;
+    const note = div("sw-note", this.overlay, `<b>${a.spec.label}</b>${text}`);
+    note.style.setProperty("--c", a.spec.color);
+    gsap.set(pin, { x: p.x - 12, y: p.y - 30, scale: 0, autoAlpha: 0, transformOrigin: "0% 100%" });
+    gsap.set(note, { x: p.x + 18, y: p.y - 34, autoAlpha: 0 });
+    this.tl.to(pin, { scale: 1, autoAlpha: 1, duration: 0.25, ease: "back.out(2)" }, t);
+    this.tl.fromTo(note, { autoAlpha: 0, x: p.x + 10 }, { autoAlpha: 1, x: p.x + 18, duration: 0.25, ease: "power2.out", immediateRender: false }, t + 0.1);
+    // The note collapses after a read; the pin stays until the swarm leaves.
+    this.tl.to(note, { autoAlpha: 0, duration: 0.2 }, t + 1.6);
+    this.chrome.push(pin);
+    this.dragTo(a, { x: p.x + 26, y: p.y + 30 }, t + 0.3, 0.4, "power2.out");
+    return t + 0.7;
+  }
+
+  /** Figma-style cursor chat: rides along with the cursor for the length of a step. */
+  private say(a: Agent, text: string, from: number, to: number) {
+    const bubble = div("sw-say", a.inner, text);
+    bubble.style.background = a.spec.color;
+    gsap.set(bubble, { autoAlpha: 0 });
+    this.tl.set(bubble, { autoAlpha: 1 }, from);
+    this.tl.set(bubble, { autoAlpha: 0 }, to + 0.25);
+  }
+
   private deselect(a: Agent, t: number): number {
     if (!a.sel) return t;
     this.tl.set(a.sel.el, { autoAlpha: 0 }, t);
@@ -433,9 +468,14 @@ export class Director {
     const list = [...this.agents.values()];
     // Everyone gathers round the button; the last cursor in the list clicks it.
     let gathered = t;
-    list.forEach((a, i) => {
-      const ang = Math.PI * (0.25 + (i / Math.max(1, list.length - 1)) * 0.9);
-      gathered = Math.max(gathered, this.move(a, { x: center.x + Math.cos(ang) * 90, y: center.y + Math.sin(ang) * 60 }, t + i * 0.06));
+    // Everyone but the clicker lines up in two rows under the toast, right-aligned to the button.
+    const crew = list.slice(0, -1);
+    const cols = Math.ceil(crew.length / 2);
+    crew.forEach((a, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const spot = { x: r.x + r.w - 60 - (cols - 1 - col) * 88 + row * 44, y: r.y + r.h + 64 + row * 46 };
+      gathered = Math.max(gathered, this.move(a, spot, t + i * 0.05));
     });
     this.tl.to(p.chip, { autoAlpha: 1, duration: 0.2 }, t);
     const clicker = list[list.length - 1];
@@ -525,7 +565,7 @@ export class Director {
 
     // Stage 1 cue under the gathered swarm; the first scroll fades it.
     this.cue = div("sw-hint sw-cue", this.overlay, "<span>Scroll — the page builds itself</span><span aria-hidden>↓</span>");
-    gsap.set(this.cue, { x: (w - this.cue.offsetWidth) / 2, y: h * 0.66 });
+    gsap.set(this.cue, { x: (w - this.cue.offsetWidth) / 2, y: h * 0.74 });
     this.chrome.push(hint);
   }
 

@@ -1,7 +1,8 @@
 # Swarm animation — how it works
 
-The page is a normal, server-rendered portfolio. On tablets and desktops with motion allowed, five
-cursors ("Frontend", "Backend", "Data", "Infra", "Mobile") build the **real** DOM as you scroll. No
+The page is a normal, server-rendered portfolio. On tablets and desktops with motion allowed, a swarm
+of ten AI-agent cursors (Claude, Codex, Gemini, Copilot, Devin, Mistral, Llama, DeepSeek, Qwen, Grok —
+text labels only, no logos) builds the **real** DOM as you scroll. No
 element is duplicated for the finished state: when a timeline reaches its end, the overlay is
 empty and what remains is the actual site.
 
@@ -29,7 +30,8 @@ empty and what remains is the actual site.
   `who: "*"` steps (exit, publish) wait for everyone.
 - **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6`.
   Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
-  the Stage 1 intro drift on a separate wrapper (`.sw-inner`), released on the first scroll.
+  the interactive Stage 1 (agents fly in, hover and flock toward the visitor's pointer, each with
+  its own lag). It moves a separate wrapper (`.sw-inner`) and is released on the first scroll.
 - **Transforms only** for content (`x/y/scale/opacity/clip-path`). Selection boxes animate
   width/height, but they are tiny absolutely positioned overlay nodes in a `contain`ed layer.
 
@@ -38,14 +40,15 @@ empty and what remains is the actual site.
 `tool`, `type`, `draw` (rectangle drag revealing the element via clip-path, optional image drop
 zone), `place`, `resize`, `appear` / `scale` / `drag` (headline set small, scaled up, dragged into place
 with alignment guides), `duplicate` (Alt-drag a ghost clone onto the next instance), `fill`, `line`,
-`select`, `deselect`, `rest`, `wait`, `exit`, `publish`.
+`select`, `deselect`, `comment` (review pin with a note), `rest`, `wait`, `exit`, `publish`.
+Any step can carry `say: "…"`, a Figma-style cursor-chat bubble shown while that step runs.
 
 ## Breakpoints
 
 | Width | Behaviour |
 | --- | --- |
-| ≥ 1024px | 5 cursors, hero pinned for 2.6 viewport heights |
-| 640–1023px | 3 cursors (`tabletAlias` folds Data→Backend, Infra→Frontend), pin 1.7 viewport heights |
+| ≥ 1024px | 10 agents, hero pinned for 3 viewport heights |
+| 640–1023px | 5 agents (`tabletAlias` folds the other five into them), pin 1.9 viewport heights |
 | < 640px or `prefers-reduced-motion` | No engine; finished page with a light CSS entrance (`.rise`) |
 
 ## Common changes
@@ -68,8 +71,8 @@ photo: { src: me, alt: "Portrait of Abdul Malik Muzakir", focal: { x: 50, y: 30 
   root: "#skills",
   scroll: { start: "top 70%", end: "center 40%" },
   steps: [
-    { who: "fe", do: "draw", target: "skills.title" },
-    { who: "be", at: 0.3, do: "line", target: "skills.rule" },
+    { who: "claude", do: "draw", target: "skills.title", say: "Laying out the stack" },
+    { who: "gemini", at: 0.3, do: "line", target: "skills.rule" },
     { who: "*", do: "exit" },
   ],
 }

@@ -272,3 +272,42 @@ html.swarm:not(.swarm-ready) [data-build] {
 .sw-cue {
   color: #ededef;
 }
+.sw-say {
+  position: absolute;
+  left: 13px;
+  top: 37px;
+  padding: 4px 9px;
+  border-radius: 2px 10px 10px 10px;
+  color: #0a0a0b;
+  font: 500 12px/16px var(--font-sans), system-ui, sans-serif;
+  white-space: nowrap;
+}
+.sw-pin {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #0a0a0b;
+  border-radius: 50% 50% 50% 0;
+  color: #0a0a0b;
+  font: 600 12px/1 var(--font-sans), system-ui, sans-serif;
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.8);
+}
+.sw-note {
+  display: grid;
+  gap: 2px;
+  max-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 2px solid var(--c);
+  border-radius: 6px;
+  background: #17171a;
+  color: #ededef;
+  font: 12px/16px var(--font-sans), system-ui, sans-serif;
+  white-space: nowrap;
+  box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.9);
+}
+.sw-note b {
+  color: var(--c);
+  font-weight: 600;
+}

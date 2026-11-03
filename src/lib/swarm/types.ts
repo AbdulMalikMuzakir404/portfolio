@@ -27,6 +27,8 @@ export type Task =
   | { do: "fill"; target: string }
   | { do: "line"; target: string }
   | { do: "select"; target: string }
+  /** Drop a review comment pin with a short note on the target. */
+  | { do: "comment"; target: string; text: string }
   | { do: "deselect" }
   | { do: "wait"; dur: number }
   /** Park somewhere out of the way (fraction of the root) so idle cursors never cover content. */
@@ -42,6 +44,8 @@ export type Step = Task & {
   /** Start after the step with this id has finished. */
   after?: string;
   id?: string;
+  /** Cursor-chat bubble shown next to the cursor while this step runs. */
+  say?: string;
 };
 
 export type Scene = {

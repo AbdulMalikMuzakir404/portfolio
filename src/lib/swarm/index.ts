@@ -97,6 +97,7 @@ export function startSwarm(): () => void {
     return gsap.context(() => {
       html.classList.add("swarm");
       const overlays: HTMLElement[] = [];
+      const stops: (() => void)[] = [];
       const alias = mode === "tablet" ? tabletAlias : {};
 
       for (const scene of scenes) {
@@ -110,6 +111,7 @@ export function startSwarm(): () => void {
         // Only the editor scene has a Stage 1 intro and drives the header's Skip button.
         const editor = scene.chrome === "editor";
         const intro = editor ? playIntro(d) : undefined;
+        if (intro) stops.push(intro.stop);
         const sync = (p: number) => {
           html.dataset.swarm = p < 0.995 ? "building" : "done";
           if (p > 0.002) intro?.release();
@@ -132,7 +134,10 @@ export function startSwarm(): () => void {
       }
 
       html.classList.add("swarm-ready");
-      return () => overlays.forEach((o) => o.remove());
+      return () => {
+        stops.forEach((stop) => stop());
+        overlays.forEach((o) => o.remove());
+      };
     });
   }
 
@@ -144,34 +149,65 @@ export function startSwarm(): () => void {
   };
 }
 
-/** Time-based Stage 1: cursors fly in and hover until the first scroll hands control to the timeline. */
+/**
+ * Time-based Stage 1. The swarm flies in, hovers, and flocks toward the visitor's pointer, each
+ * agent with its own lag. It only moves the `.sw-inner` wrappers, so the scroll timeline (on the
+ * outer element) is untouched; the first scroll eases every offset back to zero.
+ */
 function playIntro(d: Director) {
-  const inners = [...d.agents.values()].map((a) => a.inner);
+  const agents = [...d.agents.values()];
+  const inners = agents.map((a) => a.inner);
   const offsets = d.enterOffsets();
-  const tweens: gsap.core.Tween[] = [
-    gsap.from(inners, {
-      x: (i) => offsets[i].x,
-      y: (i) => offsets[i].y,
-      duration: 1.5,
-      stagger: 0.11,
-      ease: "power3.out",
-    }),
-  ];
-  // Two out-of-phase sine drifts per cursor trace a small orbit around the gathering point.
-  inners.forEach((el, i) => {
-    const delay = 1.5 + i * 0.11;
-    tweens.push(
-      gsap.to(el, { x: 7 + i, duration: 1.7 + i * 0.23, yoyo: true, repeat: -1, ease: "sine.inOut", delay }),
-      gsap.to(el, { y: -6 - i, duration: 2.1 + i * 0.17, yoyo: true, repeat: -1, ease: "sine.inOut", delay: delay + 0.4 }),
-    );
-  });
-  let released = false;
+  const { w, h } = d.size;
+  const cx = agents.reduce((n, a) => n + a.pos.x, 0) / agents.length;
+  const cy = agents.reduce((n, a) => n + a.pos.y, 0) / agents.length;
+  const sim = agents.map((_, i) => ({ ...offsets[i], k: 0.03 + ((i * 7) % 10) * 0.0045, ph: i * 1.7 }));
+  const setX = inners.map((el) => gsap.quickSetter(el, "x", "px"));
+  const setY = inners.map((el) => gsap.quickSetter(el, "y", "px"));
+  sim.forEach((s, i) => (setX[i](s.x), setY[i](s.y)));
+
+  const aim = { x: 0, y: 0 };
+  const clamp = gsap.utils.clamp;
+  const onMove = (e: PointerEvent) => {
+    if (e.pointerType === "touch") return;
+    const r = d.root.getBoundingClientRect();
+    aim.x = clamp(-w * 0.32, w * 0.32, (e.clientX - r.left - cx) * 0.65);
+    aim.y = clamp(-h * 0.28, h * 0.28, (e.clientY - r.top - cy) * 0.65);
+  };
+  const onLeave = () => ((aim.x = 0), (aim.y = 0));
+
+  const born = gsap.ticker.time;
+  const tick = (time: number) => {
+    const dr = gsap.ticker.deltaRatio();
+    sim.forEach((s, i) => {
+      if (time - born < i * 0.08) return; // staggered entrance
+      const tx = aim.x + Math.cos(time * 0.8 + s.ph) * 10;
+      const ty = aim.y + Math.sin(time * 1.1 + s.ph) * 8;
+      const f = 1 - Math.pow(1 - s.k, dr); // frame-rate independent easing
+      s.x += (tx - s.x) * f;
+      s.y += (ty - s.y) * f;
+      setX[i](s.x);
+      setY[i](s.y);
+    });
+  };
+  gsap.ticker.add(tick);
+  d.root.addEventListener("pointermove", onMove);
+  d.root.addEventListener("pointerleave", onLeave);
+
+  let done = false;
+  const stop = () => {
+    if (done) return;
+    done = true;
+    gsap.ticker.remove(tick);
+    d.root.removeEventListener("pointermove", onMove);
+    d.root.removeEventListener("pointerleave", onLeave);
+  };
   return {
+    stop,
     release() {
-      if (released) return;
-      released = true;
-      tweens.forEach((t) => t.kill());
-      gsap.to(inners, { x: 0, y: 0, duration: 0.4, ease: "power2.out" });
+      if (done) return;
+      stop();
+      gsap.to(inners, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
     },
   };
 }
