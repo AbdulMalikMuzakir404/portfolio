@@ -2,22 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-    scroll-behavior: smooth;
-}
-
 @layer base {
-    .nav-item {
-        @apply px-4 py-1.5 rounded-full text-white/70 text-sm font-semibold hover:bg-white/10 hover:text-white transition duration-300
+  html {
+    background: #0a0a0b;
+    color: #ededef;
+    scroll-padding-top: 72px;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
     }
-
-    .hero-ring {
-        @apply absolute inset-0 border-2 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-emerald-300/5 shadow-[0_0_80px_inset] shadow-emerald-300/5
-    }
+  }
+  body {
+    background: #0a0a0b;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: rgba(59, 130, 246, 0.35);
+  }
+  :focus-visible {
+    outline: 2px solid #34d399;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  summary {
+    cursor: pointer;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
 }
 
-@layer utilities {
-    .container {
-        @apply lg:max-w-5xl
-    }
+@layer components {
+  .page {
+    @apply mx-auto w-full max-w-page px-4 md:px-8;
+  }
+  .label {
+    @apply font-mono text-label uppercase text-muted;
+  }
+  .hairline {
+    @apply border-line;
+  }
+  .btn {
+    @apply inline-flex h-12 items-center gap-2 rounded-md px-5 text-[15px] font-medium transition-colors duration-200;
+  }
+  .btn-primary {
+    @apply btn bg-fg text-ink-950 hover:bg-white;
+  }
+  .btn-ghost {
+    @apply btn border border-white/15 text-fg hover:border-white/40 hover:bg-white/[0.03];
+  }
+  .chip {
+    @apply inline-flex items-center gap-2 rounded-[5px] border border-line bg-ink-900 px-2.5 py-1.5 text-[13px] text-fg/90;
+  }
+  .link {
+    @apply underline decoration-white/25 underline-offset-4 transition-colors hover:decoration-accent;
+  }
+}
+
+/* Editor canvas dot grid behind the hero. */
+.dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -12px -12px;
+}
+
+/* The swarm engine adds `html.swarm` before first paint (see layout.tsx) and `.swarm-ready`
+   once it owns the build states. Until then buildable parts stay hidden to avoid a flash.
+   Without JS, with reduced motion, or on small screens, the class is never added. */
+html.swarm:not(.swarm-ready) [data-build] {
+  visibility: hidden;
+}
+
+/* Lightweight entrance for the non-swarm experience (phones, skipped build). */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.swarm) .rise {
+    animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
 }

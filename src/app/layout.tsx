@@ -1,14 +1,16 @@
-import { Inter, Calistoga } from "next/font/google";
-import type { Metadata } from "next";
+import { Instrument_Serif, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { twMerge } from "tailwind-merge";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const calistoga = Calistoga({
+const sans = Inter_Tight({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const serif = Instrument_Serif({
   subsets: ["latin"],
-  variable: "--font-serif",
   weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
 });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Abdul Malik Muzakir | Software Engineer Portfolio",
@@ -150,7 +152,11 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-  themeColor: "#0f172a",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0A0B",
+  colorScheme: "dark",
 };
 
 const structuredData = {
@@ -166,11 +172,15 @@ const structuredData = {
     "https://discord.com/users/1072893949288644732",
   ],
   jobTitle: "Software Engineer",
-  worksFor: {
-    "@type": "Organization",
-    name: "Freelance / Open Source / Personal Projects / Internships / Part Time Jobs / Full Time Jobs / Projects",
-  },
+  email: "mailto:abdulmalikmuzakir55@gmail.com",
+  address: { "@type": "PostalAddress", addressLocality: "Bandung", addressRegion: "West Java", addressCountry: "ID" },
+  worksFor: { "@type": "Organization", name: "MrScraper" },
+  alumniOf: { "@type": "EducationalOrganization", name: "SMK Negeri 1 Katapang" },
+  knowsAbout: ["NestJS", "Ruby on Rails", "Laravel", "Next.js", "Vue.js", "Flutter", "PostgreSQL", "Kafka"],
 };
+
+// Runs before first paint: opt into the scroll-built hero only where it will actually play.
+const swarmBoot = `(function(){try{var d=document.documentElement,s=false;try{s=sessionStorage.getItem("swarm:skipped")==="1"}catch(e){}if(!s&&matchMedia("(min-width: 640px) and (prefers-reduced-motion: no-preference)").matches){d.classList.add("swarm");setTimeout(function(){if(!d.classList.contains("swarm-ready"))d.classList.remove("swarm")},4000)}}catch(e){}})();`;
 
 export default function RootLayout({
   children,
@@ -178,25 +188,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${sans.variable} ${serif.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script dangerouslySetInnerHTML={{ __html: swarmBoot }} />
         <script
           id="structured-data-person"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body
-        className={twMerge(
-          inter.variable,
-          calistoga.variable,
-          "bg-slate-950 text-white antialiased font-sans"
-        )}
-      >
-        {children}
-      </body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
