@@ -1,5 +1,6 @@
 import type { StaticImageData } from "next/image";
 import BookCover from "@/assets/images/book-cover.png";
+import Portrait from "@/assets/images/me.jpeg";
 
 export type Photo = {
   /** Import your photo (e.g. `import me from "@/assets/images/me.jpg"`) and set it here. `null` shows the placeholder. */
@@ -26,9 +27,9 @@ export const profile = {
   phone: { display: "+62 857 2348 6958", tel: "+6285723486958", whatsapp: "https://wa.me/6285723486958" },
   cv: "/cv/CV2025.pdf",
   photo: {
-    src: null,
+    src: Portrait,
     alt: "Portrait of Abdul Malik Muzakir",
-    focal: { x: 50, y: 35 },
+    focal: { x: 50, y: 15 },
   } satisfies Photo as Photo,
   languages: [
     { name: "Indonesian", level: "Native" },

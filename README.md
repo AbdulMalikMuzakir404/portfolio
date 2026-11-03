@@ -3,10 +3,10 @@
 Next.js 16 · React 19 · Tailwind CSS 3 · GSAP (ScrollTrigger, MotionPath)
 
 ```bash
-npm install
-npm run dev        # http://localhost:3000
-npm run build      # production build + sitemap
-npm run lint && npm run typecheck
+bun install
+bun dev            # http://localhost:3000
+bun run build      # production build + sitemap
+bun run lint && bun run typecheck
 ```
 
 - Content lives in `src/data/*` (profile, experience, projects, skills, certifications, socials).
