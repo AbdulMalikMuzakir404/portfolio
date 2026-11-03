@@ -713,12 +713,43 @@ export class Director {
     return Math.max(end, t + 0.5);
   }
 
+  /**
+   * The empty area for the closing orbit: beside the contact heading (below the publish toast,
+   * above the action buttons) or, on narrow layouts, under the social links — whichever is larger.
+   * Insets leave room for a cursor's name tag (it hangs right and down).
+   */
+  private freeBox() {
+    const p = this.publishChip;
+    const title = this.el("contact.title");
+    const actions = this.el("contact.actions");
+    if (!p || !title || !actions) return undefined;
+    const chip = this.rects.get(p.chip)!;
+    const tr = this.rect(title);
+    const ar = this.rect(actions);
+    const toastBottom = chip.y + chip.h + 10 + p.toast.offsetHeight;
+    const beside = { l: tr.x + tr.w + 24, r: chip.x + chip.w - 110, t: toastBottom + 24, b: ar.y - 56 };
+    // On narrow layouts the heading fills the width; the open space under the socials is the fallback.
+    const socials = this.el("contact.socials");
+    const sr = socials && this.rect(socials);
+    const below = sr && { l: sr.x + 40, r: sr.x + sr.w - 110, t: sr.y + sr.h + 40, b: this.size.h - 56 };
+    const size = (q: { l: number; r: number; t: number; b: number }) => Math.min(q.r - q.l, (q.b - q.t) * 1.25);
+    const best = [beside, below].filter((q): q is typeof beside => !!q && q.r - q.l > 120 && q.b - q.t > 72).sort((a, b) => size(b) - size(a))[0];
+    return best;
+  }
+
   /** Closing formation: everyone rings a point; the time-based galaxy orbit takes over from there. */
   private orbit(t: number, center: Pt): number {
     const list = [...this.agents.values()];
-    const c = this.frac(center);
-    const rx = Math.min(190, this.size.w * 0.14);
-    const ry = rx * 0.8;
+    let c = this.frac(center);
+    let rx = Math.min(180, this.size.w * 0.12);
+    let ry = rx * 0.8;
+    const free = this.freeBox();
+    if (free) {
+      // Fit the ring into the measured empty area instead of a fixed fraction of the section.
+      c = { x: (free.l + free.r) / 2, y: (free.t + free.b) / 2 };
+      rx = Math.max(60, Math.min(rx, (free.r - free.l) / 2));
+      ry = Math.max(36, Math.min(rx * 0.8, (free.b - free.t) / 2));
+    }
     let end = t;
     list.forEach((a, i) => {
       if (a.sel) this.tl.set(a.sel.el, { autoAlpha: 0 }, t);

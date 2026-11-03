@@ -377,3 +377,11 @@ html.swarm:not(.swarm-ready) [data-build] {
     opacity: 0.35;
   }
 }
+
+/* Narrow swarm layouts: the contact heading fills the width, so the closing orbit needs open space
+   under the social links. Only while the swarm runs; set before first paint, so no layout shift. */
+@media (max-width: 1023.98px) {
+  html.swarm #contact {
+    padding-bottom: 20rem;
+  }
+}

@@ -477,13 +477,15 @@ const cvMore: Scene = {
   ],
 };
 
-// The finale. The first beat waits until the heading is actually on screen.
+// The finale.
 const contact: Scene = {
   root: "#contact",
   chrome: "publish",
+  // Last section: too little page below it to scrub, so it plays once the heading is in view.
+  play: { trigger: "[data-build='contact.title']", start: "top 70%", speed: 1.1 },
   scroll: { start: "top 100%", end: "max" },
   steps: [
-    { who: "qwen", at: 1.2, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
+    { who: "qwen", at: 0.3, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
     { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
     { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
@@ -502,7 +504,7 @@ const contact: Scene = {
     ...cursors.map((c) => ({ who: c.id, do: "wait" as const, dur: 0 })),
     { who: "*", do: "publish" },
     // No exit: the swarm settles beside the heading and keeps orbiting there.
-    { who: "*", do: "orbit", center: { x: 0.72, y: 0.55 } },
+    { who: "*", do: "orbit", center: { x: 0.8, y: 0.38 } },
   ],
 };
 

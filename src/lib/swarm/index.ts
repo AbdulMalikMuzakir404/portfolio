@@ -126,6 +126,28 @@ export function startSwarm(): () => void {
           else outro?.release();
         };
 
+        if (scene.play) {
+          // Time-based playback: starts when the trigger comes into view, rewinds at double speed
+          // when the visitor scrolls back above it. The closing orbit runs once it has finished.
+          const speed = scene.play.speed ?? 1;
+          const trigger = (scene.play.trigger && root.querySelector(scene.play.trigger)) || root;
+          tl.eventCallback("onComplete", () => outro?.start());
+          tl.eventCallback("onReverseComplete", () => outro?.release());
+          const play = () => tl.timeScale(speed).play();
+          const st = ScrollTrigger.create({
+            trigger,
+            start: scene.play.start,
+            end: "max",
+            onEnter: play,
+            onLeaveBack: () => {
+              outro?.release();
+              tl.timeScale(speed * 2).reverse();
+            },
+          });
+          if (st.progress > 0) play(); // already scrolled past the start (reload, deep link)
+          continue;
+        }
+
         const st = ScrollTrigger.create({
           trigger: scene.scroll.trigger ? (root.querySelector(scene.scroll.trigger) ?? root) : root,
           start: scene.scroll.start,

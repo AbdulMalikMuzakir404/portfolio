@@ -66,6 +66,11 @@ export type Scene = {
   chrome?: "editor" | "publish";
   /** Where cursors sit at progress 0 (fractions of the root). Defaults to their exit points. */
   start?: Record<string, Pt>;
+  /**
+   * Play the timeline over time once `trigger` passes `start`, instead of scrubbing it with scroll.
+   * For the last section, where there is too little page left below it to scrub a full build.
+   */
+  play?: { trigger?: string; start: string; speed?: number };
   scroll: {
     /** Element that drives the ScrollTrigger; defaults to the root. */
     trigger?: string;

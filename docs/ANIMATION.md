@@ -30,6 +30,10 @@ empty and what remains is the actual site.
   `who: "*"` steps (exit, publish) wait for everyone.
 - **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6` on
   native browser scrolling (no smooth-scroll library, no section pinning except the hero).
+  One exception: Contact is the last section, with too little page below it to scrub a full build,
+  so it uses `play` — the timeline plays over time once the heading is 70% up the viewport and
+  rewinds at double speed if the visitor scrolls back above it. The closing orbit fits itself into
+  the measured empty area (beside the heading, or under the socials on narrow layouts).
   Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
   the interactive Stage 1 (agents fly in and orbit the centre like a galaxy, inner ones faster,
   while the whole system leans toward the visitor's pointer, each agent with its own lag). It moves a separate wrapper (`.sw-inner`) and is released on the first scroll.
