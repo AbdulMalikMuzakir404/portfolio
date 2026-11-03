@@ -85,7 +85,7 @@ export class Director {
   /** Offset from each cursor's start to its off-canvas exit point; the intro flies in along it. */
   enterOffsets() {
     return [...this.agents.values()].map((a) => {
-      const e = this.frac(a.spec.exit);
+      const e = this.exitPt(a.spec);
       return { x: e.x - a.home.x, y: e.y - a.home.y };
     });
   }
@@ -565,13 +565,6 @@ export class Director {
     const el = this.el(target);
     if (!el || !messages.length) return t;
     const r = this.rect(el);
-    const p = { x: r.x + r.w * 0.82, y: r.y + Math.min(r.h * 0.2, 24) };
-    t = this.move(a, p, t);
-    this.hover(r, t - 0.15, t + 0.2);
-    t = this.press(a, t);
-
-    const pin = div("sw-pin", this.overlay, a.spec.label[0]);
-    pin.style.background = a.spec.color;
     const spec = (id: string) => this.agents.get(this.who(id))?.spec ?? a.spec;
     const box = div(
       "sw-thread",
@@ -584,9 +577,15 @@ export class Director {
     const texts = rows.map((row) => row.querySelector("span")!);
     const dots = rows.map((row) => row.querySelector("i")!);
     gsap.set(dots, { autoAlpha: 0 });
-    const flip = p.x + 18 + box.offsetWidth > this.size.w - 16;
-    const bx = flip ? p.x - 20 - box.offsetWidth : p.x + 18;
-    const by = p.y - 34;
+    const spot = this.placeNote(r, box.offsetWidth, box.offsetHeight);
+    const p = spot.pin;
+    const bx = spot.x;
+    const by = spot.y;
+    t = this.move(a, p, t);
+    this.hover(r, t - 0.15, t + 0.2);
+    t = this.press(a, t);
+    const pin = div("sw-pin", this.overlay, a.spec.label[0]);
+    pin.style.background = a.spec.color;
     // Measure where each line will sit once shown, then collapse the replies so the box grows
     // as they arrive instead of opening at full height.
     const lineY = rows.map((row) => by + row.offsetTop + row.offsetHeight / 2);
@@ -600,8 +599,7 @@ export class Director {
     this.tl.to(pin, { scale: 1, autoAlpha: 1, duration: 0.25, ease: "back.out(2)" }, t);
     this.tl.set(box, { autoAlpha: 1 }, t + 0.1);
     this.tl.to(rows[0], { autoAlpha: 1, y: 0, duration: 0.25, ease: "power2.out" }, t + 0.1);
-    // Step away from the box, not onto it.
-    this.dragTo(a, { x: flip ? p.x + 30 : p.x - 34, y: p.y + 44 }, t + 0.3, 0.4, "power2.out");
+    this.dragTo(a, spot.away, t + 0.3, 0.4, "power2.out");
 
     let next = t + 0.6;
     messages.slice(1).forEach((m, k) => {
@@ -609,9 +607,11 @@ export class Director {
       const b = this.agents.get(this.who(m.who));
       if (b) {
         // Replies land beside their own line in the thread.
-        const spot = { x: flip ? bx - 14 : bx + boxW + 14, y: lineY[k + 1] };
+        // Reply beside its own line, on whichever side of the box leaves room for the name tag.
+        const roomRight = bx + boxW + 14 + 100 <= this.size.w;
+        const replyAt = { x: roomRight ? bx + boxW + 14 : bx - 110, y: lineY[k + 1] };
         const go = Math.max(b.t, next - 0.6, b === a ? next : 0);
-        const at = this.press(b, this.move(b, spot, go));
+        const at = this.press(b, this.move(b, replyAt, go));
         b.t = at + 0.3;
         next = at;
       }
@@ -629,28 +629,52 @@ export class Director {
     return t + 0.7;
   }
 
+  /**
+   * Where a comment box goes: beside the target on the right, else above, left, or below, taking
+   * the first spot that fits in the scene without covering the target itself.
+   */
+  private placeNote(r: Rect, w: number, h: number) {
+    const W = this.size.w;
+    const H = this.size.h;
+    const alignRight = clamp(8, W - w - 8, r.x + r.w - w);
+    // Side spots may slide vertically to fit inside short rows.
+    const sideY = clamp(8, Math.max(8, H - h - 8), r.y - 8);
+    const spots = [
+      { side: "right", x: r.x + r.w + 16, y: sideY },
+      { side: "above", x: alignRight, y: r.y - h - 40 },
+      { side: "left", x: r.x - w - 16, y: sideY },
+      { side: "below", x: alignRight, y: r.y + r.h + 14 },
+    ] as const;
+    const fits = (q: { x: number; y: number }) => q.x >= 8 && q.x + w <= W - 8 && q.y >= 8 && q.y + h <= H - 8;
+    const spot = spots.find(fits) ?? { side: "right" as const, x: clamp(8, W - w - 8, r.x + r.w + 16), y: clamp(8, H - h - 8, r.y - 8) };
+    // The pin sits on the target's top-right corner; the author steps away from the box.
+    const pin = { x: r.x + r.w - 6, y: r.y + 8 };
+    const away =
+      spot.side === "left" ? { x: pin.x + 24, y: pin.y + 40 } : spot.side === "below" ? { x: pin.x - 60, y: pin.y - 34 } : { x: pin.x - 44, y: pin.y + 40 };
+    return { ...spot, pin, away };
+  }
+
   private comment(a: Agent, target: string, text: string, t: number): number {
     const el = this.el(target);
     if (!el) return t;
     const r = this.rect(el);
-    const p = { x: r.x + r.w * 0.82, y: r.y + Math.min(r.h * 0.2, 24) };
+    const note = div("sw-note", this.overlay, `<b>${a.spec.label}</b>${text}`);
+    note.style.setProperty("--c", a.spec.color);
+    const spot = this.placeNote(r, note.offsetWidth, note.offsetHeight);
+    const p = spot.pin;
     t = this.move(a, p, t);
+    this.hover(r, t - 0.15, t + 0.2);
     t = this.press(a, t);
     const pin = div("sw-pin", this.overlay, a.spec.label[0]);
     pin.style.background = a.spec.color;
-    const note = div("sw-note", this.overlay, `<b>${a.spec.label}</b>${text}`);
-    note.style.setProperty("--c", a.spec.color);
     gsap.set(pin, { x: p.x - 12, y: p.y - 30, scale: 0, autoAlpha: 0, transformOrigin: "0% 100%" });
-    // Open the note to the left of the pin when it would run off the right edge.
-    const flip = p.x + 18 + note.offsetWidth > this.size.w - 16;
-    const nx = flip ? p.x - 20 - note.offsetWidth : p.x + 18;
-    gsap.set(note, { x: nx, y: p.y - 34, autoAlpha: 0 });
+    gsap.set(note, { x: spot.x, y: spot.y, autoAlpha: 0 });
     this.tl.to(pin, { scale: 1, autoAlpha: 1, duration: 0.25, ease: "back.out(2)" }, t);
-    this.tl.fromTo(note, { autoAlpha: 0, x: nx + (flip ? 8 : -8) }, { autoAlpha: 1, x: nx, duration: 0.25, ease: "power2.out", immediateRender: false }, t + 0.1);
+    this.tl.fromTo(note, { autoAlpha: 0, y: spot.y + 6 }, { autoAlpha: 1, y: spot.y, duration: 0.25, ease: "power2.out", immediateRender: false }, t + 0.1);
     // The note collapses after a read; the pin stays until the swarm leaves.
     this.tl.to(note, { autoAlpha: 0, duration: 0.2 }, t + 1.6);
     this.chrome.push(pin);
-    this.dragTo(a, { x: p.x + 26, y: p.y + 30 }, t + 0.3, 0.4, "power2.out");
+    this.dragTo(a, spot.away, t + 0.3, 0.4, "power2.out");
     return t + 0.7;
   }
 
@@ -683,7 +707,7 @@ export class Director {
     let end = t;
     [...this.agents.values()].forEach((a, i) => {
       if (a.sel) this.tl.set(a.sel.el, { autoAlpha: 0 }, t);
-      end = Math.max(end, this.move(a, this.frac(a.spec.exit), t + i * 0.07, "power2.in"));
+      end = Math.max(end, this.move(a, this.exitPt(a.spec), t + i * 0.07, "power2.in"));
     });
     if (this.chrome.length) this.tl.to(this.chrome, { autoAlpha: 0, duration: 0.4, ease: "none" }, t + 0.1);
     return Math.max(end, t + 0.5);
@@ -743,7 +767,8 @@ export class Director {
     gsap.set(ring, { autoAlpha: 0 });
     const svg = inner.querySelector("svg")!;
     gsap.set(svg, { transformOrigin: "1px 1px" });
-    const pos = this.frac(this.scene.start?.[spec.id] ?? spec.exit);
+    const start = this.scene.start?.[spec.id];
+    const pos = start ? this.frac(start) : this.exitPt(spec);
     gsap.set(el, { x: pos.x, y: pos.y });
     return { spec, el, inner, svg, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1 };
   }
@@ -836,6 +861,13 @@ export class Director {
 
   private who(id: string) {
     return this.alias[id] ?? id;
+  }
+  /** Off-canvas point for a cursor: its exit fraction, but always at least 60px clear of the scene. */
+  private exitPt(spec: CursorSpec): Pt {
+    const { w, h } = this.size;
+    const e = this.frac(spec.exit);
+    const out = (v: number, f: number, size: number) => (f < 0 ? Math.min(v, -60) : f > 1 ? Math.max(v, size + 60) : v);
+    return { x: out(e.x, spec.exit.x, w), y: out(e.y, spec.exit.y, h) };
   }
   private frac(p: Pt): Pt {
     return { x: p.x * this.base.width, y: p.y * this.base.height };

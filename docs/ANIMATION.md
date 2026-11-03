@@ -48,6 +48,10 @@ reply's author flies over, "is typing…" dots, then their line lands), `write` 
 by line), `rest`, `wait`, `exit`, `publish`, `orbit` (closing ring; the time-based galaxy takes over
 whenever the scene sits at its end).
 
+Comment boxes go to the right of their target, else above, left or below — the first spot that
+fits without covering the target. Exit points are always at least 60px outside the scene, so
+cursors leave even very short rows cleanly.
+
 Every action shows Figma's hover outline as the cursor arrives, drops carry red spacing markers
 with the gap in px, and `deselect` steps the cursor just off the finished element.
 
@@ -60,8 +64,8 @@ with the gap in px, and `deselect` steps the cursor just off the finished elemen
 | Skills | rule, then six agents each draw a component set and stamp its chips |
 | Experience | heading highlight + rule; per role (own scene): highlight title, write bullets, stamp tech |
 | Work | one scene per featured project, each different (draw + drop + duplicate, phones handed up, draw-short-then-resize, import from the side, phone frames drawn); More projects rows dragged into order |
-| Credentials | draw heading, draw + duplicate education cards; per certificate (own scene): import image, stamp highlights |
-| Contact | draw heading and actions, stamp socials, thread, everyone gathers for Publish, then the swarm rings up beside the heading and keeps orbiting (galaxy, pointer-reactive) |
+| Credentials | draw heading, draw + duplicate education cards; per certificate (own scene): import image, stamp highlights; extra CV certifications stamped in, honor highlighted and discussed in a thread |
+| Contact | heading written line by line once it is on screen, "amazing" highlighted, each contact button and social link stamped in, thread, everyone gathers for Publish, then the swarm rings up beside the heading and keeps orbiting (galaxy, pointer-reactive) |
 
 Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
 built while it is actually on screen instead of on one long, loosely synced timeline.

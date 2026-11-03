@@ -63,7 +63,7 @@ const hero: Scene = {
 
     // Codex writes the title under the name.
     { who: "codex", after: "name", do: "type", target: "hero.title", id: "title", say: "Adding the role" },
-    { who: "codex", do: "rest", to: { x: 0.56, y: 0.36 } },
+    { who: "codex", do: "rest", to: { x: 0.47, y: 0.11 } },
 
     // Gemini sets the headline small, scales it to display size, then snaps it onto the name's edge.
     { who: "gemini", at: 1.2, do: "tool", tool: "text" },
@@ -124,7 +124,7 @@ const hero: Scene = {
       who: "grok",
       after: "cta2",
       do: "thread",
-      target: "hero.cta1",
+      target: "hero.cta2",
       messages: [
         { who: "grok", text: "Contrast passes AA ✓" },
         { who: "devin", text: "Primary drawn from the rect tool" },
@@ -455,16 +455,39 @@ const certRows: Scene[] = certifications.map((_, i) => {
 });
 
 // Every agent shows up for the launch: a zero-length step enrolls the ones with no build work here.
+// The extra certifications and the honor: stamped in, highlighted, talked over.
+const cvMore: Scene = {
+  root: "[data-swarm-row='cv-more']",
+  scroll: { start: "top 100%", end: "bottom 25%" },
+  steps: [
+    { who: "codex", at: 0.4, do: "stamp", target: "cv.more", say: "Adding the rest of the CV" },
+    { who: "grok", at: 0.9, do: "highlight", target: "cv.honor-0", id: "honor" },
+    {
+      who: "grok",
+      after: "honor",
+      do: "thread",
+      target: "cv.honor-0",
+      messages: [
+        { who: "grok", text: "3rd place, straight from the CV 🏆" },
+        { who: "claude", text: "Gave honors their own column" },
+        { who: "codex", text: "HackerRank badges listed too ✓" },
+      ],
+    },
+    { who: "*", do: "exit" },
+  ],
+};
+
+// The finale. The first beat waits until the heading is actually on screen.
 const contact: Scene = {
   root: "#contact",
   chrome: "publish",
   scroll: { start: "top 100%", end: "max" },
   steps: [
-    { who: "qwen", do: "draw", target: "contact.title" },
-    { who: "qwen", do: "deselect" },
-    { who: "mistral", at: 0.5, do: "draw", target: "contact.actions" },
-    { who: "mistral", do: "deselect" },
-    { who: "devin", at: 0.9, do: "stamp", target: "contact.socials", id: "socials" },
+    { who: "qwen", at: 1.2, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
+    { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
+    { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
+    { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
+    { who: "devin", after: "actions", do: "stamp", target: "contact.socials", id: "socials" },
     {
       who: "claude",
       after: "socials",
@@ -495,5 +518,6 @@ export const scenes = [
   moreList,
   credentials,
   ...certRows,
+  cvMore,
   contact,
 ];

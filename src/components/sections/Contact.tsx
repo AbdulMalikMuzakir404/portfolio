@@ -9,30 +9,30 @@ export function Contact() {
           06 — Contact
         </p>
         <h2 id="contact-title" data-build="contact.title" className="mt-6 max-w-[17ch] font-serif text-[clamp(3rem,1.8rem+5.4vw,7.5rem)] leading-[0.95] tracking-[-0.02em]">
-          Let&rsquo;s create something <em className="text-accent/95">amazing</em> together
+          Let&rsquo;s create something <em className="text-accent/95" data-build="contact.accent">amazing</em> together
         </h2>
         <p className="mt-8 max-w-xl text-lede text-muted">
           Ready to bring your next project to life? Let&rsquo;s connect and discuss how I can help you achieve your goals.
         </p>
 
         <ul className="mt-12 flex w-fit flex-wrap gap-3" data-build="contact.actions">
-          <li>
+          <li data-build-part="item">
             <a href={`mailto:${profile.email}`} className="btn-primary">
               {profile.email}
             </a>
           </li>
-          <li>
+          <li data-build-part="item">
             <a href={profile.phone.whatsapp} target="_blank" rel="noopener noreferrer" className="btn-ghost">
               WhatsApp <span aria-hidden>↗</span>
             </a>
           </li>
-          <li>
+          <li data-build-part="item">
             <a href={`tel:${profile.phone.tel}`} className="btn-ghost">
               <span className="sr-only">Call </span>
               {profile.phone.display}
             </a>
           </li>
-          <li>
+          <li data-build-part="item">
             <a href={profile.cv} target="_blank" rel="noopener" className="btn-ghost">
               Curriculum Vitae <span className="font-mono text-[11px] text-muted">PDF</span>
             </a>

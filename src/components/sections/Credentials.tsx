@@ -74,12 +74,12 @@ export function Credentials() {
           ))}
         </ul>
 
-        <div className="mt-12 grid gap-10 md:grid-cols-12">
+        <div data-swarm-row="cv-more" className="relative mt-12 grid gap-10 md:grid-cols-12">
           <div className="md:col-span-8">
             <h3 className="label">Also on my CV</h3>
-            <ul className="mt-4 space-y-3 text-[15px]">
+            <ul className="mt-4 space-y-3 text-[15px]" data-build="cv.more">
               {moreCertifications.map((c) => (
-                <li key={c.title}>
+                <li key={c.title} data-build-part="item" className="w-fit">
                   {c.title} <span className="text-muted">— {c.issuer}</span>
                 </li>
               ))}
@@ -88,8 +88,10 @@ export function Credentials() {
           <div className="md:col-span-4">
             <h3 className="label">Honors</h3>
             <ul className="mt-4 space-y-3 text-[15px]">
-              {honors.map((h) => (
-                <li key={h}>{h}</li>
+              {honors.map((h, i) => (
+                <li key={h} data-build={`cv.honor-${i}`} className="w-fit">
+                  {h}
+                </li>
               ))}
             </ul>
           </div>
