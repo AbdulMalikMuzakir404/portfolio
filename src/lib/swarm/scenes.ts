@@ -138,7 +138,7 @@ const hero: Scene = {
 
 const about: Scene = {
   root: "#about",
-  scroll: { trigger: "[data-build='about.summary']", start: "top 100%", end: "bottom 45%" },
+  scroll: { trigger: "[data-build='about.summary']", start: "top 115%", end: "bottom 20%" },
   steps: [
     { who: "claude", do: "select", target: "about.title" },
     { who: "gemini", at: 0.3, do: "line", target: "about.rule" },
@@ -162,7 +162,7 @@ const about: Scene = {
 
 const aboutCards: Scene = {
   root: "[data-swarm-row='about-cards']",
-  scroll: { start: "top 85%", end: "center 40%" },
+  scroll: { start: "top 100%", end: "bottom 28%" },
   steps: [
     { who: "codex", do: "draw", target: "about.card-0" },
     { who: "codex", do: "fill", target: "about.card-0", id: "c0" },
@@ -189,7 +189,7 @@ const aboutCards: Scene = {
 
 const aboutMore: Scene = {
   root: "[data-swarm-row='about-more']",
-  scroll: { start: "top 85%", end: "center 40%" },
+  scroll: { start: "top 100%", end: "bottom 28%" },
   steps: [
     { who: "qwen", do: "stamp", target: "about.hobbies", say: "Adding hobbies" },
     { who: "llama", at: 0.3, do: "import", target: "about.book", from: { x: -120, y: 40 } },
@@ -300,13 +300,13 @@ const caseScenes: Scene[] = projects
     ];
     add({ who: talk[i % talk.length][0].who, after: `${c}-media`, do: "thread", target: `${c}.title`, messages: talk[i % talk.length] });
     add({ who: "*", do: "exit" });
-    return { root: `[data-swarm-row='${c}']`, scroll: { start: "top 85%", end: "center 35%" }, steps };
+    return { root: `[data-swarm-row='${c}']`, scroll: { start: "top 100%", end: "bottom 35%" }, steps };
   });
 
 // The compact list gets dragged into order, alternating sides.
 const moreList: Scene = {
   root: "[data-swarm-row='more']",
-  scroll: { start: "top 85%", end: "bottom 55%" },
+  scroll: { start: "top 100%", end: "bottom 30%" },
   steps: [
     ...projects
       .filter((p) => !p.featured)
@@ -335,7 +335,7 @@ const moreList: Scene = {
 const skillCrew = ["codex", "gemini", "deepseek", "copilot", "llama", "devin"];
 const skills: Scene = {
   root: "#skills",
-  scroll: { start: "top 75%", end: "bottom 85%" },
+  scroll: { start: "top 95%", end: "bottom 45%" },
   steps: [
     { who: "mistral", do: "line", target: "skills.rule" },
     { who: "mistral", do: "rest", to: { x: 1.06, y: 0.2 } },
@@ -372,7 +372,7 @@ const roleCrew = [
 ];
 const experienceHeading: Scene = {
   root: "#experience",
-  scroll: { trigger: "[data-build='experience.title']", start: "top 85%", end: "top 30%" },
+  scroll: { trigger: "[data-build='experience.title']", start: "top 100%", end: "top 12%" },
   steps: [
     { who: "copilot", do: "highlight", target: "experience.title", say: "Selecting the heading" },
     { who: "deepseek", at: 0.3, do: "line", target: "experience.rule" },
@@ -383,16 +383,16 @@ const experienceRows: Scene[] = roles.map((_, i) => {
   const [lead, helper] = roleCrew[i % roleCrew.length];
   return {
     root: `[data-swarm-row='experience-${i}']`,
-    scroll: { start: "top 85%", end: "center 40%" },
+    scroll: { start: "top 100%", end: "bottom 28%" },
     steps: [
       { who: lead, do: "highlight", target: `experience.role-${i}` },
-      { who: lead, do: "fill", target: `experience.points-${i}` },
+      { who: lead, do: "fill", target: `experience.points-${i}`, id: "points" },
       { who: helper, at: 0.6, do: "stamp", target: `experience.stack-${i}`, id: "stack" },
       ...(i === 0
         ? [
             {
               who: lead,
-              after: "stack",
+              after: "points",
               do: "thread" as const,
               target: `experience.role-${i}`,
               messages: [
@@ -410,7 +410,7 @@ const experienceRows: Scene[] = roles.map((_, i) => {
 // Heading and education share one scene; each certificate row gets its own.
 const credentials: Scene = {
   root: "#credentials",
-  scroll: { trigger: "[data-build='edu.0']", start: "top 95%", end: "bottom 45%" },
+  scroll: { trigger: "[data-build='edu.0']", start: "top 110%", end: "bottom 20%" },
   steps: [
     { who: "claude", do: "draw", target: "credentials.title" },
     { who: "claude", do: "deselect" },
@@ -444,7 +444,7 @@ const certRows: Scene[] = certifications.map((_, i) => {
   const [importer, stamper] = certCrew[i % certCrew.length];
   return {
     root: `[data-swarm-row='cert-${i}']`,
-    scroll: { start: "top 85%", end: "center 40%" },
+    scroll: { start: "top 100%", end: "bottom 28%" },
     steps: [
       { who: importer, do: "import", target: `cert.image-${i}`, from: { x: 110, y: 40 }, guides: [{ edge: "top", with: `cert.title-${i}` }] },
       { who: importer, do: "deselect" },
@@ -458,7 +458,7 @@ const certRows: Scene[] = certifications.map((_, i) => {
 const contact: Scene = {
   root: "#contact",
   chrome: "publish",
-  scroll: { start: "top 80%", end: "max" },
+  scroll: { start: "top 100%", end: "max" },
   steps: [
     { who: "qwen", do: "draw", target: "contact.title" },
     { who: "qwen", do: "deselect" },
