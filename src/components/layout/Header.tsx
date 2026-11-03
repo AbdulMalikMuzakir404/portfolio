@@ -39,8 +39,12 @@ export function Header() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-ink-950/85 backdrop-blur-md">
       <div className="page flex h-16 items-center justify-between gap-6">
         <a href="#home" className="flex items-center gap-3" onClick={() => setOpen(false)}>
-          <span aria-hidden className="grid size-8 place-items-center rounded-[5px] border border-white/15 font-serif text-lg italic">
-            a
+          <span aria-hidden className="grid size-8 place-items-center rounded-[5px] border border-white/15 text-accent">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 8a3 3 0 0 1 6 0" />
+              <rect x="7" y="8" width="10" height="12" rx="5" />
+              <path d="M12 12v8M10 5 8.5 3.5M14 5l1.5-1.5M7 13H4M20 13h-3M7.4 9.8 5 8M16.6 9.8 19 8M7.3 17 5 19M16.7 17l2.3 2" />
+            </svg>
           </span>
           <span className="text-[15px] font-medium tracking-tight">{profile.name}</span>
         </a>
