@@ -75,7 +75,7 @@ export function Header() {
             rel="noopener"
             className="hidden h-9 items-center rounded-md bg-fg px-3 text-[13px] font-medium text-ink-950 transition-colors hover:bg-white sm:inline-flex"
           >
-            Résumé
+            CV
           </a>
           <button
             type="button"
@@ -100,7 +100,7 @@ export function Header() {
           ))}
           <li>
             <a href={profile.cv} target="_blank" rel="noopener" className="block py-3 text-lg text-accent">
-              Résumé (PDF)
+              CV (PDF)
             </a>
           </li>
         </ul>
