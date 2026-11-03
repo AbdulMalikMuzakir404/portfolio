@@ -35,6 +35,20 @@ export function startSwarm(): () => void {
   };
   addEventListener("swarm:skip", onSkip);
 
+  // A clipped control can still take focus, so keyboard focus on any buildable part ends the build.
+  const onFocus = (e: FocusEvent) => {
+    const el = e.target as HTMLElement;
+    if (!html.classList.contains("swarm-ready") || !el.matches(":focus-visible") || !el.closest("[data-build]")) return;
+    try {
+      sessionStorage.setItem(SKIP_KEY, "1");
+    } catch {}
+    teardown();
+    // Unpinning re-parents the hero, which drops focus; put it back.
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: "center", behavior: "instant" });
+  };
+  addEventListener("focusin", onFocus);
+
   document.fonts.ready.then(() => {
     if (!alive) return;
     mm.add(
@@ -125,6 +139,7 @@ export function startSwarm(): () => void {
   return () => {
     alive = false;
     removeEventListener("swarm:skip", onSkip);
+    removeEventListener("focusin", onFocus);
     teardown();
   };
 }

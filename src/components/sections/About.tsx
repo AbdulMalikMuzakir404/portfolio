@@ -79,7 +79,7 @@ export function About() {
               className="object-cover opacity-60 grayscale-[40%]"
             />
             <div className="absolute left-[38%] top-[40%] size-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-950/40 bg-accent">
-              <Image src={Memoji} alt="" className="size-16" sizes="64px" />
+              <Image src={Memoji} alt="" className="size-full rounded-full object-cover" sizes="64px" />
             </div>
             <p className="label absolute bottom-4 left-4 rounded bg-ink-950/80 px-2 py-1 text-fg/90">Bandung, Indonesia</p>
           </div>

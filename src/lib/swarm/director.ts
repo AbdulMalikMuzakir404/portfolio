@@ -51,6 +51,7 @@ export class Director {
   private chrome: HTMLElement[] = [];
   private publishChip?: { chip: HTMLElement; done: HTMLElement; toast: HTMLElement };
   private progressBar?: HTMLElement;
+  private cue?: HTMLElement;
   private base: DOMRect;
 
   constructor(
@@ -106,6 +107,7 @@ export class Director {
       a.t = end;
       if (s.id) this.ends.set(s.id, end);
     }
+    if (this.cue) this.tl.to(this.cue, { autoAlpha: 0, duration: 0.25, ease: "none" }, 0);
     if (this.progressBar) this.tl.fromTo(this.progressBar, { scaleX: 0 }, { scaleX: 1, ease: "none", duration: this.tl.duration() }, 0);
     return this.tl;
   }
@@ -520,6 +522,10 @@ export class Director {
     const hint = div("sw-hint", this.overlay, "<span>Scroll to build</span><i><b></b></i>");
     gsap.set(hint, { x: w - hint.offsetWidth - 32, y: barY + (barH - hint.offsetHeight) / 2 });
     this.progressBar = hint.querySelector("b")!;
+
+    // Stage 1 cue under the gathered swarm; the first scroll fades it.
+    this.cue = div("sw-hint sw-cue", this.overlay, "<span>Scroll — the page builds itself</span><span aria-hidden>↓</span>");
+    gsap.set(this.cue, { x: (w - this.cue.offsetWidth) / 2, y: h * 0.66 });
     this.chrome.push(hint);
   }
 

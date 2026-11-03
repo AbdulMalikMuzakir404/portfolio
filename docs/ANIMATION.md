@@ -1,0 +1,87 @@
+# Swarm animation — how it works
+
+The page is a normal, server-rendered portfolio. On tablets and desktops with motion allowed, five
+cursors ("Frontend", "Backend", "Data", "Infra", "Mobile") build the **real** DOM as you scroll. No
+element is duplicated for the finished state: when a timeline reaches its end, the overlay is
+empty and what remains is the actual site.
+
+## Files
+
+| File | Role |
+| --- | --- |
+| `src/app/layout.tsx` (`swarmBoot`) | Inline script that runs before first paint. Adds `html.swarm` only if width ≥ 640px, motion is allowed and the visitor hasn't skipped this session. A 4s failsafe removes it if the engine never loads. |
+| `src/app/globals.css` | `html.swarm:not(.swarm-ready) [data-build] { visibility: hidden }` prevents a flash before the engine applies build states. Also holds the `.sw-*` overlay styles. |
+| `src/components/swarm/SwarmLoader.tsx` | Dynamically imports the engine only when `html.swarm` is set. Phones, reduced-motion and no-JS visitors never download GSAP. |
+| `src/lib/swarm/index.ts` | `startSwarm()`: `gsap.matchMedia` breakpoints, one ScrollTrigger per scene (the hero is pinned), the Stage 1 intro, Skip, keyboard-focus bail-out, resize rebuild, deep-link fix. |
+| `src/lib/swarm/director.ts` | Compiles a `Scene` into one paused timeline. Creates the overlay (cursors, selection boxes, guides, toolbar, artboard frame). |
+| `src/lib/swarm/scenes.ts` | The choreography: cursor specs and the step lists for hero, about, projects and contact. |
+| `src/lib/swarm/types.ts` | `Task`, `Step`, `Scene`, `CursorSpec`. |
+
+## Model
+
+- **Targets** are marked in the section markup with `data-build="hero.name"`. Sub-parts use
+  `data-build-part="label"` (text a `fill` step reveals) or `data-build-part="media"` (image a
+  `place` step drops in). Characters for exact typing use `data-ch`.
+- **Measure once.** The Director records every target's rect relative to the scene root
+  *before* applying any build state, so later transforms never skew coordinates.
+- **Per-cursor clocks.** Each step starts at `max(cursor.t, at, end of after)` plus a 0.12 beat,
+  and advances only that cursor's clock. Cursors therefore work in parallel, each one sequential.
+  `who: "*"` steps (exit, publish) wait for everyone.
+- **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6`.
+  Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
+  the Stage 1 intro drift on a separate wrapper (`.sw-inner`), released on the first scroll.
+- **Transforms only** for content (`x/y/scale/opacity/clip-path`). Selection boxes animate
+  width/height, but they are tiny absolutely positioned overlay nodes in a `contain`ed layer.
+
+### Tasks
+
+`tool`, `type`, `draw` (rectangle drag revealing the element via clip-path, optional image drop
+zone), `place`, `resize`, `appear` / `scale` / `drag` (headline set small, scaled up, dragged into place
+with alignment guides), `duplicate` (Alt-drag a ghost clone onto the next instance), `fill`, `line`,
+`select`, `deselect`, `rest`, `wait`, `exit`, `publish`.
+
+## Breakpoints
+
+| Width | Behaviour |
+| --- | --- |
+| ≥ 1024px | 5 cursors, hero pinned for 2.6 viewport heights |
+| 640–1023px | 3 cursors (`tabletAlias` folds Data→Backend, Infra→Frontend), pin 1.7 viewport heights |
+| < 640px or `prefers-reduced-motion` | No engine; finished page with a light CSS entrance (`.rise`) |
+
+## Common changes
+
+**Swap in your photo.** Add the file (e.g. `src/assets/images/me.jpg`), then in
+`src/data/profile.ts`:
+
+```ts
+import me from "@/assets/images/me.jpg";
+// …
+photo: { src: me, alt: "Portrait of Abdul Malik Muzakir", focal: { x: 50, y: 30 } },
+```
+
+`focal` sets `object-position`, so the 4:5 crop keeps your face in frame. No animation code changes.
+
+**Add a scene.** Put `data-build` ids on the elements, then add a `Scene` to `scenes.ts`:
+
+```ts
+{
+  root: "#skills",
+  scroll: { start: "top 70%", end: "center 40%" },
+  steps: [
+    { who: "fe", do: "draw", target: "skills.title" },
+    { who: "be", at: 0.3, do: "line", target: "skills.rule" },
+    { who: "*", do: "exit" },
+  ],
+}
+```
+
+**Debug.** Scrub with the scrollbar; every frame is deterministic. To jump to a moment in the
+console: `ScrollTrigger.getAll()[0].animation.progress(0.5)`.
+
+## Escape hatches
+
+- Header **Skip build** (visible while the hero builds) reverts everything and remembers the
+  choice for the session.
+- Keyboard focus on any buildable control does the same and restores focus, so Tab never
+  lands on a clipped button.
+- Nav anchors and deep links (`/#work`) work during and after the build.
