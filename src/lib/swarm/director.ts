@@ -716,30 +716,19 @@ export class Director {
   }
 
   /**
-   * The empty area for the closing orbit: beside the contact heading (below the publish toast,
-   * above the action buttons) or, on narrow layouts, under the social links — whichever is larger.
+   * The empty area for the closing orbit, next to the Publish button under the social links.
    * Insets leave room for a cursor's name tag (it hangs right and down).
    */
   private freeBox(minRx: number, minRy: number) {
     const p = this.publishChip;
-    const title = this.el("contact.title");
-    const actions = this.el("contact.actions");
-    if (!p || !title || !actions) return undefined;
-    const chip = this.rects.get(p.chip)!;
-    const tr = this.rect(title);
-    const ar = this.rect(actions);
-    const toastBottom = chip.y + chip.h + 10 + p.toast.offsetHeight;
-    const beside = { l: tr.x + tr.w + 24, r: chip.x + chip.w - 110, t: toastBottom + 24, b: ar.y - 56 };
-    // On narrow layouts the heading fills the width; the open space under the socials is the fallback.
     const socials = this.el("contact.socials");
-    const sr = socials && this.rect(socials);
-    const below = sr && { l: sr.x + 40, r: sr.x + sr.w - 110, t: sr.y + sr.h + 40, b: this.size.h - 56 };
-    // First area that holds the minimum ring wins; otherwise the roomier of the two.
-    type Box = typeof beside;
-    const boxes = [beside, below].filter((q): q is Box => !!q);
-    const holds = (q: Box) => q.r - q.l >= minRx * 2 && q.b - q.t >= minRy * 2;
-    const size = (q: Box) => Math.min(q.r - q.l, (q.b - q.t) * 1.25);
-    return boxes.find(holds) ?? boxes.filter((q) => q.r - q.l > 120 && q.b - q.t > 72).sort((a, b) => size(b) - size(a))[0];
+    if (!p || !socials) return undefined;
+    const chip = this.rects.get(p.chip)!;
+    const sr = this.rect(socials);
+    // Left of the Publish button and its toast, under the socials, above the section's end.
+    const left = Math.min(chip.x, chip.x + chip.w - p.toast.offsetWidth);
+    const box = { l: sr.x + 40, r: left - 120, t: sr.y + sr.h + 40, b: this.size.h - 56 };
+    return box.r - box.l >= minRx * 2 && box.b - box.t >= minRy * 2 ? box : undefined;
   }
 
   /** Closing formation: everyone rings a point; the time-based galaxy orbit takes over from there. */
@@ -879,17 +868,21 @@ export class Director {
     this.chrome.push(hint);
   }
 
+  /**
+   * The Publish button and its toast sit in the open space under the social links, right-aligned:
+   * that is what is on screen when the scrubbed contact scene reaches its end.
+   */
   private publishChrome() {
     const page = this.root.querySelector(".page");
-    const kicker = this.el("contact.kicker");
-    if (!page || !kicker) return;
+    const socials = this.el("contact.socials");
+    if (!page || !socials) return;
     const pr = this.measure(page);
-    const kr = this.rect(kicker);
+    const sr = this.rect(socials);
     const chip = div("sw-chip", this.overlay, '<span>Publish</span><span class="sw-chip-done">✓ Published</span>');
     const toast = div("sw-toast", this.overlay, "Portfolio is live · abdulmalikmuzakir.my.id");
-    const x = pr.x + pr.w - 32 - chip.offsetWidth;
-    gsap.set(chip, { x, y: kr.y - 10, autoAlpha: 0 });
-    gsap.set(toast, { x: pr.x + pr.w - 32 - toast.offsetWidth, autoAlpha: 0 });
+    const right = pr.x + pr.w - 32;
+    gsap.set(chip, { x: right - chip.offsetWidth, y: sr.y + sr.h + 40, autoAlpha: 0 });
+    gsap.set(toast, { x: right - toast.offsetWidth, autoAlpha: 0 });
     this.rects.set(chip, this.measure(chip));
     const done = chip.querySelector<HTMLElement>(".sw-chip-done")!;
     gsap.set(done, { autoAlpha: 0 });

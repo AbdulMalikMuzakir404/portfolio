@@ -139,7 +139,7 @@ const hero: Scene = {
 
 /**
  * Section headings, each built a different way: the mono kicker is typed, the title revealed,
- * the divider drawn. Triggered by the kicker, so they play as soon as the heading comes in.
+ * the divider drawn, scrubbed while the heading block crosses the screen.
  */
 function heading(id: string, lead: string, helper: string, reveal: "draw" | "write" | "appear"): Scene {
   const title = `${id}.title`;
@@ -501,11 +501,11 @@ const cvMore: Scene = {
 const contact: Scene = {
   root: "#contact",
   chrome: "publish",
-  // Last section: too little page below it to scrub, so it plays as soon as it starts to appear.
-  play: { trigger: "[data-build='contact.kicker']", start: "top 92%" },
-  scroll: { start: "top 100%", end: "max" },
+  // Scrubbed like the others. It is the last section, so the range runs to the end of the page;
+  // the extra bottom padding (globals.css) leaves room to scroll through the whole build.
+  scroll: { start: "top 60%", end: "max" },
   steps: [
-    { who: "qwen", at: 0.5, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
+    { who: "qwen", do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
     { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
     { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
