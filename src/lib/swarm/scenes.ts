@@ -508,11 +508,11 @@ const contact: Scene = {
     { who: "qwen", do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
     { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
-    { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV" },
-    // Publish while the heading (and the button beside it) is still on screen.
+    // Publish right after the headline, while it (and the button beside it) is on screen.
     ...cursors.map((c) => ({ who: c.id, do: "wait" as const, dur: 0 })),
     { who: "*", do: "publish", id: "published" },
-    { who: "devin", do: "stamp", target: "contact.socials", id: "socials" },
+    { who: "mistral", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
+    { who: "devin", after: "actions", do: "stamp", target: "contact.socials", id: "socials" },
     {
       who: "claude",
       after: "socials",

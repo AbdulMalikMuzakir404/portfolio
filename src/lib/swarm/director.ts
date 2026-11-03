@@ -868,8 +868,9 @@ export class Director {
   }
 
   /**
-   * Publish button and toast, right-aligned beside the contact heading's lines. If the heading is
-   * too wide to leave room, they sit just under the action buttons instead.
+   * Publish button and toast at the top right, beside the contact heading (the original design).
+   * Only if they would actually overlap the heading's text — narrow screens where it fills the
+   * width — do they move under the action buttons.
    */
   private publishChrome() {
     const page = this.root.querySelector(".page");
@@ -878,15 +879,25 @@ export class Director {
     if (!page || !kicker || !title) return;
     const pr = this.measure(page);
     const kr = this.rect(kicker);
-    const tr = this.rect(title);
     const chip = div("sw-chip", this.overlay, '<span>Publish</span><span class="sw-chip-done">✓ Published</span>');
     const toast = div("sw-toast", this.overlay, "Portfolio is live · abdulmalikmuzakir.my.id");
     const right = pr.x + pr.w - 32;
-    const roomBeside = right - Math.max(chip.offsetWidth, toast.offsetWidth) > tr.x + tr.w + 24;
-    // No room beside the heading: go under the action buttons, still on screen when Publish lands.
+    const top = kr.y - 10;
+    const bottom = top + chip.offsetHeight + 10 + toast.offsetHeight;
+    const left = right - Math.max(chip.offsetWidth, toast.offsetWidth);
+    // Where the heading's text really ends on the lines level with the button and toast.
+    const range = document.createRange();
+    range.selectNodeContents(title);
+    const textRight = Math.max(
+      0,
+      ...[...range.getClientRects()]
+        .map((r) => ({ top: r.top - this.base.top, bottom: r.bottom - this.base.top, right: r.right - this.base.left }))
+        .filter((r) => r.bottom > top && r.top < bottom)
+        .map((r) => r.right),
+    );
     const actions = this.el("contact.actions");
-    const below = actions ? this.rect(actions) : kr;
-    const y = roomBeside ? tr.y + tr.h * 0.5 - chip.offsetHeight - 6 : below.y + below.h + 28;
+    const under = actions ? this.rect(actions) : kr;
+    const y = left > textRight + 16 ? top : under.y + under.h + 28;
     gsap.set(chip, { x: right - chip.offsetWidth, y, autoAlpha: 0 });
     gsap.set(toast, { x: right - toast.offsetWidth, autoAlpha: 0 });
     this.rects.set(chip, this.measure(chip));
