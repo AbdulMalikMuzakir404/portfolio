@@ -1,4 +1,4 @@
-// Source: public/cv/CV2025.pdf
+// Source: public/cv/CV2025.pdf (stack chips use only what each role's CV text names)
 export const roles = [
   {
     period: "Jul 2025 — Present",
@@ -12,7 +12,7 @@ export const roles = [
       "The platform is built using a monorepo architecture with Next.js for the frontend and NestJS for the backend.",
       "Frontend contributions include developing a dynamic, responsive, and reusable UI component system with a minimal-code approach, and enforcing code quality standards using ESLint, Husky, and Conventional Commit.",
     ],
-    stack: ["Next.js", "NestJS", "Kafka", "Monorepo"],
+    stack: ["Next.js", "NestJS", "Kafka", "Change Data Capture", "Database pooling", "Horizontal scaling", "Monorepo", "ESLint", "Husky", "Conventional Commits"],
   },
   {
     period: "Jun 2023 — Jun 2025",
@@ -25,7 +25,7 @@ export const roles = [
       "Worked closely with cross-functional teams, including front-end developers using Vue.js and Next.js, to ensure seamless API integration and efficient data flow.",
       "Implemented secure authentication mechanisms using JWT and OAuth, optimized database performance in PostgreSQL and MySQL, and conducted regular code reviews and unit testing.",
     ],
-    stack: ["NestJS", "Laravel", "PostgreSQL", "MySQL", "JWT", "OAuth"],
+    stack: ["NestJS", "Laravel", "PostgreSQL", "MySQL", "JWT", "OAuth", "REST API integration", "Code review", "Unit testing"],
   },
   {
     period: "Jul 2023 — Sep 2023",
@@ -38,7 +38,7 @@ export const roles = [
       "Gathered business requirements, created system architecture and database design blueprints, and oversaw the integration of the Midtrans payment gateway.",
       "Involved in hands-on coding, implementing key features, and performing pre-project research.",
     ],
-    stack: ["Midtrans"],
+    stack: ["Midtrans", "Team leadership", "System architecture", "Database design", "Requirements gathering"],
   },
   {
     period: "Apr 2022 — Jun 2022",
@@ -51,7 +51,8 @@ export const roles = [
       "Gathered and analyzed requirements, planned system architecture, implemented new features based on real user feedback, conducted thorough testing, and managed deployment and ongoing maintenance.",
       "Focused on improving system performance, increasing data accuracy, and ensuring long-term reliability and scalability of the platform.",
     ],
-    stack: [],
+    // Laravel / Laravel Breeze: from the SINOVATIF PKL certificate (src/data/certifications.ts).
+    stack: ["Laravel", "Laravel Breeze", "Requirements analysis", "Testing", "Deployment"],
   },
 ];
 
