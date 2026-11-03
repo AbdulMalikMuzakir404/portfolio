@@ -868,9 +868,10 @@ export class Director {
   }
 
   /**
-   * Publish button and toast at the top right, beside the contact heading (the original design).
-   * Only if they would actually overlap the heading's text — narrow screens where it fills the
-   * width — do they move under the action buttons.
+   * Publish button and toast in the right-hand column beside the contact heading. Publish is the
+   * last beat of the page, so they sit no higher than the top of the screen at the end of the
+   * scroll: beside the heading's lines on tall screens, a little lower on short ones. Only if they
+   * would overlap the heading's actual text do they move under the action buttons.
    */
   private publishChrome() {
     const page = this.root.querySelector(".page");
@@ -882,22 +883,21 @@ export class Director {
     const chip = div("sw-chip", this.overlay, '<span>Publish</span><span class="sw-chip-done">✓ Published</span>');
     const toast = div("sw-toast", this.overlay, "Portfolio is live · abdulmalikmuzakir.my.id");
     const right = pr.x + pr.w - 32;
-    const top = kr.y - 10;
-    const bottom = top + chip.offsetHeight + 10 + toast.offsetHeight;
+    const blockH = chip.offsetHeight + 10 + toast.offsetHeight;
     const left = right - Math.max(chip.offsetWidth, toast.offsetWidth);
-    // Where the heading's text really ends on the lines level with the button and toast.
-    const range = document.createRange();
-    range.selectNodeContents(title);
-    const textRight = Math.max(
-      0,
-      ...[...range.getClientRects()]
-        .map((r) => ({ top: r.top - this.base.top, bottom: r.bottom - this.base.top, right: r.right - this.base.left }))
-        .filter((r) => r.bottom > top && r.top < bottom)
-        .map((r) => r.right),
-    );
+    // Section-relative y of the top of the screen when the page is scrolled to its end.
+    const footer = document.querySelector("footer")?.offsetHeight ?? 0;
+    const endTop = this.base.height + footer - innerHeight + 84;
+    const lines = (() => {
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      return [...range.getClientRects()].map((r) => ({ top: r.top - this.base.top, bottom: r.bottom - this.base.top, right: r.right - this.base.left }));
+    })();
+    const clearOfText = (y: number) => lines.filter((l) => l.bottom > y && l.top < y + blockH).every((l) => left > l.right + 16);
     const actions = this.el("contact.actions");
     const under = actions ? this.rect(actions) : kr;
-    const y = left > textRight + 16 ? top : under.y + under.h + 28;
+    let y = Math.max(kr.y - 10, endTop);
+    if (!clearOfText(y)) y = Math.max(under.y + under.h + 28, endTop);
     gsap.set(chip, { x: right - chip.offsetWidth, y, autoAlpha: 0 });
     gsap.set(toast, { x: right - toast.offsetWidth, autoAlpha: 0 });
     this.rects.set(chip, this.measure(chip));

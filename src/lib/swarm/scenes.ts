@@ -508,10 +508,7 @@ const contact: Scene = {
     { who: "qwen", do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
     { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
-    // Publish right after the headline, while it (and the button beside it) is on screen.
-    ...cursors.map((c) => ({ who: c.id, do: "wait" as const, dur: 0 })),
-    { who: "*", do: "publish", id: "published" },
-    { who: "mistral", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
+    { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
     { who: "devin", after: "actions", do: "stamp", target: "contact.socials", id: "socials" },
     {
       who: "claude",
@@ -524,6 +521,9 @@ const contact: Scene = {
         { who: "grok", text: "Ready when you are 🚀" },
       ],
     },
+    // Last beat of the page: everyone gathers, Publish is clicked, then the swarm orbits.
+    ...cursors.map((c) => ({ who: c.id, do: "wait" as const, dur: 0 })),
+    { who: "*", do: "publish", id: "published" },
     // No exit: the swarm settles under the social links and keeps orbiting there.
     { who: "*", do: "orbit", center: { x: 0.8, y: 0.38 } },
   ],

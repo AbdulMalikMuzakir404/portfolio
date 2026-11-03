@@ -32,10 +32,10 @@ empty and what remains is the actual site.
   section pins except the hero. While the swarm runs, a gentle Lenis (`lerp 0.12`,
   `wheelMultiplier 0.85`) smooths the wheel slightly; keyboard, anchors and focus stay native.
   Contact, the last section, scrubs from "top 60%" to the end of the page; while the swarm runs it
-  gets 32rem of bottom padding so there is room to scroll through its whole build. Publish happens
-  right after the headline is written, with the button and toast at the top right beside the
-  heading (under the buttons only if the heading's text would overlap them); the closing orbit
-  lives under the social links.
+  gets 24rem of bottom padding so there is room to scroll through its whole build. Publish is the
+  last beat (then the orbit). The button and toast sit in the right-hand column beside the heading,
+  placed no higher than the top of the screen at the end of the scroll so the click is visible;
+  the closing orbit lives under the social links.
   Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
   the interactive Stage 1 (agents fly in and orbit the centre like a galaxy, inner ones faster,
   while the whole system leans toward the visitor's pointer, each agent with its own lag). It moves a separate wrapper (`.sw-inner`) and is released on the first scroll.
