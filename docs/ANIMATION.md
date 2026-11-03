@@ -30,8 +30,8 @@ empty and what remains is the actual site.
   `who: "*"` steps (exit, publish) wait for everyone.
 - **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6`.
   Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
-  the interactive Stage 1 (agents fly in, hover and flock toward the visitor's pointer, each with
-  its own lag). It moves a separate wrapper (`.sw-inner`) and is released on the first scroll.
+  the interactive Stage 1 (agents fly in and orbit the centre like a galaxy, inner ones faster,
+  while the whole system leans toward the visitor's pointer, each agent with its own lag). It moves a separate wrapper (`.sw-inner`) and is released on the first scroll.
 - **Transforms only** for content (`x/y/scale/opacity/clip-path`). Selection boxes animate
   width/height, but they are tiny absolutely positioned overlay nodes in a `contain`ed layer.
 

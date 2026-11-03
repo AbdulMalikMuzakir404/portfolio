@@ -8,7 +8,8 @@ type Agent = {
   inner: HTMLElement; // free for the time-based intro drift
   svg: SVGElement;
   ring: HTMLElement;
-  pos: Pt;
+  pos: Pt; // advances as steps compile; ends wherever the timeline leaves the cursor
+  home: Pt; // where the cursor sits at progress 0
   t: number;
   side: 1 | -1;
   sel?: Sel;
@@ -85,7 +86,7 @@ export class Director {
   enterOffsets() {
     return [...this.agents.values()].map((a) => {
       const e = this.frac(a.spec.exit);
-      return { x: e.x - a.pos.x, y: e.y - a.pos.y };
+      return { x: e.x - a.home.x, y: e.y - a.home.y };
     });
   }
 
@@ -499,7 +500,7 @@ export class Director {
     gsap.set(svg, { transformOrigin: "1px 1px" });
     const pos = this.frac(this.scene.start?.[spec.id] ?? spec.exit);
     gsap.set(el, { x: pos.x, y: pos.y });
-    return { spec, el, inner, svg, ring, pos, t: 0, side: i % 2 ? -1 : 1 };
+    return { spec, el, inner, svg, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1 };
   }
 
   private sel(a: Agent, from: Rect, t: number, final: Rect): Sel {

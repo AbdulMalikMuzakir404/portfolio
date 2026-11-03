@@ -150,18 +150,32 @@ export function startSwarm(): () => void {
 }
 
 /**
- * Time-based Stage 1. The swarm flies in, hovers, and flocks toward the visitor's pointer, each
- * agent with its own lag. It only moves the `.sw-inner` wrappers, so the scroll timeline (on the
- * outer element) is untouched; the first scroll eases every offset back to zero.
+ * Time-based Stage 1. The swarm flies in and orbits the centre like a small galaxy (inner agents
+ * faster), and the whole system leans toward the visitor's pointer, each agent with its own lag.
+ * It only moves the `.sw-inner` wrappers, so the scroll timeline (on the outer element) is
+ * untouched; the first scroll eases every offset back to zero.
  */
 function playIntro(d: Director) {
   const agents = [...d.agents.values()];
   const inners = agents.map((a) => a.inner);
   const offsets = d.enterOffsets();
   const { w, h } = d.size;
-  const cx = agents.reduce((n, a) => n + a.pos.x, 0) / agents.length;
-  const cy = agents.reduce((n, a) => n + a.pos.y, 0) / agents.length;
-  const sim = agents.map((_, i) => ({ ...offsets[i], k: 0.03 + ((i * 7) % 10) * 0.0045, ph: i * 1.7 }));
+  const cx = agents.reduce((n, a) => n + a.home.x, 0) / agents.length;
+  const cy = agents.reduce((n, a) => n + a.home.y, 0) / agents.length;
+  // Orbits keep each agent's own ring radius; the ellipse squash matches the gathering ring.
+  const squash = 0.82;
+  const orbits = agents.map((a) => {
+    const dx = a.home.x - cx;
+    const dy = (a.home.y - cy) / squash;
+    return { r: Math.hypot(dx, dy), a0: Math.atan2(dy, dx) };
+  });
+  const rMax = Math.max(...orbits.map((o) => o.r), 1);
+  const sim = agents.map((_, i) => ({
+    ...offsets[i],
+    k: 0.03 + ((i * 7) % 10) * 0.0045,
+    // Kepler-ish: angular speed falls off with radius, so the inner ring overtakes the outer one.
+    w: 0.3 * Math.pow(rMax / orbits[i].r, 1.5),
+  }));
   const setX = inners.map((el) => gsap.quickSetter(el, "x", "px"));
   const setY = inners.map((el) => gsap.quickSetter(el, "y", "px"));
   sim.forEach((s, i) => (setX[i](s.x), setY[i](s.y)));
@@ -181,8 +195,11 @@ function playIntro(d: Director) {
     const dr = gsap.ticker.deltaRatio();
     sim.forEach((s, i) => {
       if (time - born < i * 0.08) return; // staggered entrance
-      const tx = aim.x + Math.cos(time * 0.8 + s.ph) * 10;
-      const ty = aim.y + Math.sin(time * 1.1 + s.ph) * 8;
+      const { r, a0 } = orbits[i];
+      const ang = a0 + s.w * (time - born);
+      // Target is the orbit point minus the agent's resting spot (offsets are relative to it).
+      const tx = aim.x + cx + Math.cos(ang) * r - agents[i].home.x;
+      const ty = aim.y + cy + Math.sin(ang) * r * squash - agents[i].home.y;
       const f = 1 - Math.pow(1 - s.k, dr); // frame-rate independent easing
       s.x += (tx - s.x) * f;
       s.y += (ty - s.y) * f;
@@ -207,7 +224,7 @@ function playIntro(d: Director) {
     release() {
       if (done) return;
       stop();
-      gsap.to(inners, { x: 0, y: 0, duration: 0.5, ease: "power2.out" });
+      gsap.to(inners, { x: 0, y: 0, duration: 0.7, ease: "power3.out" });
     },
   };
 }
