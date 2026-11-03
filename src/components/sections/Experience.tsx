@@ -14,28 +14,28 @@ export function Experience() {
         />
 
         <ol className="relative mt-4">
-          {roles.map((r) => (
-            <li key={r.company + r.period} className="grid gap-4 border-b border-line py-10 md:grid-cols-12 md:gap-8">
+          {roles.map((r, i) => (
+            <li key={r.company + r.period} data-swarm-row={`experience-${i}`} className="relative grid gap-4 border-b border-line py-10 md:grid-cols-12 md:gap-8">
               <div className="md:col-span-3">
                 <p className="font-mono text-[13px] text-fg/90">{r.period}</p>
                 <p className="label mt-2">{r.type}</p>
               </div>
               <div className="md:col-span-9">
-                <h3 className="text-[clamp(1.375rem,1.2rem+0.6vw,1.75rem)] font-medium tracking-tight">
+                <h3 data-build={`experience.role-${i}`} className="w-fit text-[clamp(1.375rem,1.2rem+0.6vw,1.75rem)] font-medium tracking-tight">
                   {r.role} <span className="font-serif font-normal italic text-muted">at</span> {r.company}
                 </h3>
                 <p className="mt-1 text-[14px] text-muted">{r.location}</p>
-                <ul className="mt-6 max-w-3xl space-y-3 text-[15px] leading-relaxed text-fg/80">
+                <ul data-build={`experience.points-${i}`} className="mt-6 max-w-3xl space-y-3 text-[15px] leading-relaxed text-fg/80">
                   {r.points.map((p) => (
-                    <li key={p} className="relative pl-5 before:absolute before:left-0 before:top-[0.7em] before:h-px before:w-2.5 before:bg-white/30">
+                    <li key={p} data-build-part="label" className="relative pl-5 before:absolute before:left-0 before:top-[0.7em] before:h-px before:w-2.5 before:bg-white/30">
                       {p}
                     </li>
                   ))}
                 </ul>
                 {r.stack.length > 0 && (
-                  <ul className="mt-6 flex flex-wrap gap-2" aria-label="Technologies">
+                  <ul data-build={`experience.stack-${i}`} className="mt-6 flex flex-wrap gap-2" aria-label="Technologies">
                     {r.stack.map((s) => (
-                      <li key={s} className="chip font-mono text-[12px]">
+                      <li key={s} className="chip font-mono text-[12px]" data-build-part="item">
                         {s}
                       </li>
                     ))}

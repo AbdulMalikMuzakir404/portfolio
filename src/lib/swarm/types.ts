@@ -27,6 +27,12 @@ export type Task =
   | { do: "fill"; target: string }
   | { do: "line"; target: string }
   | { do: "select"; target: string }
+  /** Pop the target's `data-build-part="item"` children in one by one as the cursor sweeps over them. */
+  | { do: "stamp"; target: string }
+  /** Drag a text-selection highlight across the target. */
+  | { do: "highlight"; target: string }
+  /** Drag the target in from an offset (like importing an asset) and snap it into place. */
+  | { do: "import"; target: string; from: Pt; guides?: Guide[] }
   /** Drop a review comment pin with a short note on the target. */
   | { do: "comment"; target: string; text: string }
   | { do: "deselect" }

@@ -1,3 +1,6 @@
+import { roles } from "@/data/experience";
+import { certifications } from "@/data/certifications";
+import { skillGroups } from "@/data/skills";
 import type { CursorSpec, Pt, Scene } from "./types";
 
 // A swarm of AI coding agents helping build the page. Labels only (no logos); colors are loose nods.
@@ -149,6 +152,96 @@ const projects: Scene = {
   ],
 };
 
+
+// Six agents each frame one component set, then stamp its instances in.
+const skillCrew = ["codex", "gemini", "deepseek", "copilot", "llama", "devin"];
+const skills: Scene = {
+  root: "#skills",
+  scroll: { start: "top 75%", end: "bottom 85%" },
+  steps: [
+    { who: "mistral", do: "line", target: "skills.rule" },
+    { who: "mistral", do: "rest", to: { x: 1.06, y: 0.2 } },
+    ...skillGroups.flatMap((g, i) => {
+      const who = skillCrew[i % skillCrew.length];
+      const target = `skills.group-${g.id}`;
+      return [
+        { who, at: 0.5 + (i % 3) * 0.25 + Math.floor(i / 3) * 1.4, do: "draw" as const, target },
+        { who, do: "stamp" as const, target, id: `skill-${i}` },
+        { who, do: "deselect" as const },
+      ];
+    }),
+    { who: "grok", after: "skill-2", do: "comment", target: "skills.group-distributed", text: "Real stack, no % bars ✓" },
+    { who: "*", do: "exit" },
+  ],
+};
+
+// Each role is its own short scene, so the work happens while that row is on screen.
+const roleCrew = [
+  ["claude", "devin"],
+  ["codex", "mistral"],
+  ["gemini", "qwen"],
+  ["llama", "grok"],
+];
+const experienceHeading: Scene = {
+  root: "#experience",
+  scroll: { trigger: "[data-build='experience.title']", start: "top 85%", end: "top 30%" },
+  steps: [
+    { who: "copilot", do: "highlight", target: "experience.title", say: "Selecting the heading" },
+    { who: "deepseek", at: 0.3, do: "line", target: "experience.rule" },
+    { who: "*", do: "exit" },
+  ],
+};
+const experienceRows: Scene[] = roles.map((_, i) => {
+  const [lead, helper] = roleCrew[i % roleCrew.length];
+  return {
+    root: `[data-swarm-row='experience-${i}']`,
+    scroll: { start: "top 85%", end: "center 40%" },
+    steps: [
+      { who: lead, do: "highlight", target: `experience.role-${i}` },
+      { who: lead, do: "fill", target: `experience.points-${i}` },
+      { who: helper, at: 0.6, do: "stamp", target: `experience.stack-${i}` },
+      { who: "*", do: "exit" },
+    ],
+  };
+});
+
+// Heading and education share one scene; each certificate row gets its own.
+const credentials: Scene = {
+  root: "#credentials",
+  scroll: { trigger: "[data-build='edu.0']", start: "top 95%", end: "bottom 45%" },
+  steps: [
+    { who: "claude", do: "draw", target: "credentials.title" },
+    { who: "claude", do: "deselect" },
+    { who: "gemini", at: 0.5, do: "draw", target: "edu.0" },
+    { who: "gemini", do: "fill", target: "edu.0", id: "edu0" },
+    { who: "gemini", do: "deselect" },
+    { who: "copilot", after: "edu0", do: "duplicate", source: "edu.0", target: "edu.1", guides: [{ edge: "top", with: "edu.0" }] },
+    { who: "copilot", do: "fill", target: "edu.1" },
+    { who: "copilot", do: "deselect" },
+    { who: "*", do: "exit" },
+  ],
+};
+const certCrew = [
+  ["deepseek", "copilot"],
+  ["qwen", "claude"],
+  ["mistral", "codex"],
+  ["devin", "gemini"],
+  ["grok", "llama"],
+];
+const certRows: Scene[] = certifications.map((_, i) => {
+  const [importer, stamper] = certCrew[i % certCrew.length];
+  return {
+    root: `[data-swarm-row='cert-${i}']`,
+    scroll: { start: "top 85%", end: "center 40%" },
+    steps: [
+      { who: importer, do: "import", target: `cert.image-${i}`, from: { x: 110, y: 40 }, guides: [{ edge: "top", with: `cert.title-${i}` }] },
+      { who: importer, do: "deselect" },
+      { who: stamper, at: 0.4, do: "stamp", target: `cert.highlights-${i}` },
+      { who: "*", do: "exit" },
+    ],
+  };
+});
+
 // Every agent shows up for the launch: a zero-length step enrolls the ones with no build work here.
 const contact: Scene = {
   root: "#contact",
@@ -165,4 +258,14 @@ const contact: Scene = {
   ],
 };
 
-export const scenes = [hero, about, projects, contact];
+export const scenes = [
+  hero,
+  about,
+  skills,
+  experienceHeading,
+  ...experienceRows,
+  projects,
+  credentials,
+  ...certRows,
+  contact,
+];

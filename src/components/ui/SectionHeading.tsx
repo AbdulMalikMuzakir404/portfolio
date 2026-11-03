@@ -17,7 +17,7 @@ export function SectionHeading({ id, index, kicker, title, lede }: Props) {
           <p className="label" data-build={`${id}.kicker`}>
             {index} — {kicker}
           </p>
-          <h2 id={`${id}-title`} className="mt-5 font-serif text-h2" data-build={`${id}.title`}>
+          <h2 id={`${id}-title`} className="mt-5 w-fit font-serif text-h2" data-build={`${id}.title`}>
             {title}
           </h2>
         </div>

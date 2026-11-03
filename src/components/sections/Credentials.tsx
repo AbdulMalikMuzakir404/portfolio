@@ -19,29 +19,39 @@ export function Credentials() {
 
         <h3 className="label mt-14">Education</h3>
         <ul className="mt-5 grid gap-4 md:grid-cols-2">
-          {education.map((e) => (
-            <li key={e.school} className="rounded-md border border-line bg-ink-900 p-6 md:p-7">
-              <p className="font-mono text-[13px] text-muted">
+          {education.map((e, i) => (
+            <li key={e.school} data-build={`edu.${i}`} className="rounded-md border border-line bg-ink-900 p-6 md:p-7">
+              <p className="font-mono text-[13px] text-muted" data-build-part="label">
                 {e.period} · {e.location}
               </p>
-              <p className="mt-6 font-serif text-[1.75rem] leading-tight">{e.school}</p>
-              <p className="mt-1 text-[15px] text-fg/85">{e.degree}</p>
-              {e.note && <p className="mt-4 text-[14px] leading-relaxed text-muted">{e.note}</p>}
+              <p className="mt-6 font-serif text-[1.75rem] leading-tight" data-build-part="label">
+                {e.school}
+              </p>
+              <p className="mt-1 text-[15px] text-fg/85" data-build-part="label">
+                {e.degree}
+              </p>
+              {e.note && (
+                <p className="mt-4 text-[14px] leading-relaxed text-muted" data-build-part="label">
+                  {e.note}
+                </p>
+              )}
             </li>
           ))}
         </ul>
 
         <h3 className="label mt-20">Certifications</h3>
         <ul className="mt-5 border-t border-line">
-          {certifications.map((c) => (
-            <li key={c.title} className="grid gap-6 border-b border-line py-8 md:grid-cols-12 md:gap-8">
+          {certifications.map((c, i) => (
+            <li key={c.title} data-swarm-row={`cert-${i}`} className="relative grid gap-6 border-b border-line py-8 md:grid-cols-12 md:gap-8">
               <p className="font-mono text-[13px] text-muted md:col-span-2">{c.date}</p>
               <div className="md:col-span-6">
-                <p className="text-[1.375rem] tracking-tight">{c.title}</p>
+                <p className="w-fit text-[1.375rem] tracking-tight" data-build={`cert.title-${i}`}>
+                  {c.title}
+                </p>
                 <p className="text-[15px] text-muted">{c.issuer}</p>
-                <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-[14px] text-fg/75">
+                <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-[14px] text-fg/75" data-build={`cert.highlights-${i}`}>
                   {c.highlights.map((h) => (
-                    <li key={h} className="flex items-center gap-2">
+                    <li key={h} className="flex items-center gap-2" data-build-part="item">
                       <span aria-hidden className="size-1 rounded-full bg-accent" />
                       {h}
                     </li>
@@ -52,7 +62,7 @@ export function Credentials() {
                   <span className="sr-only"> for {c.title}</span>
                 </a>
               </div>
-              <div className="md:col-span-4">
+              <div className="md:col-span-4" data-build={`cert.image-${i}`}>
                 <Image
                   src={c.image}
                   alt={`${c.title} certificate`}

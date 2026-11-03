@@ -143,6 +143,12 @@ export class Director {
         return this.line(a, s.target, t);
       case "select":
         return this.select(a, s.target, t);
+      case "stamp":
+        return this.stamp(a, s.target, t);
+      case "highlight":
+        return this.highlight(a, s.target, t);
+      case "import":
+        return this.import(a, s.target, t, s.from, s.guides);
       case "comment":
         return this.comment(a, s.target, s.text, t);
       case "deselect":
@@ -228,6 +234,7 @@ export class Director {
       gsap.set(el, { clipPath: "inset(0% 100% 0% 0%)" });
       this.tl.to(el, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: `steps(${n})` }, t);
       this.tl.to(caret, { x: r.x + r.w, duration: dur, ease: `steps(${n})` }, t);
+      this.unclip(el, t + dur);
     }
     this.tl.set(caret, { autoAlpha: 0 }, t + dur + 0.2);
     return t + dur;
@@ -257,6 +264,7 @@ export class Director {
     this.tl.to(el, { clipPath: `inset(0% ${cut} ${cut} 0%)`, duration: dur }, t);
     this.tl.to(boxes, { width: w, height: h, duration: dur }, t);
     sel.r = { x: r.x, y: r.y, w, h };
+    if (until >= 1) this.unclip(el, t + dur);
     return t + dur;
   }
 
@@ -282,6 +290,7 @@ export class Director {
     const dur = 0.65;
     this.dragTo(a, { x: r.x + r.w, y: r.y + r.h }, t, dur, "power3.inOut");
     this.tl.to(el, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: "power3.inOut" }, t);
+    this.unclip(el, t + dur);
     if (a.sel) {
       this.tl.to(a.sel.el, { width: r.w, height: r.h, duration: dur, ease: "power3.inOut" }, t);
       a.sel.r = r;
@@ -347,9 +356,11 @@ export class Director {
 
     // The ghost is a snapshot of the source as it looks once built (labels may still be empty).
     const ghost = src.cloneNode(true) as HTMLElement;
-    [ghost, ...ghost.querySelectorAll<HTMLElement>("[id], [data-build]")].forEach((n) => {
+    [ghost, ...ghost.querySelectorAll<HTMLElement>("[id], [data-build], [data-build-part], [data-ch]")].forEach((n) => {
       n.removeAttribute("id");
       n.removeAttribute("data-build");
+      n.removeAttribute("data-build-part");
+      n.removeAttribute("data-ch");
     });
     ghost.style.cssText = "";
     ghost.classList.add("sw-ghost");
@@ -411,6 +422,73 @@ export class Director {
     return t + 0.35;
   }
 
+  /** Once fully revealed, drop the clip so shadows and overhanging labels render as in the static page. */
+  private unclip(el: HTMLElement, t: number) {
+    this.tl.set(el, { clipPath: "none" }, t);
+  }
+
+  private stamp(a: Agent, target: string, t: number): number {
+    const el = this.el(target);
+    const items = el ? [...el.querySelectorAll<HTMLElement>("[data-build-part='item']")] : [];
+    if (!items.length) return t;
+    gsap.set(items, { autoAlpha: 0, scale: 0.6, transformOrigin: "50% 50%" });
+    const center = (it: HTMLElement) => {
+      const r = this.rect(it);
+      return { x: r.x + r.w * 0.5, y: r.y + r.h * 0.65 };
+    };
+    // The cursor hops across roughly five stops; items in between pop on the same beat.
+    const step = 0.15;
+    const every = Math.max(1, Math.ceil(items.length / 5));
+    t = this.move(a, center(items[0]), t);
+    let prev = 0;
+    items.forEach((it, i) => {
+      const ti = t + i * step;
+      if (i > 0 && i % every === 0) {
+        this.dragTo(a, center(it), t + prev * step, (i - prev) * step, "power1.inOut");
+        prev = i;
+      }
+      if (i % every === 0) this.press(a, ti);
+      this.tl.to(it, { autoAlpha: 1, scale: 1, duration: 0.28, ease: "back.out(2.2)" }, ti);
+    });
+    return t + items.length * step + 0.2;
+  }
+
+  private highlight(a: Agent, target: string, t: number): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const r = this.rect(el);
+    const hl = div("sw-hl", this.overlay);
+    hl.style.background = `color-mix(in srgb, ${a.spec.color} 32%, transparent)`;
+    gsap.set(hl, { x: r.x, y: r.y, width: 0, height: r.h, autoAlpha: 0 });
+    t = this.move(a, { x: r.x, y: r.y + r.h * 0.55 }, t);
+    t = this.press(a, t);
+    const dur = clamp(0.45, 0.95, r.w / 900);
+    this.tl.set(hl, { autoAlpha: 1 }, t);
+    this.tl.to(hl, { width: r.w, duration: dur, ease: "power1.inOut" }, t);
+    this.dragTo(a, { x: r.x + r.w, y: r.y + r.h * 0.55 }, t, dur, "power1.inOut");
+    this.tl.to(hl, { autoAlpha: 0, duration: 0.3 }, t + dur + 0.5);
+    return t + dur;
+  }
+
+  private import(a: Agent, target: string, t: number, from: Pt, guides: Guide[] = []): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const r = this.rect(el);
+    gsap.set(el, { autoAlpha: 0, x: from.x, y: from.y });
+    const grab = { x: r.x + from.x + r.w * 0.5, y: r.y + from.y + r.h * 0.5 };
+    t = this.move(a, grab, t);
+    t = this.press(a, t);
+    this.tl.to(el, { autoAlpha: 1, duration: 0.15, ease: "none" }, t);
+    const sel = this.sel(a, { x: r.x + from.x, y: r.y + from.y, w: r.w, h: r.h }, t, r);
+    const dur = 0.75;
+    this.tl.to(el, { x: 0, y: 0, duration: dur, ease: "power3.inOut" }, t);
+    this.tl.to(sel.el, { x: r.x, y: r.y, duration: dur, ease: "power3.inOut" }, t);
+    this.dragTo(a, { x: grab.x - from.x, y: grab.y - from.y }, t, dur, "power3.inOut");
+    this.guides(el, guides, t + dur * 0.6, t + dur + 0.35);
+    sel.r = r;
+    return t + dur;
+  }
+
   private comment(a: Agent, target: string, text: string, t: number): number {
     const el = this.el(target);
     if (!el) return t;
@@ -423,9 +501,12 @@ export class Director {
     const note = div("sw-note", this.overlay, `<b>${a.spec.label}</b>${text}`);
     note.style.setProperty("--c", a.spec.color);
     gsap.set(pin, { x: p.x - 12, y: p.y - 30, scale: 0, autoAlpha: 0, transformOrigin: "0% 100%" });
-    gsap.set(note, { x: p.x + 18, y: p.y - 34, autoAlpha: 0 });
+    // Open the note to the left of the pin when it would run off the right edge.
+    const flip = p.x + 18 + note.offsetWidth > this.size.w - 16;
+    const nx = flip ? p.x - 20 - note.offsetWidth : p.x + 18;
+    gsap.set(note, { x: nx, y: p.y - 34, autoAlpha: 0 });
     this.tl.to(pin, { scale: 1, autoAlpha: 1, duration: 0.25, ease: "back.out(2)" }, t);
-    this.tl.fromTo(note, { autoAlpha: 0, x: p.x + 10 }, { autoAlpha: 1, x: p.x + 18, duration: 0.25, ease: "power2.out", immediateRender: false }, t + 0.1);
+    this.tl.fromTo(note, { autoAlpha: 0, x: nx + (flip ? 8 : -8) }, { autoAlpha: 1, x: nx, duration: 0.25, ease: "power2.out", immediateRender: false }, t + 0.1);
     // The note collapses after a read; the pin stays until the swarm leaves.
     this.tl.to(note, { autoAlpha: 0, duration: 0.2 }, t + 1.6);
     this.chrome.push(pin);

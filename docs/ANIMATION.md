@@ -40,7 +40,24 @@ empty and what remains is the actual site.
 `tool`, `type`, `draw` (rectangle drag revealing the element via clip-path, optional image drop
 zone), `place`, `resize`, `appear` / `scale` / `drag` (headline set small, scaled up, dragged into place
 with alignment guides), `duplicate` (Alt-drag a ghost clone onto the next instance), `fill`, `line`,
-`select`, `deselect`, `comment` (review pin with a note), `rest`, `wait`, `exit`, `publish`.
+`select`, `deselect`, `stamp` (pop a set's `data-build-part="item"` children in as the cursor sweeps),
+`highlight` (text-selection sweep), `import` (drag an element in from an offset and snap it to a guide),
+`comment` (review pin with a note), `rest`, `wait`, `exit`, `publish`.
+
+### Scenes (every section has one)
+
+| Section | Choreography |
+| --- | --- |
+| Hero | full build: type, draw, scale/drag with guides, duplicate, image drop, review pins |
+| About | select heading, draw rule, draw a card then duplicate it twice |
+| Skills | rule, then six agents each draw a component set and stamp its chips |
+| Experience | heading highlight + rule; per role (own scene): highlight title, write bullets, stamp tech |
+| Work | draw media frame, drop image, duplicate thumbnails |
+| Credentials | draw heading, draw + duplicate education cards; per certificate (own scene): import image, stamp highlights |
+| Contact | draw heading and actions, everyone gathers, Publish |
+
+Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
+built while it is actually on screen instead of on one long, loosely synced timeline.
 Any step can carry `say: "…"`, a Figma-style cursor-chat bubble shown while that step runs.
 
 ## Breakpoints

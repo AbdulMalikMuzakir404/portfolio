@@ -311,3 +311,6 @@ html.swarm:not(.swarm-ready) [data-build] {
   color: var(--c);
   font-weight: 600;
 }
+.sw-hl {
+  border-radius: 2px;
+}
