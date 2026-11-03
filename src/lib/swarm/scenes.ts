@@ -136,20 +136,53 @@ const hero: Scene = {
   ],
 };
 
+
+/**
+ * Section headings, each built a different way: the mono kicker is typed, the title revealed,
+ * the divider drawn. Triggered by the kicker, so they play as soon as the heading comes in.
+ */
+function heading(id: string, lead: string, helper: string, reveal: "draw" | "write" | "appear"): Scene {
+  const title = `${id}.title`;
+  const build: Scene["steps"] =
+    reveal === "appear"
+      ? [
+          { who: lead, do: "appear", target: title, offset: { x: 90, y: 40 }, scale: 0.5 },
+          { who: lead, do: "scale", target: title, say: "Scaling the title" },
+          { who: lead, do: "drag", target: title, guides: [{ edge: "left", with: `${id}.kicker` }] },
+        ]
+      : [{ who: lead, do: reveal, target: title, say: reveal === "write" ? "Writing the title" : undefined }];
+  return {
+    root: `[data-swarm-row='heading-${id}']`,
+    scroll: { start: "top 100%", end: "top 15%" },
+    steps: [
+      { who: lead, do: "type", target: `${id}.kicker` },
+      ...build,
+      { who: lead, do: "deselect" },
+      { who: helper, at: 0.5, do: "line", target: `${id}.rule` },
+      { who: "*", do: "exit" },
+    ],
+  };
+}
+
+const headings = {
+  about: heading("about", "claude", "gemini", "draw"),
+  skills: heading("skills", "mistral", "codex", "write"),
+  experience: heading("experience", "copilot", "deepseek", "appear"),
+  work: heading("work", "llama", "qwen", "draw"),
+  credentials: heading("credentials", "devin", "claude", "write"),
+};
+
 const about: Scene = {
-  root: "#about",
-  scroll: { trigger: "[data-build='about.summary']", start: "top 115%", end: "bottom 20%" },
+  root: "[data-swarm-row='about-intro']",
+  scroll: { start: "top 100%", end: "bottom 20%" },
   steps: [
-    { who: "claude", do: "select", target: "about.title" },
-    { who: "gemini", at: 0.3, do: "line", target: "about.rule" },
-    { who: "claude", do: "deselect" },
-    { who: "codex", at: 0.6, do: "write", target: "about.summary", say: "Writing the summary" },
-    { who: "mistral", at: 0.9, do: "stamp", target: "about.facts" },
+    { who: "codex", do: "write", target: "about.summary", say: "Writing the summary" },
+    { who: "mistral", at: 0.4, do: "stamp", target: "about.facts" },
     {
       who: "claude",
       at: 1.6,
       do: "thread",
-      target: "about.title",
+      target: "about.summary",
       messages: [
         { who: "claude", text: "Summary is word for word from the CV" },
         { who: "codex", text: "Kept the line length comfortable" },
@@ -334,16 +367,14 @@ const moreList: Scene = {
 // Six agents each frame one component set, then stamp its instances in.
 const skillCrew = ["codex", "gemini", "deepseek", "copilot", "llama", "devin"];
 const skills: Scene = {
-  root: "#skills",
+  root: "[data-swarm-row='skills-sets']",
   scroll: { start: "top 95%", end: "bottom 45%" },
   steps: [
-    { who: "mistral", do: "line", target: "skills.rule" },
-    { who: "mistral", do: "rest", to: { x: 1.06, y: 0.2 } },
     ...skillGroups.flatMap((g, i) => {
       const who = skillCrew[i % skillCrew.length];
       const target = `skills.group-${g.id}`;
       return [
-        { who, at: 0.5 + (i % 3) * 0.25 + Math.floor(i / 3) * 1.4, do: "draw" as const, target },
+        { who, at: (i % 3) * 0.25 + Math.floor(i / 3) * 1.2, do: "draw" as const, target },
         { who, do: "stamp" as const, target, id: `skill-${i}` },
         { who, do: "deselect" as const },
       ];
@@ -370,15 +401,6 @@ const roleCrew = [
   ["gemini", "qwen"],
   ["llama", "grok"],
 ];
-const experienceHeading: Scene = {
-  root: "#experience",
-  scroll: { trigger: "[data-build='experience.title']", start: "top 100%", end: "top 12%" },
-  steps: [
-    { who: "copilot", do: "highlight", target: "experience.title", say: "Selecting the heading" },
-    { who: "deepseek", at: 0.3, do: "line", target: "experience.rule" },
-    { who: "*", do: "exit" },
-  ],
-};
 const experienceRows: Scene[] = roles.map((_, i) => {
   const [lead, helper] = roleCrew[i % roleCrew.length];
   return {
@@ -409,12 +431,10 @@ const experienceRows: Scene[] = roles.map((_, i) => {
 
 // Heading and education share one scene; each certificate row gets its own.
 const credentials: Scene = {
-  root: "#credentials",
-  scroll: { trigger: "[data-build='edu.0']", start: "top 110%", end: "bottom 20%" },
+  root: "[data-swarm-row='edu']",
+  scroll: { start: "top 100%", end: "bottom 20%" },
   steps: [
-    { who: "claude", do: "draw", target: "credentials.title" },
-    { who: "claude", do: "deselect" },
-    { who: "gemini", at: 0.5, do: "draw", target: "edu.0" },
+    { who: "gemini", do: "draw", target: "edu.0" },
     { who: "gemini", do: "fill", target: "edu.0", id: "edu0" },
     { who: "gemini", do: "deselect" },
     { who: "copilot", after: "edu0", do: "duplicate", source: "edu.0", target: "edu.1", guides: [{ edge: "top", with: "edu.0" }] },
@@ -481,11 +501,11 @@ const cvMore: Scene = {
 const contact: Scene = {
   root: "#contact",
   chrome: "publish",
-  // Last section: too little page below it to scrub, so it plays once the heading is in view.
-  play: { trigger: "[data-build='contact.title']", start: "top 70%", speed: 1.1 },
+  // Last section: too little page below it to scrub, so it plays as soon as it starts to appear.
+  play: { trigger: "[data-build='contact.kicker']", start: "top 92%" },
   scroll: { start: "top 100%", end: "max" },
   steps: [
-    { who: "qwen", at: 0.3, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
+    { who: "qwen", at: 0.5, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
     { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
     { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
@@ -510,14 +530,18 @@ const contact: Scene = {
 
 export const scenes = [
   hero,
+  headings.about,
   about,
   aboutCards,
   aboutMore,
+  headings.skills,
   skills,
-  experienceHeading,
+  headings.experience,
   ...experienceRows,
+  headings.work,
   ...caseScenes,
   moreList,
+  headings.credentials,
   credentials,
   ...certRows,
   cvMore,

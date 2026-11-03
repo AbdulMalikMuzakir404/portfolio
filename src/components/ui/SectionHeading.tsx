@@ -11,10 +11,10 @@ type Props = {
 
 export function SectionHeading({ id, index, kicker, title, lede }: Props) {
   return (
-    <header>
+    <header data-swarm-row={`heading-${id}`} className="relative">
       <div className="grid items-end gap-6 md:grid-cols-12">
         <div className="md:col-span-7">
-          <p className="label" data-build={`${id}.kicker`}>
+          <p className="label w-fit" data-build={`${id}.kicker`}>
             {index} — {kicker}
           </p>
           <h2 id={`${id}-title`} className="mt-5 w-fit font-serif text-h2" data-build={`${id}.title`}>

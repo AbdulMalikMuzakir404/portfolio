@@ -18,7 +18,7 @@ export function About() {
       <div className="page">
         <SectionHeading id="about" index="01" kicker="About" title={<>A glimpse into my <em>world</em></>} />
 
-        <div className="mt-14 grid gap-12 md:grid-cols-12">
+        <div data-swarm-row="about-intro" className="relative mt-14 grid gap-12 md:grid-cols-12">
           <p data-build="about.summary" className="text-[clamp(1.25rem,1.05rem+0.7vw,1.75rem)] leading-[1.45] text-fg/90 md:col-span-7">
             {profile.summary}
           </p>

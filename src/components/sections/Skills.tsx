@@ -14,7 +14,7 @@ export function Skills() {
           lede="Each set below is a group of tools I reach for, from interface to infrastructure."
         />
 
-        <div className="mt-14 grid gap-x-4 gap-y-8 md:grid-cols-2 lg:grid-cols-3">
+        <div data-swarm-row="skills-sets" className="relative mt-14 grid gap-x-4 gap-y-8 md:grid-cols-2 lg:grid-cols-3">
           {skillGroups.map((g) => (
             <article key={g.id} data-build={`skills.group-${g.id}`} className="relative rounded-md border border-dashed border-[#A78BFA]/35 p-5 pt-7">
               <h3 className="absolute -top-2.5 left-4 bg-ink-950 px-1.5 font-mono text-[12px] text-[#C4B5FD]">

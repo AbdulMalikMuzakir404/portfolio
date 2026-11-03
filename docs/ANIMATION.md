@@ -31,7 +31,7 @@ empty and what remains is the actual site.
 - **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6` on
   native browser scrolling (no smooth-scroll library, no section pinning except the hero).
   One exception: Contact is the last section, with too little page below it to scrub a full build,
-  so it uses `play` — the timeline plays over time once the heading is 70% up the viewport and
+  so it uses `play` — the timeline plays over time as soon as the section starts to appear and
   rewinds at double speed if the visitor scrolls back above it. The closing orbit fits itself into
   the measured empty area (beside the heading, or under the socials on narrow layouts).
   Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
@@ -60,6 +60,9 @@ Every action shows Figma's hover outline as the cursor arrives, drops carry red 
 with the gap in px, and `deselect` steps the cursor just off the finished element.
 
 ### Scenes (every section has one)
+
+Every section heading has its own scene too (`heading()` in `scenes.ts`): the mono kicker is typed,
+the title drawn, written or scaled into place, and the divider drawn.
 
 | Section | Choreography |
 | --- | --- |

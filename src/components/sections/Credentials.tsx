@@ -17,27 +17,29 @@ export function Credentials() {
           lede="The credentials I’ve earned on my journey of continuous learning."
         />
 
-        <h3 className="label mt-14">Education</h3>
-        <ul className="mt-5 grid gap-4 md:grid-cols-2">
-          {education.map((e, i) => (
-            <li key={e.school} data-build={`edu.${i}`} className="rounded-md border border-line bg-ink-900 p-6 md:p-7">
-              <p className="font-mono text-[13px] text-muted" data-build-part="label">
-                {e.period} · {e.location}
-              </p>
-              <p className="mt-6 font-serif text-[1.75rem] leading-tight" data-build-part="label">
-                {e.school}
-              </p>
-              <p className="mt-1 text-[15px] text-fg/85" data-build-part="label">
-                {e.degree}
-              </p>
-              {e.note && (
-                <p className="mt-4 text-[14px] leading-relaxed text-muted" data-build-part="label">
-                  {e.note}
+        <div data-swarm-row="edu" className="relative mt-14">
+          <h3 className="label">Education</h3>
+          <ul className="mt-5 grid gap-4 md:grid-cols-2">
+            {education.map((e, i) => (
+              <li key={e.school} data-build={`edu.${i}`} className="rounded-md border border-line bg-ink-900 p-6 md:p-7">
+                <p className="font-mono text-[13px] text-muted" data-build-part="label">
+                  {e.period} · {e.location}
                 </p>
-              )}
-            </li>
-          ))}
-        </ul>
+                <p className="mt-6 font-serif text-[1.75rem] leading-tight" data-build-part="label">
+                  {e.school}
+                </p>
+                <p className="mt-1 text-[15px] text-fg/85" data-build-part="label">
+                  {e.degree}
+                </p>
+                {e.note && (
+                  <p className="mt-4 text-[14px] leading-relaxed text-muted" data-build-part="label">
+                    {e.note}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <h3 className="label mt-20">Certifications</h3>
         <ul className="mt-5 border-t border-line">

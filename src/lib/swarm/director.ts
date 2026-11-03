@@ -211,10 +211,11 @@ export class Director {
     caret.style.background = a.spec.color;
     gsap.set(caret, { x: r.x, y: r.y + r.h * 0.12, height: r.h * 0.76, autoAlpha: 0 });
 
-    t = this.move(a, { x: r.x - 2, y: r.y + r.h * 0.6 }, t);
+    // Text at the very left edge of a scene: keep the pointer inside it so it isn't clipped.
+    t = this.move(a, { x: Math.max(r.x - 2, 4), y: r.y + r.h * 0.6 }, t);
     t = this.press(a, t);
     // The pointer steps aside so the words stay readable while they're typed.
-    this.dragTo(a, { x: r.x - 22, y: r.y + r.h + 18 }, t, 0.35, "power2.out");
+    this.dragTo(a, { x: Math.max(r.x - 22, 4), y: r.y + r.h + 18 }, t, 0.35, "power2.out");
     this.tl.set(caret, { autoAlpha: 1 }, t);
 
     const chars = [...el.querySelectorAll<HTMLElement>("[data-ch]")];
@@ -624,7 +625,8 @@ export class Director {
       this.tl.set(texts[k + 1], { autoAlpha: 1 }, next);
       next += 0.55;
     });
-    this.tl.to(box, { autoAlpha: 0, duration: 0.25 }, next + 1.1);
+    // Leave the finished thread up long enough to read before it collapses to its pin.
+    this.tl.to(box, { autoAlpha: 0, duration: 0.25 }, next + 2.2);
     this.chrome.push(pin);
     return t + 0.7;
   }
@@ -672,7 +674,7 @@ export class Director {
     this.tl.to(pin, { scale: 1, autoAlpha: 1, duration: 0.25, ease: "back.out(2)" }, t);
     this.tl.fromTo(note, { autoAlpha: 0, y: spot.y + 6 }, { autoAlpha: 1, y: spot.y, duration: 0.25, ease: "power2.out", immediateRender: false }, t + 0.1);
     // The note collapses after a read; the pin stays until the swarm leaves.
-    this.tl.to(note, { autoAlpha: 0, duration: 0.2 }, t + 1.6);
+    this.tl.to(note, { autoAlpha: 0, duration: 0.2 }, t + 2.6);
     this.chrome.push(pin);
     this.dragTo(a, spot.away, t + 0.3, 0.4, "power2.out");
     return t + 0.7;
@@ -718,7 +720,7 @@ export class Director {
    * above the action buttons) or, on narrow layouts, under the social links — whichever is larger.
    * Insets leave room for a cursor's name tag (it hangs right and down).
    */
-  private freeBox() {
+  private freeBox(minRx: number, minRy: number) {
     const p = this.publishChip;
     const title = this.el("contact.title");
     const actions = this.el("contact.actions");
@@ -732,23 +734,29 @@ export class Director {
     const socials = this.el("contact.socials");
     const sr = socials && this.rect(socials);
     const below = sr && { l: sr.x + 40, r: sr.x + sr.w - 110, t: sr.y + sr.h + 40, b: this.size.h - 56 };
-    const size = (q: { l: number; r: number; t: number; b: number }) => Math.min(q.r - q.l, (q.b - q.t) * 1.25);
-    const best = [beside, below].filter((q): q is typeof beside => !!q && q.r - q.l > 120 && q.b - q.t > 72).sort((a, b) => size(b) - size(a))[0];
-    return best;
+    // First area that holds the minimum ring wins; otherwise the roomier of the two.
+    type Box = typeof beside;
+    const boxes = [beside, below].filter((q): q is Box => !!q);
+    const holds = (q: Box) => q.r - q.l >= minRx * 2 && q.b - q.t >= minRy * 2;
+    const size = (q: Box) => Math.min(q.r - q.l, (q.b - q.t) * 1.25);
+    return boxes.find(holds) ?? boxes.filter((q) => q.r - q.l > 120 && q.b - q.t > 72).sort((a, b) => size(b) - size(a))[0];
   }
 
   /** Closing formation: everyone rings a point; the time-based galaxy orbit takes over from there. */
   private orbit(t: number, center: Pt): number {
     const list = [...this.agents.values()];
     let c = this.frac(center);
-    let rx = Math.min(180, this.size.w * 0.12);
+    // A ring big enough that the name tags don't pile up: ~13px of radius per agent.
+    const minRx = Math.max(90, list.length * 13);
+    const minRy = minRx * 0.72;
+    let rx = Math.max(minRx, Math.min(180, this.size.w * 0.12));
     let ry = rx * 0.8;
-    const free = this.freeBox();
+    const free = this.freeBox(minRx, minRy);
     if (free) {
       // Fit the ring into the measured empty area instead of a fixed fraction of the section.
       c = { x: (free.l + free.r) / 2, y: (free.t + free.b) / 2 };
-      rx = Math.max(60, Math.min(rx, (free.r - free.l) / 2));
-      ry = Math.max(36, Math.min(rx * 0.8, (free.b - free.t) / 2));
+      rx = Math.max(minRx, Math.min(rx, (free.r - free.l) / 2));
+      ry = Math.max(minRy, Math.min(rx * 0.8, (free.b - free.t) / 2));
     }
     let end = t;
     list.forEach((a, i) => {
