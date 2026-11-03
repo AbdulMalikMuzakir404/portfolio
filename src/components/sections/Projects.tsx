@@ -24,9 +24,9 @@ export function Projects() {
         </div>
 
         <h3 className="label mt-24">More projects</h3>
-        <ul className="mt-6 border-t border-line">
-          {rest.map((p) => (
-            <li key={p.slug} id={`project-${p.slug}`} className="border-b border-line">
+        <ul data-swarm-row="more" className="relative mt-6 border-t border-line">
+          {rest.map((p, i) => (
+            <li key={p.slug} id={`project-${p.slug}`} data-build={`more.row-${i}`} className="border-b border-line">
               <details className="group">
                 <summary className="grid list-none grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-1 py-6 md:grid-cols-12">
                   <span className="font-mono text-[13px] text-muted md:col-span-2">{p.period}</span>
@@ -62,27 +62,32 @@ export function Projects() {
 }
 
 function Case({ project: p, index }: { project: Project; index: number }) {
-  const first = index === 0;
   return (
-    <article id={`project-${p.slug}`} className="grid gap-10 border-b border-line py-16 lg:grid-cols-12 lg:gap-8 lg:py-24">
-      <div className={`self-start lg:sticky lg:top-28 lg:col-span-5 ${index % 2 ? "lg:order-last lg:col-start-8" : ""}`}>
+    <article
+      id={`project-${p.slug}`}
+      data-swarm-row={`case-${index}`}
+      className="relative grid gap-10 border-b border-line py-16 lg:grid-cols-12 lg:gap-8 lg:py-24"
+    >
+      {/* Not sticky: the swarm measures this column once, so it must move with its row. */}
+      <div className={`self-start lg:col-span-5 ${index % 2 ? "lg:order-last lg:col-start-8" : ""}`}>
         <p className="label">
           {String(index + 1).padStart(2, "0")} · {p.period} · {p.kind}
         </p>
-        <h3 className="mt-5 w-fit font-serif text-h3" data-build={first ? "projects.title" : undefined}>
+        <h3 className="mt-5 w-fit font-serif text-h3" data-build={`case-${index}.title`}>
           {p.name}
         </h3>
-        <ProjectMeta project={p} />
+        <ProjectMeta project={p} build={`case-${index}`} />
       </div>
 
       <div className={`lg:col-span-7 ${index % 2 ? "" : "lg:col-start-6"}`}>
-        {p.media === "phone" ? <PhoneMedia project={p} /> : <DesktopMedia project={p} first={first} />}
+        {p.media === "phone" ? <PhoneMedia project={p} build={`case-${index}`} /> : <DesktopMedia project={p} build={`case-${index}`} />}
       </div>
     </article>
   );
 }
 
-function ProjectMeta({ project: p }: { project: Project }) {
+/** `build` prefixes the swarm hooks; the compact "More projects" rows leave it out. */
+function ProjectMeta({ project: p, build }: { project: Project; build?: string }) {
   return (
     <>
       <p className="mt-5 text-[17px] leading-relaxed text-fg/85">{p.summary}</p>
@@ -93,9 +98,9 @@ function ProjectMeta({ project: p }: { project: Project }) {
         </p>
       )}
       {p.tech.length > 0 && (
-        <ul className="mt-6 flex flex-wrap gap-2" aria-label="Technologies">
+        <ul className="mt-6 flex flex-wrap gap-2" aria-label="Technologies" data-build={build && `${build}.tech`}>
           {p.tech.map((t) => (
-            <li key={t} className="chip font-mono text-[12px]">
+            <li key={t} className="chip font-mono text-[12px]" data-build-part={build && "item"}>
               {t}
             </li>
           ))}
@@ -122,16 +127,16 @@ function ProjectMeta({ project: p }: { project: Project }) {
   );
 }
 
-function DesktopMedia({ project: p, first }: { project: Project; first: boolean }) {
+function DesktopMedia({ project: p, build }: { project: Project; build: string }) {
   const [lead, ...thumbs] = p.images;
   return (
     <div className="grid gap-3">
-      <div className="overflow-hidden rounded-md border border-line bg-ink-900" data-build={first ? "projects.media" : undefined}>
+      <div className="overflow-hidden rounded-md border border-line bg-ink-900" data-build={`${build}.media`}>
         <Image src={lead.src} alt={lead.alt} sizes="(min-width: 1024px) 680px, 100vw" className="aspect-[16/10] w-full object-cover object-top" />
       </div>
       <div className="grid grid-cols-3 gap-3">
         {thumbs.slice(0, 3).map((img, i) => (
-          <div key={img.alt} className="overflow-hidden rounded-[5px] border border-line" data-build={first ? `projects.thumb-${i}` : undefined}>
+          <div key={img.alt} className="overflow-hidden rounded-[5px] border border-line" data-build={`${build}.thumb-${i}`}>
             <Image src={img.src} alt={img.alt} sizes="(min-width: 1024px) 220px, 33vw" className="aspect-[16/10] w-full object-cover object-top" />
           </div>
         ))}
@@ -140,29 +145,33 @@ function DesktopMedia({ project: p, first }: { project: Project; first: boolean 
   );
 }
 
-function PhoneMedia({ project: p }: { project: Project }) {
+function PhoneMedia({ project: p, build }: { project: Project; build: string }) {
   const phones = p.images.filter((img) => img.src.height > img.src.width).slice(0, 4);
   const wide = p.images.find((img) => img.src.width > img.src.height);
   return (
     <div className="grid gap-6">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* The stagger is a margin, not a transform, so measured boxes match what is drawn. */}
         {phones.map((img, i) => (
-          <Image
-            key={img.alt}
-            src={img.src}
-            alt={img.alt}
-            sizes="(min-width: 1024px) 170px, (min-width: 640px) 22vw, 45vw"
-            className={`aspect-[9/20] w-full rounded-[18px] border border-white/10 object-cover object-top ${i % 2 ? "sm:translate-y-10" : ""}`}
-          />
+          <div key={img.alt} data-build={`${build}.phone-${i}`} className={i % 2 ? "sm:mt-10" : ""}>
+            <Image
+              src={img.src}
+              alt={img.alt}
+              sizes="(min-width: 1024px) 170px, (min-width: 640px) 22vw, 45vw"
+              className="aspect-[9/20] w-full rounded-[18px] border border-white/10 object-cover object-top"
+            />
+          </div>
         ))}
       </div>
       {wide && (
-        <Image
-          src={wide.src}
-          alt={wide.alt}
-          sizes="(min-width: 1024px) 680px, 100vw"
-          className="aspect-[16/10] w-full rounded-md border border-line object-cover object-top sm:mt-10"
-        />
+        <div data-build={`${build}.wide`}>
+          <Image
+            src={wide.src}
+            alt={wide.alt}
+            sizes="(min-width: 1024px) 680px, 100vw"
+            className="aspect-[16/10] w-full rounded-md border border-line object-cover object-top"
+          />
+        </div>
       )}
     </div>
   );

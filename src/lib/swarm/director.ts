@@ -95,7 +95,7 @@ export class Director {
       const after = s.after ? (this.ends.get(s.after) ?? 0) : 0;
       if (s.who === "*") {
         const t0 = Math.max(after, s.at ?? 0, ...[...this.agents.values()].map((a) => a.t)) + 0.15;
-        const end = s.do === "publish" ? this.publish(t0) : this.exit(t0);
+        const end = s.do === "publish" ? this.publish(t0) : s.do === "orbit" ? this.orbit(t0, s.center) : this.exit(t0);
         this.agents.forEach((a) => (a.t = end));
         if (s.id) this.ends.set(s.id, end);
         continue;
@@ -151,6 +151,10 @@ export class Director {
         return this.import(a, s.target, t, s.from, s.guides);
       case "comment":
         return this.comment(a, s.target, s.text, t);
+      case "write":
+        return this.write(a, s.target, t);
+      case "thread":
+        return this.thread(a, s.target, s.messages, t);
       case "deselect":
         return this.deselect(a, t);
       case "wait":
@@ -341,6 +345,10 @@ export class Director {
     this.dragTo(a, { x: grab.x - x.dx, y: grab.y - x.dy }, t, dur, "power3.inOut");
     if (a.sel) this.tl.to(a.sel.el, { x: v.x - x.dx, y: v.y - x.dy, duration: dur, ease: "power3.inOut" }, t);
     this.guides(el, guides, t + dur * 0.6, t + dur + 0.35);
+    for (const g of guides) {
+      const other = this.el(g.with);
+      if (other) this.redline(this.rect(other), this.rect(el), t + dur * 0.75, t + dur + 0.5);
+    }
     x.dx = 0;
     x.dy = 0;
     return t + dur;
@@ -376,6 +384,7 @@ export class Director {
     this.dragTo(a, { x: rd.x + rs.w * 0.5, y: rd.y + rs.h * 0.5 }, t, dur, "power3.inOut");
     this.tl.to([ghost, sel.el], { x: rd.x, y: rd.y, duration: dur, ease: "power3.inOut" }, t);
     this.guides(dst, guides, t + dur * 0.6, t + dur + 0.35);
+    this.redline(rs, rd, t + dur * 0.7, t + dur + 0.5);
     // On drop the instance adopts its own size, then the real element takes over.
     const t2 = t + dur;
     this.tl.to([ghost, sel.el], { width: rd.w, height: rd.h, duration: 0.2 }, t2);
@@ -392,6 +401,7 @@ export class Director {
     gsap.set(parts, { opacity: 0 });
     const r = this.rect(el);
     t = this.move(a, { x: r.x + Math.min(r.w * 0.5, 120), y: r.y + r.h * 0.55 }, t);
+    this.hover(r, t - 0.15, t + 0.3);
     t = this.press(a, t);
     t = this.press(a, t);
     const step = 0.12;
@@ -417,9 +427,45 @@ export class Director {
     if (!el) return t;
     const v = this.vis(el);
     t = this.move(a, { x: v.x + v.w * 0.3, y: v.y + v.h * 0.55 }, t);
+    this.hover(v, t - 0.15, t + 0.05);
     t = this.press(a, t);
     this.sel(a, v, t, this.rect(el));
     return t + 0.35;
+  }
+
+  /** Figma's hover state: a thin outline appears as the cursor arrives, before the click. */
+  private hover(r: Rect, from: number, to: number) {
+    const el = div("sw-hover", this.overlay);
+    gsap.set(el, { x: r.x - 2, y: r.y - 2, width: r.w + 4, height: r.h + 4, autoAlpha: 0 });
+    this.tl.set(el, { autoAlpha: 1 }, Math.max(0, from));
+    this.tl.set(el, { autoAlpha: 0 }, to);
+  }
+
+  /** Red spacing marker between two boxes, labelled with the gap in px, like Figma's Alt-measure. */
+  private redline(a: Rect, b: Rect, on: number, off: number) {
+    const line = div("sw-redline", this.overlay, "<span></span>");
+    let gap: number;
+    if (b.x >= a.x + a.w - 1 || a.x >= b.x + b.w - 1) {
+      const [l, r] = b.x >= a.x ? [a, b] : [b, a];
+      gap = r.x - (l.x + l.w);
+      const top = Math.max(l.y, r.y);
+      const bottom = Math.min(l.y + l.h, r.y + r.h);
+      const y = bottom > top ? (top + bottom) / 2 : l.y + l.h / 2;
+      gsap.set(line, { x: l.x + l.w, y, width: Math.max(gap, 1), height: 1 });
+    } else {
+      const [t, u] = b.y >= a.y ? [a, b] : [b, a];
+      gap = u.y - (t.y + t.h);
+      const left = Math.max(t.x, u.x);
+      const right = Math.min(t.x + t.w, u.x + u.w);
+      const x = right > left ? left + Math.min(40, (right - left) / 2) : t.x + 20;
+      gsap.set(line, { x, y: t.y + t.h, width: 1, height: Math.max(gap, 1) });
+      line.classList.add("sw-redline-v");
+    }
+    if (gap < 4) return line.remove();
+    line.querySelector("span")!.textContent = String(Math.round(gap));
+    gsap.set(line, { autoAlpha: 0 });
+    this.tl.set(line, { autoAlpha: 1 }, on);
+    this.tl.set(line, { autoAlpha: 0 }, off);
   }
 
   /** Once fully revealed, drop the clip so shadows and overhanging labels render as in the static page. */
@@ -440,6 +486,7 @@ export class Director {
     const step = 0.15;
     const every = Math.max(1, Math.ceil(items.length / 5));
     t = this.move(a, center(items[0]), t);
+    this.hover(this.rect(el!), t - 0.15, t + items.length * step + 0.2);
     let prev = 0;
     items.forEach((it, i) => {
       const ti = t + i * step;
@@ -461,6 +508,7 @@ export class Director {
     hl.style.background = `color-mix(in srgb, ${a.spec.color} 32%, transparent)`;
     gsap.set(hl, { x: r.x, y: r.y, width: 0, height: r.h, autoAlpha: 0 });
     t = this.move(a, { x: r.x, y: r.y + r.h * 0.55 }, t);
+    this.hover(r, t - 0.15, t + 0.05);
     t = this.press(a, t);
     const dur = clamp(0.45, 0.95, r.w / 900);
     this.tl.set(hl, { autoAlpha: 1 }, t);
@@ -485,8 +533,100 @@ export class Director {
     this.tl.to(sel.el, { x: r.x, y: r.y, duration: dur, ease: "power3.inOut" }, t);
     this.dragTo(a, { x: grab.x - from.x, y: grab.y - from.y }, t, dur, "power3.inOut");
     this.guides(el, guides, t + dur * 0.6, t + dur + 0.35);
+    for (const g of guides) {
+      const other = this.el(g.with);
+      if (other) this.redline(this.rect(other), r, t + dur * 0.7, t + dur + 0.5);
+    }
     sel.r = r;
     return t + dur;
+  }
+
+  private write(a: Agent, target: string, t: number): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const r = this.rect(el);
+    const lh = parseFloat(getComputedStyle(el).lineHeight) || 24;
+    const n = Math.max(1, Math.round(r.h / lh));
+    gsap.set(el, { clipPath: "inset(0% 0% 100% 0%)" });
+    t = this.move(a, { x: r.x - 6, y: r.y + lh * 0.6 }, t);
+    t = this.press(a, t);
+    const dur = n * 0.2;
+    this.tl.to(el, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: `steps(${n})` }, t);
+    this.dragTo(a, { x: r.x - 6, y: r.y + r.h - lh * 0.4 }, t, dur, "none");
+    this.unclip(el, t + dur);
+    return t + dur;
+  }
+
+  /**
+   * Figma-style comment thread. The opener pins it and posts; each reply's author flies over on
+   * their own clock, clicks, and their message appears. The opener is free again almost at once.
+   */
+  private thread(a: Agent, target: string, messages: { who: string; text: string }[], t: number): number {
+    const el = this.el(target);
+    if (!el || !messages.length) return t;
+    const r = this.rect(el);
+    const p = { x: r.x + r.w * 0.82, y: r.y + Math.min(r.h * 0.2, 24) };
+    t = this.move(a, p, t);
+    this.hover(r, t - 0.15, t + 0.2);
+    t = this.press(a, t);
+
+    const pin = div("sw-pin", this.overlay, a.spec.label[0]);
+    pin.style.background = a.spec.color;
+    const spec = (id: string) => this.agents.get(this.who(id))?.spec ?? a.spec;
+    const box = div(
+      "sw-thread",
+      this.overlay,
+      messages
+        .map((m) => `<div class="sw-msg"><b style="color:${spec(m.who).color}">${spec(m.who).label}</b><span>${m.text}</span><i>• • •</i></div>`)
+        .join(""),
+    );
+    const rows = [...box.children] as HTMLElement[];
+    const texts = rows.map((row) => row.querySelector("span")!);
+    const dots = rows.map((row) => row.querySelector("i")!);
+    gsap.set(dots, { autoAlpha: 0 });
+    const flip = p.x + 18 + box.offsetWidth > this.size.w - 16;
+    const bx = flip ? p.x - 20 - box.offsetWidth : p.x + 18;
+    const by = p.y - 34;
+    // Measure where each line will sit once shown, then collapse the replies so the box grows
+    // as they arrive instead of opening at full height.
+    const lineY = rows.map((row) => by + row.offsetTop + row.offsetHeight / 2);
+    const boxW = box.offsetWidth;
+    gsap.set(box, { width: boxW });
+    gsap.set(rows.slice(1), { display: "none" });
+    gsap.set(pin, { x: p.x - 12, y: p.y - 30, scale: 0, autoAlpha: 0, transformOrigin: "0% 100%" });
+    gsap.set(box, { x: bx, y: by, autoAlpha: 0 });
+    gsap.set(rows, { autoAlpha: 0, y: 6 });
+
+    this.tl.to(pin, { scale: 1, autoAlpha: 1, duration: 0.25, ease: "back.out(2)" }, t);
+    this.tl.set(box, { autoAlpha: 1 }, t + 0.1);
+    this.tl.to(rows[0], { autoAlpha: 1, y: 0, duration: 0.25, ease: "power2.out" }, t + 0.1);
+    // Step away from the box, not onto it.
+    this.dragTo(a, { x: flip ? p.x + 30 : p.x - 34, y: p.y + 44 }, t + 0.3, 0.4, "power2.out");
+
+    let next = t + 0.6;
+    messages.slice(1).forEach((m, k) => {
+      const row = rows[k + 1];
+      const b = this.agents.get(this.who(m.who));
+      if (b) {
+        // Replies land beside their own line in the thread.
+        const spot = { x: flip ? bx - 14 : bx + boxW + 14, y: lineY[k + 1] };
+        const go = Math.max(b.t, next - 0.6, b === a ? next : 0);
+        const at = this.press(b, this.move(b, spot, go));
+        b.t = at + 0.3;
+        next = at;
+      }
+      // "is typing…" for a beat, then the message lands.
+      this.tl.set(row, { display: "grid" }, next - 0.45);
+      this.tl.set(texts[k + 1], { autoAlpha: 0 }, next - 0.45);
+      this.tl.set(dots[k + 1], { autoAlpha: 1 }, next - 0.45);
+      this.tl.to(row, { autoAlpha: 1, y: 0, duration: 0.2, ease: "power2.out" }, next - 0.45);
+      this.tl.set(dots[k + 1], { autoAlpha: 0 }, next);
+      this.tl.set(texts[k + 1], { autoAlpha: 1 }, next);
+      next += 0.55;
+    });
+    this.tl.to(box, { autoAlpha: 0, duration: 0.25 }, next + 1.1);
+    this.chrome.push(pin);
+    return t + 0.7;
   }
 
   private comment(a: Agent, target: string, text: string, t: number): number {
@@ -525,9 +665,16 @@ export class Director {
 
   private deselect(a: Agent, t: number): number {
     if (!a.sel) return t;
+    const r = a.sel.r;
     this.tl.set(a.sel.el, { autoAlpha: 0 }, t);
     a.sel = undefined;
-    return t + 0.05;
+    // Click off, then drift just past the bottom-right corner so the finished work stays readable.
+    const off = {
+      // Keep the whole name tag inside the scene (it hangs ~90px right and ~45px below the tip).
+      x: clamp(8, this.size.w - 100, r.x + r.w + 14),
+      y: clamp(8, this.size.h - 48, r.y + r.h + 16),
+    };
+    return this.move(a, off, t + 0.05, "power2.out");
   }
 
   // ---------------------------------------------------------------- swarm-wide
@@ -540,6 +687,23 @@ export class Director {
     });
     if (this.chrome.length) this.tl.to(this.chrome, { autoAlpha: 0, duration: 0.4, ease: "none" }, t + 0.1);
     return Math.max(end, t + 0.5);
+  }
+
+  /** Closing formation: everyone rings a point; the time-based galaxy orbit takes over from there. */
+  private orbit(t: number, center: Pt): number {
+    const list = [...this.agents.values()];
+    const c = this.frac(center);
+    const rx = Math.min(190, this.size.w * 0.14);
+    const ry = rx * 0.8;
+    let end = t;
+    list.forEach((a, i) => {
+      if (a.sel) this.tl.set(a.sel.el, { autoAlpha: 0 }, t);
+      const ang = (i / list.length) * Math.PI * 2 - Math.PI / 2;
+      const k = i % 2 ? 0.72 : 1;
+      end = Math.max(end, this.move(a, { x: c.x + Math.cos(ang) * rx * k, y: c.y + Math.sin(ang) * ry * k }, t + i * 0.05));
+    });
+    if (this.chrome.length) this.tl.to(this.chrome, { autoAlpha: 0, duration: 0.3, ease: "none" }, t);
+    return end + 0.2;
   }
 
   private publish(t: number): number {
@@ -573,7 +737,7 @@ export class Director {
   private cursor(spec: CursorSpec, i: number): Agent {
     const el = div("sw-cursor", this.overlay);
     const inner = div("sw-inner", el);
-    inner.innerHTML = `<svg width="18" height="20" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span>`;
+    inner.innerHTML = `<svg width="22" height="24" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span>`;
     const ring = div("sw-ring", inner);
     ring.style.borderColor = spec.color;
     gsap.set(ring, { autoAlpha: 0 });

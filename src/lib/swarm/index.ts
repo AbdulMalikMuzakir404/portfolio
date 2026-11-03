@@ -108,13 +108,22 @@ export function startSwarm(): () => void {
         const tl = d.build();
         const pin = scene.scroll.pin?.[mode];
 
-        // Only the editor scene has a Stage 1 intro and drives the header's Skip button.
+        // The editor scene opens with the galaxy and drives the header's Skip button; a scene that
+        // ends in an orbit step resumes the galaxy whenever its timeline sits at the end.
         const editor = scene.chrome === "editor";
-        const intro = editor ? playIntro(d) : undefined;
+        const finale = scene.steps.some((st) => st.do === "orbit");
+        const intro = editor ? galaxy(d, "home", true) : undefined;
+        const outro = finale ? galaxy(d, "end", false) : undefined;
+        intro?.start();
         if (intro) stops.push(intro.stop);
+        if (outro) stops.push(outro.stop);
         const sync = (p: number) => {
-          html.dataset.swarm = p < 0.995 ? "building" : "done";
-          if (p > 0.002) intro?.release();
+          if (editor) {
+            html.dataset.swarm = p < 0.995 ? "building" : "done";
+            if (p > 0.002) intro?.release();
+          }
+          if (outro && p > 0.995) outro.start();
+          else outro?.release();
         };
 
         const st = ScrollTrigger.create({
@@ -125,12 +134,10 @@ export function startSwarm(): () => void {
           anticipatePin: pin ? 1 : 0,
           scrub: 0.6,
           animation: tl,
-          onUpdate: editor ? (self) => sync(self.progress) : undefined,
+          onUpdate: editor || finale ? (self) => sync(self.progress) : undefined,
         });
-        if (editor) {
-          hero = st;
-          sync(st.progress);
-        }
+        if (editor) hero = st;
+        if (editor || finale) sync(st.progress);
       }
 
       html.classList.add("swarm-ready");
@@ -150,36 +157,32 @@ export function startSwarm(): () => void {
 }
 
 /**
- * Time-based Stage 1. The swarm flies in and orbits the centre like a small galaxy (inner agents
- * faster), and the whole system leans toward the visitor's pointer, each agent with its own lag.
- * It only moves the `.sw-inner` wrappers, so the scroll timeline (on the outer element) is
- * untouched; the first scroll eases every offset back to zero.
+ * Time-based galaxy orbit, used for the opening (Stage 1) and the closing scene. Agents circle the
+ * ring they are standing on (inner ones faster) and the whole system leans toward the visitor's
+ * pointer, each agent with its own lag. It only moves the `.sw-inner` wrappers, so the scroll
+ * timeline on the outer element is untouched; `release` eases every offset back to zero.
+ *
+ * `anchor` picks the ring: "home" is where cursors sit at progress 0 (the opening), "end" is where
+ * the timeline leaves them (the closing orbit). `enter` flies them in from their exit points first.
  */
-function playIntro(d: Director) {
+function galaxy(d: Director, anchor: "home" | "end", enter: boolean) {
   const agents = [...d.agents.values()];
   const inners = agents.map((a) => a.inner);
-  const offsets = d.enterOffsets();
+  const pts = agents.map((a) => (anchor === "home" ? a.home : a.pos));
+  const entry = d.enterOffsets();
   const { w, h } = d.size;
-  const cx = agents.reduce((n, a) => n + a.home.x, 0) / agents.length;
-  const cy = agents.reduce((n, a) => n + a.home.y, 0) / agents.length;
+  const cx = pts.reduce((n, p) => n + p.x, 0) / pts.length;
+  const cy = pts.reduce((n, p) => n + p.y, 0) / pts.length;
   // Orbits keep each agent's own ring radius; the ellipse squash matches the gathering ring.
-  const squash = 0.82;
-  const orbits = agents.map((a) => {
-    const dx = a.home.x - cx;
-    const dy = (a.home.y - cy) / squash;
+  const squash = 0.8;
+  const orbits = pts.map((p) => {
+    const dx = p.x - cx;
+    const dy = (p.y - cy) / squash;
     return { r: Math.hypot(dx, dy), a0: Math.atan2(dy, dx) };
   });
   const rMax = Math.max(...orbits.map((o) => o.r), 1);
-  const sim = agents.map((_, i) => ({
-    ...offsets[i],
-    k: 0.03 + ((i * 7) % 10) * 0.0045,
-    // Kepler-ish: angular speed falls off with radius, so the inner ring overtakes the outer one.
-    w: 0.3 * Math.pow(rMax / orbits[i].r, 1.5),
-  }));
   const setX = inners.map((el) => gsap.quickSetter(el, "x", "px"));
   const setY = inners.map((el) => gsap.quickSetter(el, "y", "px"));
-  sim.forEach((s, i) => (setX[i](s.x), setY[i](s.y)));
-
   const aim = { x: 0, y: 0 };
   const clamp = gsap.utils.clamp;
   const onMove = (e: PointerEvent) => {
@@ -190,16 +193,18 @@ function playIntro(d: Director) {
   };
   const onLeave = () => ((aim.x = 0), (aim.y = 0));
 
-  const born = gsap.ticker.time;
+  let sim: { x: number; y: number; k: number; w: number }[] = [];
+  let born = 0;
+  let running = false;
   const tick = (time: number) => {
     const dr = gsap.ticker.deltaRatio();
     sim.forEach((s, i) => {
-      if (time - born < i * 0.08) return; // staggered entrance
+      if (enter && time - born < i * 0.08) return; // staggered entrance
       const { r, a0 } = orbits[i];
       const ang = a0 + s.w * (time - born);
-      // Target is the orbit point minus the agent's resting spot (offsets are relative to it).
-      const tx = aim.x + cx + Math.cos(ang) * r - agents[i].home.x;
-      const ty = aim.y + cy + Math.sin(ang) * r * squash - agents[i].home.y;
+      // Target is the orbit point minus the agent's own anchor (offsets are relative to it).
+      const tx = aim.x + cx + Math.cos(ang) * r - pts[i].x;
+      const ty = aim.y + cy + Math.sin(ang) * r * squash - pts[i].y;
       const f = 1 - Math.pow(1 - s.k, dr); // frame-rate independent easing
       s.x += (tx - s.x) * f;
       s.y += (ty - s.y) * f;
@@ -207,22 +212,34 @@ function playIntro(d: Director) {
       setY[i](s.y);
     });
   };
-  gsap.ticker.add(tick);
-  d.root.addEventListener("pointermove", onMove);
-  d.root.addEventListener("pointerleave", onLeave);
-
-  let done = false;
   const stop = () => {
-    if (done) return;
-    done = true;
+    if (!running) return;
+    running = false;
     gsap.ticker.remove(tick);
     d.root.removeEventListener("pointermove", onMove);
     d.root.removeEventListener("pointerleave", onLeave);
   };
   return {
+    start() {
+      if (running) return;
+      running = true;
+      gsap.killTweensOf(inners);
+      born = gsap.ticker.time;
+      sim = agents.map((_, i) => ({
+        x: enter ? entry[i].x : +gsap.getProperty(inners[i], "x"),
+        y: enter ? entry[i].y : +gsap.getProperty(inners[i], "y"),
+        k: 0.03 + ((i * 7) % 10) * 0.0045,
+        // Kepler-ish: angular speed falls off with radius, so the inner ring overtakes the outer one.
+        w: 0.3 * Math.pow(rMax / Math.max(orbits[i].r, 1), 1.5),
+      }));
+      sim.forEach((s, i) => (setX[i](s.x), setY[i](s.y)));
+      gsap.ticker.add(tick);
+      d.root.addEventListener("pointermove", onMove);
+      d.root.addEventListener("pointerleave", onLeave);
+    },
     stop,
     release() {
-      if (done) return;
+      if (!running) return;
       stop();
       gsap.to(inners, { x: 0, y: 0, duration: 0.7, ease: "power3.out" });
     },

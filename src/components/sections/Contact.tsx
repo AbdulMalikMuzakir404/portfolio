@@ -39,9 +39,9 @@ export function Contact() {
           </li>
         </ul>
 
-        <ul className="mt-20 grid grid-cols-2 border-t border-line sm:grid-cols-3 lg:grid-cols-5">
+        <ul data-build="contact.socials" className="mt-20 grid grid-cols-2 border-t border-line sm:grid-cols-3 lg:grid-cols-5">
           {socials.map((s) => (
-            <li key={s.label} className="border-b border-line lg:border-b-0">
+            <li key={s.label} className="border-b border-line lg:border-b-0" data-build-part="item">
               <a href={s.href} target="_blank" rel="noopener noreferrer" className="group flex flex-col gap-1 py-6 pr-4">
                 <span className="flex items-center gap-2 text-[17px]">
                   {s.label}

@@ -28,7 +28,8 @@ empty and what remains is the actual site.
 - **Per-cursor clocks.** Each step starts at `max(cursor.t, at, end of after)` plus a 0.12 beat,
   and advances only that cursor's clock. Cursors therefore work in parallel, each one sequential.
   `who: "*"` steps (exit, publish) wait for everyone.
-- **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6`.
+- **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6` on
+  native browser scrolling (no smooth-scroll library, no section pinning except the hero).
   Every state is a tween, so scrolling backwards un-builds exactly. The only time-based motion is
   the interactive Stage 1 (agents fly in and orbit the centre like a galaxy, inner ones faster,
   while the whole system leans toward the visitor's pointer, each agent with its own lag). It moves a separate wrapper (`.sw-inner`) and is released on the first scroll.
@@ -42,19 +43,25 @@ zone), `place`, `resize`, `appear` / `scale` / `drag` (headline set small, scale
 with alignment guides), `duplicate` (Alt-drag a ghost clone onto the next instance), `fill`, `line`,
 `select`, `deselect`, `stamp` (pop a set's `data-build-part="item"` children in as the cursor sweeps),
 `highlight` (text-selection sweep), `import` (drag an element in from an offset and snap it to a guide),
-`comment` (review pin with a note), `rest`, `wait`, `exit`, `publish`.
+`comment` (review pin with a note), `thread` (Figma-style comment thread: the opener posts, each
+reply's author flies over, "is typing…" dots, then their line lands), `write` (paragraph revealed line
+by line), `rest`, `wait`, `exit`, `publish`, `orbit` (closing ring; the time-based galaxy takes over
+whenever the scene sits at its end).
+
+Every action shows Figma's hover outline as the cursor arrives, drops carry red spacing markers
+with the gap in px, and `deselect` steps the cursor just off the finished element.
 
 ### Scenes (every section has one)
 
 | Section | Choreography |
 | --- | --- |
-| Hero | full build: type, draw, scale/drag with guides, duplicate, image drop, review pins |
-| About | select heading, draw rule, draw a card then duplicate it twice |
+| Hero | full build: type, draw, scale/drag with guides, duplicate, image drop, comment threads |
+| About | heading select + rule, summary written line by line, facts stamped; cards drawn then duplicated; hobbies stamped, book imported, pin dropped on the map |
 | Skills | rule, then six agents each draw a component set and stamp its chips |
 | Experience | heading highlight + rule; per role (own scene): highlight title, write bullets, stamp tech |
-| Work | draw media frame, drop image, duplicate thumbnails |
+| Work | one scene per featured project, each different (draw + drop + duplicate, phones handed up, draw-short-then-resize, import from the side, phone frames drawn); More projects rows dragged into order |
 | Credentials | draw heading, draw + duplicate education cards; per certificate (own scene): import image, stamp highlights |
-| Contact | draw heading and actions, everyone gathers, Publish |
+| Contact | draw heading and actions, stamp socials, thread, everyone gathers for Publish, then the swarm rings up beside the heading and keeps orbiting (galaxy, pointer-reactive) |
 
 Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
 built while it is actually on screen instead of on one long, loosely synced timeline.

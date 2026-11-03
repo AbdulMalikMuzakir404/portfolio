@@ -33,6 +33,12 @@ export type Task =
   | { do: "highlight"; target: string }
   /** Drag the target in from an offset (like importing an asset) and snap it into place. */
   | { do: "import"; target: string; from: Pt; guides?: Guide[] }
+  /** Reveal a paragraph line by line, the cursor walking down its left edge. */
+  | { do: "write"; target: string }
+  /** A comment thread on the target: the step's agent opens it, the others fly over and reply. */
+  | { do: "thread"; target: string; messages: { who: string; text: string }[] }
+  /** Whole swarm: gather into a ring around `center` (fractions of the root) for the closing orbit. */
+  | { do: "orbit"; center: Pt }
   /** Drop a review comment pin with a short note on the target. */
   | { do: "comment"; target: string; text: string }
   | { do: "deselect" }

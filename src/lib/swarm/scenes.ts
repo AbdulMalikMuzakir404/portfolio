@@ -1,6 +1,7 @@
 import { roles } from "@/data/experience";
 import { certifications } from "@/data/certifications";
 import { skillGroups } from "@/data/skills";
+import { projects } from "@/data/projects";
 import type { CursorSpec, Pt, Scene } from "./types";
 
 // A swarm of AI coding agents helping build the page. Labels only (no logos); colors are loose nods.
@@ -73,7 +74,17 @@ const hero: Scene = {
     { who: "gemini", do: "rest", to: { x: 0.53, y: 0.64 } },
 
     // Qwen reviews the type.
-    { who: "qwen", after: "headline", do: "comment", target: "hero.headline", text: "Tight leading reads well" },
+    {
+      who: "qwen",
+      after: "headline",
+      do: "thread",
+      target: "hero.headline",
+      messages: [
+        { who: "qwen", text: "Tight leading reads well" },
+        { who: "gemini", text: "Snapped it to the name's left edge" },
+        { who: "claude", text: "Love it. Shipping the type 🚢" },
+      ],
+    },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.9 } },
 
     // Llama builds the portrait frame.
@@ -109,7 +120,17 @@ const hero: Scene = {
     { who: "mistral", do: "rest", to: { x: 0.44, y: 0.96 } },
 
     // Grok checks accessibility on the finished buttons.
-    { who: "grok", after: "cta2", do: "comment", target: "hero.cta1", text: "Contrast passes AA ✓" },
+    {
+      who: "grok",
+      after: "cta2",
+      do: "thread",
+      target: "hero.cta1",
+      messages: [
+        { who: "grok", text: "Contrast passes AA ✓" },
+        { who: "devin", text: "Primary drawn from the rect tool" },
+        { who: "mistral", text: "CV button is a duplicate, restyled" },
+      ],
+    },
 
     { who: "*", do: "exit" },
   ],
@@ -117,41 +138,198 @@ const hero: Scene = {
 
 const about: Scene = {
   root: "#about",
-  scroll: { start: "top 70%", end: "center 30%" },
+  scroll: { trigger: "[data-build='about.summary']", start: "top 100%", end: "bottom 45%" },
   steps: [
     { who: "claude", do: "select", target: "about.title" },
     { who: "gemini", at: 0.3, do: "line", target: "about.rule" },
     { who: "claude", do: "deselect" },
-    { who: "codex", at: 2.6, do: "draw", target: "about.card-0" },
+    { who: "codex", at: 0.6, do: "write", target: "about.summary", say: "Writing the summary" },
+    { who: "mistral", at: 0.9, do: "stamp", target: "about.facts" },
+    {
+      who: "claude",
+      at: 1.6,
+      do: "thread",
+      target: "about.title",
+      messages: [
+        { who: "claude", text: "Summary is word for word from the CV" },
+        { who: "codex", text: "Kept the line length comfortable" },
+        { who: "mistral", text: "Facts column on the 12-col grid ✓" },
+      ],
+    },
+    { who: "*", do: "exit" },
+  ],
+};
+
+const aboutCards: Scene = {
+  root: "[data-swarm-row='about-cards']",
+  scroll: { start: "top 85%", end: "center 40%" },
+  steps: [
+    { who: "codex", do: "draw", target: "about.card-0" },
     { who: "codex", do: "fill", target: "about.card-0", id: "c0" },
     { who: "codex", do: "deselect" },
     { who: "copilot", after: "c0", do: "duplicate", source: "about.card-0", target: "about.card-1", guides: [{ edge: "top", with: "about.card-0" }] },
     { who: "copilot", do: "fill", target: "about.card-1", id: "c1" },
     { who: "copilot", do: "deselect" },
     { who: "devin", after: "c1", do: "duplicate", source: "about.card-1", target: "about.card-2", guides: [{ edge: "top", with: "about.card-1" }] },
-    { who: "devin", do: "fill", target: "about.card-2" },
+    { who: "devin", do: "fill", target: "about.card-2", id: "c2" },
     { who: "devin", do: "deselect" },
+    {
+      who: "devin",
+      after: "c2",
+      do: "thread",
+      target: "about.card-2",
+      messages: [
+        { who: "devin", text: "Three principles, one component" },
+        { who: "copilot", text: "Instances stay in sync ✓" },
+      ],
+    },
     { who: "*", do: "exit" },
   ],
 };
 
-const projects: Scene = {
-  root: "#work",
-  scroll: { trigger: "[data-build='projects.media']", start: "top 85%", end: "bottom 35%" },
+const aboutMore: Scene = {
+  root: "[data-swarm-row='about-more']",
+  scroll: { start: "top 85%", end: "center 40%" },
   steps: [
-    { who: "llama", do: "draw", target: "projects.media", drop: true },
-    { who: "llama", do: "place", target: "projects.media", id: "media" },
+    { who: "qwen", do: "stamp", target: "about.hobbies", say: "Adding hobbies" },
+    { who: "llama", at: 0.3, do: "import", target: "about.book", from: { x: -120, y: 40 } },
     { who: "llama", do: "deselect" },
-    { who: "llama", do: "rest", to: { x: 1.06, y: 0.3 } },
-    { who: "deepseek", after: "media", do: "draw", target: "projects.thumb-0" },
-    { who: "deepseek", do: "place", target: "projects.thumb-0" },
-    { who: "deepseek", do: "duplicate", source: "projects.thumb-0", target: "projects.thumb-1" },
-    { who: "deepseek", do: "duplicate", source: "projects.thumb-1", target: "projects.thumb-2" },
-    { who: "deepseek", do: "deselect" },
+    { who: "deepseek", at: 0.6, do: "import", target: "about.pin", from: { x: -90, y: -60 }, say: "Pinning Bandung" },
+    { who: "deepseek", do: "deselect", id: "pin" },
+    {
+      who: "grok",
+      after: "pin",
+      do: "thread",
+      target: "about.pin",
+      messages: [
+        { who: "grok", text: "Pin is on Bandung 📍" },
+        { who: "deepseek", text: "Same city as the CV ✓" },
+        { who: "llama", text: "Book cover placed — Atomic Habits" },
+      ],
+    },
     { who: "*", do: "exit" },
   ],
 };
 
+// One scene per featured project, each built a different way.
+type Crew = Record<string, string>;
+const caseScenes: Scene[] = projects
+  .filter((p) => p.featured)
+  .map((p, i): Scene => {
+    const c = `case-${i}`;
+    const steps: Scene["steps"] = [];
+    const add = (...xs: Scene["steps"]) => steps.push(...xs);
+    const crews: Crew[] = [
+      { a: "llama", b: "deepseek", c: "claude" },
+      { a: "gemini", b: "qwen", c: "codex" },
+      { a: "mistral", b: "devin", c: "codex" },
+      { a: "copilot", b: "gemini", c: "claude" },
+      { a: "devin", b: "mistral", c: "grok" },
+    ];
+    const { a, b, c: lead } = crews[i % crews.length];
+    add({ who: lead, do: "highlight", target: `${c}.title` });
+    if (p.media === "phone") {
+      // Phones are handed up into place, or drawn as frames and filled, alternating by case.
+      const phoneCrew = i % 2 ? [a, b, "copilot", "grok"] : [a, b, lead];
+      phoneCrew.forEach((who, j) =>
+        i % 2
+          ? add({ who, at: 0.15 * j, do: "import", target: `${c}.phone-${j}`, from: { x: 0, y: 140 } }, { who, do: "deselect" })
+          : add({ who, at: 0.2 * j, do: "draw", target: `${c}.phone-${j}` }, { who, do: "place", target: `${c}.phone-${j}` }, { who, do: "deselect" }),
+      );
+      add({ who: "llama", at: 0.9, do: i % 2 ? "draw" : "import", target: `${c}.wide`, ...(i % 2 ? { drop: true } : { from: { x: 140, y: 60 } }) } as Scene["steps"][number]);
+      if (i % 2) add({ who: "llama", do: "place", target: `${c}.wide` });
+      add({ who: "llama", do: "deselect", id: `${c}-media` });
+    } else if (i === 0) {
+      add(
+        { who: a, do: "draw", target: `${c}.media`, drop: true },
+        { who: a, do: "place", target: `${c}.media`, id: `${c}-media` },
+        { who: a, do: "deselect" },
+        { who: b, after: `${c}-media`, do: "draw", target: `${c}.thumb-0` },
+        { who: b, do: "place", target: `${c}.thumb-0` },
+        { who: b, do: "duplicate", source: `${c}.thumb-0`, target: `${c}.thumb-1` },
+        { who: b, do: "duplicate", source: `${c}.thumb-1`, target: `${c}.thumb-2` },
+        { who: b, do: "deselect" },
+      );
+    } else if (i % 2 === 0) {
+      // Draw the lead short, drop the image, then resize it to 16:10; thumbs are handed in.
+      add(
+        { who: a, do: "draw", target: `${c}.media`, until: 0.7, drop: true },
+        { who: a, do: "place", target: `${c}.media` },
+        { who: a, do: "resize", target: `${c}.media`, from: 0.7, say: "Resizing to 16:10" },
+        { who: a, do: "deselect", id: `${c}-media` },
+        ...[0, 1, 2].flatMap((j) => [
+          { who: b, after: `${c}-media`, do: "import" as const, target: `${c}.thumb-${j}`, from: { x: 0, y: 90 } },
+          { who: b, do: "deselect" as const },
+        ]),
+      );
+    } else {
+      // Import the lead from the left, then build the thumbs as one component.
+      add(
+        { who: a, do: "import", target: `${c}.media`, from: { x: -160, y: 0 }, say: "Importing the dashboard" },
+        { who: a, do: "deselect", id: `${c}-media` },
+        { who: b, after: `${c}-media`, do: "draw", target: `${c}.thumb-0` },
+        { who: b, do: "place", target: `${c}.thumb-0` },
+        { who: b, do: "duplicate", source: `${c}.thumb-0`, target: `${c}.thumb-1` },
+        { who: b, do: "duplicate", source: `${c}.thumb-1`, target: `${c}.thumb-2` },
+        { who: b, do: "deselect" },
+      );
+    }
+    add({ who: lead, at: 0.8, do: "stamp", target: `${c}.tech` });
+    const talk: { who: string; text: string }[][] = [
+      [
+        { who: a, text: "Lead shot anchored to the top of the page" },
+        { who: b, text: "Thumbs are one component, duplicated" },
+      ],
+      [
+        { who: b, text: "Phones keep their 9:20 ratio" },
+        { who: "grok", text: "Every other one drops for rhythm" },
+        { who: "llama", text: "Admin web screen below ✓" },
+      ],
+      [
+        { who: a, text: "Lead resized to 16:10" },
+        { who: b, text: "Thumbs snapped to the grid ✓" },
+      ],
+      [
+        { who: a, text: "Dashboard shot pulled in" },
+        { who: lead, text: "Tags come from the project data ✓" },
+      ],
+      [
+        { who: a, text: "Repo links point to the public GitHub" },
+        { who: b, text: "Both checked ✓" },
+      ],
+    ];
+    add({ who: talk[i % talk.length][0].who, after: `${c}-media`, do: "thread", target: `${c}.title`, messages: talk[i % talk.length] });
+    add({ who: "*", do: "exit" });
+    return { root: `[data-swarm-row='${c}']`, scroll: { start: "top 85%", end: "center 35%" }, steps };
+  });
+
+// The compact list gets dragged into order, alternating sides.
+const moreList: Scene = {
+  root: "[data-swarm-row='more']",
+  scroll: { start: "top 85%", end: "bottom 55%" },
+  steps: [
+    ...projects
+      .filter((p) => !p.featured)
+      .flatMap((_, j) => {
+        const who = ["llama", "gemini", "codex"][j % 3];
+        return [
+          { who, at: j * 0.35, do: "import" as const, target: `more.row-${j}`, from: { x: j % 2 ? 90 : -90, y: 0 } },
+          { who, do: "deselect" as const },
+        ];
+      }),
+    {
+      who: "mistral",
+      at: 1.2,
+      do: "thread",
+      target: "more.row-0",
+      messages: [
+        { who: "mistral", text: "Sorted newest first" },
+        { who: "codex", text: "Tap + for screenshots and the full story" },
+      ],
+    },
+    { who: "*", do: "exit" },
+  ],
+};
 
 // Six agents each frame one component set, then stamp its instances in.
 const skillCrew = ["codex", "gemini", "deepseek", "copilot", "llama", "devin"];
@@ -170,7 +348,17 @@ const skills: Scene = {
         { who, do: "deselect" as const },
       ];
     }),
-    { who: "grok", after: "skill-2", do: "comment", target: "skills.group-distributed", text: "Real stack, no % bars ✓" },
+    {
+      who: "grok",
+      after: "skill-2",
+      do: "thread",
+      target: "skills.group-distributed",
+      messages: [
+        { who: "grok", text: "Real stack, no % bars" },
+        { who: "deepseek", text: "Kafka + CDC straight from the CV" },
+        { who: "codex", text: "Sets read like a design system ✓" },
+      ],
+    },
     { who: "*", do: "exit" },
   ],
 };
@@ -199,7 +387,21 @@ const experienceRows: Scene[] = roles.map((_, i) => {
     steps: [
       { who: lead, do: "highlight", target: `experience.role-${i}` },
       { who: lead, do: "fill", target: `experience.points-${i}` },
-      { who: helper, at: 0.6, do: "stamp", target: `experience.stack-${i}` },
+      { who: helper, at: 0.6, do: "stamp", target: `experience.stack-${i}`, id: "stack" },
+      ...(i === 0
+        ? [
+            {
+              who: lead,
+              after: "stack",
+              do: "thread" as const,
+              target: `experience.role-${i}`,
+              messages: [
+                { who: lead, text: "Bullets are verbatim from the CV" },
+                { who: helper, text: "Stack chips match the role ✓" },
+              ],
+            },
+          ]
+        : []),
       { who: "*", do: "exit" },
     ],
   };
@@ -216,8 +418,18 @@ const credentials: Scene = {
     { who: "gemini", do: "fill", target: "edu.0", id: "edu0" },
     { who: "gemini", do: "deselect" },
     { who: "copilot", after: "edu0", do: "duplicate", source: "edu.0", target: "edu.1", guides: [{ edge: "top", with: "edu.0" }] },
-    { who: "copilot", do: "fill", target: "edu.1" },
+    { who: "copilot", do: "fill", target: "edu.1", id: "edu1" },
     { who: "copilot", do: "deselect" },
+    {
+      who: "gemini",
+      after: "edu1",
+      do: "thread",
+      target: "edu.0",
+      messages: [
+        { who: "gemini", text: "Degree in progress, 2025 — 2027" },
+        { who: "copilot", text: "Matches the CV ✓" },
+      ],
+    },
     { who: "*", do: "exit" },
   ],
 };
@@ -250,21 +462,37 @@ const contact: Scene = {
   steps: [
     { who: "qwen", do: "draw", target: "contact.title" },
     { who: "qwen", do: "deselect" },
-    { who: "mistral", at: 0.6, do: "draw", target: "contact.actions" },
+    { who: "mistral", at: 0.5, do: "draw", target: "contact.actions" },
     { who: "mistral", do: "deselect" },
-    ...cursors.filter((c) => c.id !== "qwen" && c.id !== "mistral").map((c) => ({ who: c.id, do: "wait" as const, dur: 0 })),
+    { who: "devin", at: 0.9, do: "stamp", target: "contact.socials", id: "socials" },
+    {
+      who: "claude",
+      after: "socials",
+      do: "thread",
+      target: "contact.actions",
+      messages: [
+        { who: "claude", text: "Every link goes to a real profile" },
+        { who: "gemini", text: "Email, WhatsApp and CV wired ✓" },
+        { who: "grok", text: "Ready when you are 🚀" },
+      ],
+    },
+    ...cursors.map((c) => ({ who: c.id, do: "wait" as const, dur: 0 })),
     { who: "*", do: "publish" },
-    { who: "*", do: "exit" },
+    // No exit: the swarm settles beside the heading and keeps orbiting there.
+    { who: "*", do: "orbit", center: { x: 0.72, y: 0.55 } },
   ],
 };
 
 export const scenes = [
   hero,
   about,
+  aboutCards,
+  aboutMore,
   skills,
   experienceHeading,
   ...experienceRows,
-  projects,
+  ...caseScenes,
+  moreList,
   credentials,
   ...certRows,
   contact,
