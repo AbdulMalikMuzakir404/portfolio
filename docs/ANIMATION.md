@@ -93,7 +93,10 @@ a fixed full-screen layer) takes over exactly where the copy was and stays by th
 until the spot of the agent's next task (scrolling up: the previous one) is on screen, then zips
 there (a critically damped spring, ~0.5s) and waits riding along with the page; it hands back once it sits on top of
 the next copy. Any fast move (measured against the agent's scene, so plain scrolling doesn't count)
-leaves a short streak in the agent's colour. Moves inside a scene are short
+leaves a short streak in the agent's colour. **Waiting agents keep working**: they hop around the spot inspecting
+things and click now and then, say what they're about to do (from their next task: "Measuring the
+frame", "Mixing the palette", …), or @-mention another agent on screen, who answers a beat later.
+At most a few bubbles show at once, and never over a step's own chat bubble. Moves inside a scene are short
 darts (`power3.inOut`, 0.2–0.55 units) so agents read as quick and purposeful; the work itself keeps
 its pace. Scenes scrub with a 0.4s lag. Every scene layer also spans the full
 screen width, so cursors and notes are never cut off at the content column.

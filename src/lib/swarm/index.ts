@@ -338,7 +338,11 @@ function travel(runs: Run[]) {
     const trail = document.createElement("div");
     trail.className = "sw-trail";
     trail.style.setProperty("--c", all[0].a.spec.color);
-    layer.append(trail, el);
+    const bubble = document.createElement("div");
+    bubble.className = "sw-say";
+    bubble.style.background = all[0].a.spec.color;
+    bubble.style.visibility = "hidden";
+    layer.append(trail, el, bubble);
     return {
       segs,
       el,
@@ -350,6 +354,17 @@ function travel(runs: Run[]) {
       frame: null as Director | null,
       rel: null as Pt | null,
       speed: { x: 0, y: 0 },
+      // Idle: a small offset it hops around while waiting, its spring, and when it last stopped.
+      bubble,
+      off: { x: 0, y: 0 },
+      offVel: { x: 0, y: 0 },
+      hop: { x: 0, y: 0 },
+      nextHop: 0,
+      still: 0,
+      sayUntil: 0,
+      quietUntil: 2 + Math.random() * 4,
+      onScreen: false,
+      reply: null as { at: number; text: string } | null,
     };
   });
   type Seg = (typeof lanes)[number]["segs"][number];
@@ -370,7 +385,10 @@ function travel(runs: Run[]) {
   };
   const visible = (q: Pt) => q.y > 40 && q.y < innerHeight - 60;
   const show = (lane: (typeof lanes)[number], seg: Seg | null) => {
-    if (lane.shown) lane.shown.a.el.style.visibility = "hidden";
+    if (lane.shown) {
+      lane.shown.a.el.style.visibility = "hidden";
+      lane.shown.a.el.style.translate = "";
+    }
     if (seg) seg.a.el.style.visibility = "";
     lane.shown = seg;
     lane.el.style.visibility = seg ? "hidden" : "";
@@ -379,6 +397,94 @@ function travel(runs: Run[]) {
   let down = true;
 
   type Lane = (typeof lanes)[number];
+
+  // While waiting, an agent keeps working: it hops around the spot inspecting things, clicks now and
+  // then, and says what it's about to do or pings an agent that's busy on screen.
+  const about: Partial<Record<string, string>> = {
+    type: "Warming up the text tool",
+    draw: "Measuring the frame",
+    import: "Fetching the asset",
+    stamp: "Lining up the chips",
+    thread: "Drafting a comment",
+    comment: "Drafting a comment",
+    write: "Outlining the copy",
+    highlight: "Picking the accent",
+    paint: "Mixing the palette",
+    marquee: "Planning the selection",
+    align: "Checking the grid",
+    reveal: "Prepping the reveal",
+    fill: "Filling in content",
+    place: "Prepping the image",
+    duplicate: "Copying the component",
+    line: "Measuring the divider",
+    appear: "Setting the type scale",
+    publish: "Getting ready to ship",
+  };
+  const busy = ["Reviewing spacing", "Checking contrast", "Scanning the grid", "Running a11y checks", "Inspecting layers"];
+  const pings = ["I'm up next", "nice work 👀", "ping me when it's done", "spacing check?", "want a hand?"];
+  const replies = ["on it ✓", "almost there", "thanks! 🙌", "looks good to me", "go ahead"];
+  const label = (l: Lane) => l.el.querySelector(".sw-tag")!.textContent;
+  // Bubbles hang right of the arrow; near the right edge they flip to its left so they aren't cut off.
+  const place = (b: HTMLElement, x: number, y: number) => {
+    const flip = x + 16 + b.offsetWidth > innerWidth - 8;
+    b.style.translate = `${flip ? x - b.offsetWidth - 24 : x}px ${y}px`;
+  };
+  const say = (lane: Lane, text: string, x: number, y: number) => {
+    lane.bubble.textContent = text;
+    lane.bubble.style.visibility = "";
+    place(lane.bubble, x, y);
+    lane.sayUntil = clock + 2.2;
+    lane.quietUntil = clock + 6 + Math.random() * 6;
+  };
+  const pickOne = <T,>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
+  let clock = 0;
+  const idle = (lane: Lane, at: Pt, visEl: HTMLElement, svg: SVGElement, upcoming: Seg | undefined, dt: number) => {
+    const moving = Math.hypot(lane.speed.x, lane.speed.y) > 40;
+    lane.still = moving ? 0 : lane.still + dt;
+    const waiting = lane.still > 0.35;
+    if (!waiting) lane.hop = { x: 0, y: 0 };
+    else if (clock > lane.nextHop) {
+      // A new spot to look at nearby; sometimes a quick click there.
+      const ang = Math.random() * Math.PI * 2;
+      const r = 14 + Math.random() * 30;
+      lane.hop = { x: Math.cos(ang) * r, y: Math.sin(ang) * r * 0.7 };
+      lane.nextHop = clock + 0.9 + Math.random() * 1.4;
+      if (Math.random() < 0.35) setTimeout(() => svg.animate?.([{ scale: "1" }, { scale: "0.84" }, { scale: "1" }], { duration: 160 }), 380);
+    }
+    const w = waiting ? 9 : 16;
+    lane.offVel.x += (w * w * (lane.hop.x - lane.off.x) - 2 * w * lane.offVel.x) * dt;
+    lane.offVel.y += (w * w * (lane.hop.y - lane.off.y) - 2 * w * lane.offVel.y) * dt;
+    lane.off.x += lane.offVel.x * dt;
+    lane.off.y += lane.offVel.y * dt;
+    visEl.style.translate = `${lane.off.x}px ${lane.off.y}px`;
+
+    const x = at.x + lane.off.x;
+    const y = at.y + lane.off.y;
+    const onScreen = x > 0 && x < innerWidth - 30 && y > 60 && y < innerHeight - 70;
+    lane.onScreen = onScreen;
+    const stepSay = visEl.querySelector<HTMLElement>(".sw-say");
+    const talking = lanes.filter((l) => clock < l.sayUntil).length;
+    if (clock < lane.sayUntil && onScreen) place(lane.bubble, x, y);
+    else if (lane.sayUntil) {
+      lane.sayUntil = 0;
+      lane.bubble.style.visibility = "hidden";
+    }
+    const quiet = !(stepSay && stepSay.checkVisibility({ visibilityProperty: true }));
+    if (lane.reply && clock >= lane.reply.at) {
+      // Answering a mention: always shown, so the exchange reads as a conversation.
+      if (onScreen && quiet && clock >= lane.sayUntil) say(lane, lane.reply.text, x, y);
+      lane.reply = null;
+    } else if (waiting && lane.still > 1.2 && clock > lane.quietUntil && onScreen && quiet && talking < 2) {
+      // Mention another agent on screen (one busy in a scene if possible), who answers a beat later.
+      const others = lanes.filter((l) => l !== lane && l.onScreen && clock >= l.sayUntil && !l.reply);
+      const peer = others.find((l) => l.shown && l.still === 0) ?? (others.length ? pickOne(others) : undefined);
+      // A mention only starts when nobody else is talking, so its reply never makes it crowded.
+      if (peer && talking === 0 && Math.random() < 0.5) {
+        say(lane, `@${label(peer)} ${pickOne(pings)}`, x, y);
+        peer.reply = { at: clock + 1.1, text: `@${label(lane)} ${pickOne(replies)}` };
+      } else say(lane, (upcoming?.a.firstTask && about[upcoming.a.firstTask]) ?? pickOne(busy), x, y);
+    }
+  };
   // Streak: speed measured against the agent's scene (so scrolling the page doesn't count), drawn
   // behind the arrow tip along the direction of travel, longer the faster it goes.
   const streak = (lane: Lane, at: Pt, frame: Director, dt: number) => {
@@ -407,14 +513,22 @@ function travel(runs: Run[]) {
     if (scrollY !== lastY) down = scrollY > lastY;
     lastY = scrollY;
     const dt = Math.max(1, Math.min(dtMs, 50)) / 1000;
+    clock += dt;
+    // Positions below are without the idle offset; the offset rides on top as a CSS translate.
+    const base = (lane: Lane, s: Seg) => {
+      const p = where(s);
+      return { x: p.x - lane.off.x, y: p.y - lane.off.y };
+    };
     for (const lane of lanes) {
       if (lane.shown && live(lane.shown)) {
-        streak(lane, where(lane.shown), lane.shown.d, dt);
+        const at = base(lane, lane.shown);
+        streak(lane, at, lane.shown.d, dt);
+        idle(lane, at, lane.shown.a.el, lane.shown.a.svg, lane.segs[lane.segs.indexOf(lane.shown) + 1], dt);
         continue;
       }
       if (lane.shown) {
         // Its copy just stopped working here: pick up from exactly where it is.
-        lane.pos = where(lane.shown);
+        lane.pos = base(lane, lane.shown);
         lane.vel = { x: 0, y: 0 };
         show(lane, null);
       }
@@ -440,6 +554,7 @@ function travel(runs: Run[]) {
         lane.pos = null;
         lane.el.style.visibility = "hidden";
         lane.trail.style.opacity = "0";
+        lane.bubble.style.visibility = "hidden";
         continue;
       }
       // Critically damped spring: quick, with a smooth start and stop (settles in about 0.5s).
@@ -456,6 +571,8 @@ function travel(runs: Run[]) {
       lane.el.style.visibility = "";
       lane.el.style.transform = `translate(${lane.pos.x}px, ${lane.pos.y}px)`;
       streak(lane, lane.pos, frame, dt);
+      const upcoming = lane.segs.find((s) => s.tl.time() < s.first);
+      idle(lane, lane.pos, lane.el, lane.el.querySelector("svg")!, upcoming, dt);
     }
   };
   gsap.ticker.add(tick);

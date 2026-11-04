@@ -19,6 +19,7 @@ type Agent = {
   firstPos?: Pt;
   last: number;
   lastPos?: Pt;
+  firstTask?: Step["do"]; // what it does first here, for the "about to…" line while it waits
 };
 
 /** A cursor's arrow and name tag; shared with the travelling cursors in index.ts. */
@@ -134,6 +135,7 @@ export class Director {
       const start = Math.max(a.t, s.at ?? 0, after);
       // A short beat before each action reads as intent rather than a mechanical chain.
       const t0 = start > 0 ? start + 0.12 : 0;
+      if (!a.firstTask && !["rest", "wait", "deselect", "tool"].includes(s.do)) a.firstTask = s.do;
       const end = this.task(a, s, t0);
       if (s.say) this.say(a, s.say, t0, end);
       // Never rewind a clock: a thread can book this agent for a reply later than the step's end.
