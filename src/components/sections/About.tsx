@@ -50,7 +50,7 @@ export function About() {
 
         <div data-swarm-row="about-more" className="relative mt-4 grid gap-4 md:grid-cols-12">
           <div className="rounded-md border border-line bg-ink-900 p-6 md:col-span-5 md:p-7">
-            <h3 className="label">Beyond the code</h3>
+            <h3 className="label w-fit" data-build="about.label-0">Beyond the code</h3>
             <ul data-build="about.hobbies" className="mt-6 flex flex-wrap gap-2">
               {profile.hobbies.map((h) => (
                 <li key={h.title} className="chip" data-build-part="item">
@@ -59,14 +59,26 @@ export function About() {
                 </li>
               ))}
             </ul>
-            <h3 className="label mt-10">What I aim for</h3>
-            <p className="mt-4 text-[15px] leading-relaxed text-fg/80">{profile.qualities.join(" · ")}</p>
+            <h3 className="label mt-10 w-fit" data-build="about.label-1">What I aim for</h3>
+            <ul data-build="about.qualities" className="mt-4 flex flex-wrap gap-x-2 text-[15px] leading-relaxed text-fg/80">
+              {profile.qualities.map((q, i) => (
+                <li key={q} data-build-part="item">
+                  {i > 0 && <span aria-hidden className="mr-2 text-muted">·</span>}
+                  {q}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="flex gap-6 rounded-md border border-line bg-ink-900 p-6 md:col-span-3 md:flex-col md:p-7">
             <div data-build="about.book" className="shrink-0">
               {read.cover ? (
-                <Image src={read.cover} alt={`${read.title} by ${read.author} — book cover`} className="h-auto w-24 md:w-28" sizes="112px" />
+                <Image
+                  src={read.cover}
+                  alt={`${read.title} by ${read.author} — book cover`}
+                  className="h-auto w-24 rounded-[3px] shadow-[4px_6px_16px_-6px_rgba(0,0,0,0.8)] md:w-28"
+                  sizes="112px"
+                />
               ) : (
                 // Typographic stand-in until a cover image is added in src/data/profile.ts.
                 <div
@@ -84,13 +96,15 @@ export function About() {
               )}
             </div>
             <div>
-              <h3 className="label">My reads</h3>
-              <p className="mt-3 font-serif text-2xl leading-tight">{read.title}</p>
-              <p className="text-[14px] text-muted">{read.author}</p>
+              <h3 className="label w-fit" data-build="about.label-2">My reads</h3>
+              <div data-build="about.book-meta">
+                <p className="mt-3 font-serif text-2xl leading-tight">{read.title}</p>
+                <p className="text-[14px] text-muted">{read.author}</p>
+              </div>
             </div>
           </div>
 
-          <div className="relative min-h-64 overflow-hidden rounded-md border border-line md:col-span-4">
+          <div data-build="about.map" className="relative min-h-64 overflow-hidden rounded-md border border-line md:col-span-4">
             <Image
               src={MapImage}
               alt="Map of Bandung and surrounding area"
@@ -104,7 +118,9 @@ export function About() {
                 <Image src={Memoji} alt="" className="size-full rounded-full object-cover" sizes="64px" />
               </div>
             </div>
-            <p className="label absolute bottom-4 left-4 rounded bg-ink-950/80 px-2 py-1 text-fg/90">Bandung, Indonesia</p>
+            <p data-build="about.map-label" className="label absolute bottom-4 left-4 rounded bg-ink-950/80 px-2 py-1 text-fg/90">
+              Bandung, Indonesia
+            </p>
           </div>
         </div>
       </div>

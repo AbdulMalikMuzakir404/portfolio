@@ -2,7 +2,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import Lenis from "lenis";
-import { Director } from "./director";
+import { Director, cursorMarkup } from "./director";
+import type { Pt } from "./types";
 import { cursors, scenes, tabletAlias } from "./scenes";
 
 type Mode = "desktop" | "tablet";
@@ -21,6 +22,7 @@ export function startSwarm(): () => void {
     mm.revert();
     html.classList.remove("swarm", "swarm-ready");
     delete html.dataset.swarm;
+    dispatchEvent(new CustomEvent("swarm:skipped"));
   };
 
   const onSkip = () => {
@@ -84,6 +86,7 @@ export function startSwarm(): () => void {
             if (innerWidth === width) return;
             width = innerWidth;
             built.revert();
+            clearBuildStyles();
             built = mount(mode);
             ScrollTrigger.refresh();
           }, 250);
@@ -97,7 +100,10 @@ export function startSwarm(): () => void {
           clearTimeout(timer);
           removeEventListener("resize", onResize);
           built.revert();
+          clearBuildStyles();
           html.classList.remove("swarm-ready");
+          // The header is already on screen: don't replay its no-swarm entrance.
+          html.classList.add("swarm-off");
           delete html.dataset.swarm;
         };
       },
@@ -110,6 +116,7 @@ export function startSwarm(): () => void {
       const overlays: HTMLElement[] = [];
       const stops: (() => void)[] = [];
       const alias = mode === "tablet" ? tabletAlias : {};
+      const runs: Run[] = [];
 
       for (const scene of scenes) {
         const root = document.querySelector<HTMLElement>(scene.root);
@@ -132,6 +139,8 @@ export function startSwarm(): () => void {
         const sync = (p: number) => {
           if (editor) {
             html.dataset.swarm = p < 0.995 ? "building" : "done";
+            // The hero's layer is fixed to the screen: put it away once the hero has scrolled past.
+            d.overlay.style.visibility = p < 1 ? "" : "hidden";
             if (p > 0.002) intro?.release();
           }
           if (outro && p > 0.995) outro.start();
@@ -171,14 +180,16 @@ export function startSwarm(): () => void {
           end,
           pin: !!pin,
           anticipatePin: pin ? 1 : 0,
-          scrub: 0.6,
+          scrub: 0.4,
           animation: tl,
           onUpdate: editor || finale ? (self) => sync(self.progress) : undefined,
         });
+        runs.push({ d, st, tl });
         if (editor) hero = st;
         if (editor || finale) sync(st.progress);
       }
 
+      stops.push(travel(runs));
       html.classList.add("swarm-ready");
       return () => {
         stops.forEach((stop) => stop());
@@ -282,6 +293,292 @@ function galaxy(d: Director, anchor: "home" | "end", enter: boolean) {
       stop();
       gsap.to(inners, { x: 0, y: 0, duration: 0.7, ease: "power3.out" });
     },
+  };
+}
+
+/**
+ * Reverting a context mid-build can restore an element to the state the build set first (e.g. a
+ * typed letter at opacity 0), not to what the page had. Wipe every inline style the build touched.
+ */
+function clearBuildStyles() {
+  gsap.set(document.querySelectorAll("[data-build], [data-build-part], [data-ch]"), { clearProps: "opacity,visibility,transform,clipPath,color" });
+}
+
+type Run = { d: Director; st: ScrollTrigger; tl: gsap.core.Timeline };
+
+/**
+ * Agents never vanish between sections. A scene shows its own copy of an agent only while the agent
+ * works there (from arriving at its first task until the scene's exit). Whenever an agent leaves one
+ * copy, a shared traveller takes over exactly where that copy was. It stays by the finished work until
+ * the spot of the agent's next task (scrolling up: the previous one) is on screen, then zips there
+ * (spring-eased) and waits riding along with the page; it hands back to the next copy once it's on
+ * top of it. No
+ * hand-off ever jumps. Fast moves (in a scene or between scenes) leave a short streak.
+ */
+function travel(runs: Run[]) {
+  const layer = document.createElement("div");
+  layer.className = "sw-travel";
+  layer.setAttribute("aria-hidden", "true");
+  layer.inert = true;
+  document.body.append(layer);
+
+  const ids = [...new Set(runs.flatMap((r) => [...r.d.agents.keys()]))];
+  const lanes = ids.map((id) => {
+    const all = runs.flatMap((r) => {
+      const a = r.d.agents.get(id);
+      return a ? [{ ...r, a }] : [];
+    });
+    all.forEach((s) => (s.a.el.style.visibility = "hidden"));
+    const segs = all.flatMap((s) => (s.a.first !== undefined && s.a.first < s.a.last ? [{ ...s, first: s.a.first }] : []));
+    const el = document.createElement("div");
+    el.className = "sw-cursor";
+    el.innerHTML = `<div class="sw-inner">${cursorMarkup(all[0].a.spec)}</div>`;
+    el.style.visibility = "hidden";
+    // A speed streak behind the arrow, shown only on fast moves.
+    const trail = document.createElement("div");
+    trail.className = "sw-trail";
+    trail.style.setProperty("--c", all[0].a.spec.color);
+    const bubble = document.createElement("div");
+    bubble.className = "sw-say";
+    bubble.style.background = all[0].a.spec.color;
+    bubble.style.visibility = "hidden";
+    layer.append(trail, el, bubble);
+    return {
+      segs,
+      el,
+      trail,
+      shown: null as (typeof segs)[number] | null,
+      pos: null as Pt | null,
+      vel: { x: 0, y: 0 },
+      // For the streak: last position relative to the scene the agent belongs to, and smoothed speed.
+      frame: null as Director | null,
+      rel: null as Pt | null,
+      speed: { x: 0, y: 0 },
+      // Idle: a small offset it hops around while waiting, its spring, and when it last stopped.
+      bubble,
+      off: { x: 0, y: 0 },
+      offVel: { x: 0, y: 0 },
+      hop: { x: 0, y: 0 },
+      nextHop: 0,
+      still: 0,
+      sayUntil: 0,
+      quietUntil: 2 + Math.random() * 4,
+      onScreen: false,
+      reply: null as { at: number; text: string } | null,
+    };
+  });
+  type Seg = (typeof lanes)[number]["segs"][number];
+
+  // Where the arrow sits inside a cursor element, so a traveller can be laid exactly over a scene copy.
+  const svg0 = lanes[0]?.el.querySelector("svg")?.getBoundingClientRect();
+  const off = { x: svg0?.left ?? 0, y: svg0?.top ?? 0 };
+  const where = (s: Seg) => {
+    const r = s.a.svg.getBoundingClientRect();
+    return { x: r.left - off.x, y: r.top - off.y };
+  };
+  const live = (s: Seg) => s.tl.time() >= s.first && s.tl.time() < s.a.last;
+  // A scene point on screen. The root gives the top: the hero's layer is fixed, its content isn't.
+  const origin = (d: Director) => ({ x: d.overlay.getBoundingClientRect().left, y: d.root.getBoundingClientRect().top });
+  const onPage = (d: Director, p: Pt) => {
+    const o = origin(d);
+    return { x: o.x + p.x, y: o.y + p.y };
+  };
+  const visible = (q: Pt) => q.y > 40 && q.y < innerHeight - 60;
+  const show = (lane: (typeof lanes)[number], seg: Seg | null) => {
+    if (lane.shown) {
+      lane.shown.a.el.style.visibility = "hidden";
+      lane.shown.a.el.style.translate = "";
+    }
+    if (seg) seg.a.el.style.visibility = "";
+    lane.shown = seg;
+    lane.el.style.visibility = seg ? "hidden" : "";
+  };
+  let lastY = scrollY;
+  let down = true;
+
+  type Lane = (typeof lanes)[number];
+
+  // While waiting, an agent keeps working: it hops around the spot inspecting things, clicks now and
+  // then, and says what it's about to do or pings an agent that's busy on screen.
+  const about: Partial<Record<string, string>> = {
+    type: "Warming up the text tool",
+    draw: "Measuring the frame",
+    import: "Fetching the asset",
+    stamp: "Lining up the chips",
+    thread: "Drafting a comment",
+    comment: "Drafting a comment",
+    write: "Outlining the copy",
+    highlight: "Picking the accent",
+    paint: "Mixing the palette",
+    marquee: "Planning the selection",
+    align: "Checking the grid",
+    reveal: "Prepping the reveal",
+    fill: "Filling in content",
+    place: "Prepping the image",
+    duplicate: "Copying the component",
+    line: "Measuring the divider",
+    appear: "Setting the type scale",
+    publish: "Getting ready to ship",
+  };
+  const busy = ["Reviewing spacing", "Checking contrast", "Scanning the grid", "Running a11y checks", "Inspecting layers"];
+  const pings = ["I'm up next", "nice work 👀", "ping me when it's done", "spacing check?", "want a hand?"];
+  const replies = ["on it ✓", "almost there", "thanks! 🙌", "looks good to me", "go ahead"];
+  const label = (l: Lane) => l.el.querySelector(".sw-tag")!.textContent;
+  // Bubbles hang right of the arrow; near the right edge they flip to its left so they aren't cut off.
+  const place = (b: HTMLElement, x: number, y: number) => {
+    const flip = x + 16 + b.offsetWidth > innerWidth - 8;
+    b.style.translate = `${flip ? x - b.offsetWidth - 24 : x}px ${y}px`;
+  };
+  const say = (lane: Lane, text: string, x: number, y: number) => {
+    lane.bubble.textContent = text;
+    lane.bubble.style.visibility = "";
+    place(lane.bubble, x, y);
+    lane.sayUntil = clock + 2.2;
+    lane.quietUntil = clock + 6 + Math.random() * 6;
+  };
+  const pickOne = <T,>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
+  let clock = 0;
+  const idle = (lane: Lane, at: Pt, visEl: HTMLElement, svg: SVGElement, upcoming: Seg | undefined, dt: number) => {
+    const moving = Math.hypot(lane.speed.x, lane.speed.y) > 40;
+    lane.still = moving ? 0 : lane.still + dt;
+    const waiting = lane.still > 0.35;
+    if (!waiting) lane.hop = { x: 0, y: 0 };
+    else if (clock > lane.nextHop) {
+      // A new spot to look at nearby; sometimes a quick click there.
+      const ang = Math.random() * Math.PI * 2;
+      const r = 14 + Math.random() * 30;
+      lane.hop = { x: Math.cos(ang) * r, y: Math.sin(ang) * r * 0.7 };
+      lane.nextHop = clock + 0.9 + Math.random() * 1.4;
+      if (Math.random() < 0.35) setTimeout(() => svg.animate?.([{ scale: "1" }, { scale: "0.84" }, { scale: "1" }], { duration: 160 }), 380);
+    }
+    const w = waiting ? 9 : 16;
+    lane.offVel.x += (w * w * (lane.hop.x - lane.off.x) - 2 * w * lane.offVel.x) * dt;
+    lane.offVel.y += (w * w * (lane.hop.y - lane.off.y) - 2 * w * lane.offVel.y) * dt;
+    lane.off.x += lane.offVel.x * dt;
+    lane.off.y += lane.offVel.y * dt;
+    visEl.style.translate = `${lane.off.x}px ${lane.off.y}px`;
+
+    const x = at.x + lane.off.x;
+    const y = at.y + lane.off.y;
+    const onScreen = x > 0 && x < innerWidth - 30 && y > 60 && y < innerHeight - 70;
+    lane.onScreen = onScreen;
+    const stepSay = visEl.querySelector<HTMLElement>(".sw-say");
+    const talking = lanes.filter((l) => clock < l.sayUntil).length;
+    if (clock < lane.sayUntil && onScreen) place(lane.bubble, x, y);
+    else if (lane.sayUntil) {
+      lane.sayUntil = 0;
+      lane.bubble.style.visibility = "hidden";
+    }
+    const quiet = !(stepSay && stepSay.checkVisibility({ visibilityProperty: true }));
+    if (lane.reply && clock >= lane.reply.at) {
+      // Answering a mention: always shown, so the exchange reads as a conversation.
+      if (onScreen && quiet && clock >= lane.sayUntil) say(lane, lane.reply.text, x, y);
+      lane.reply = null;
+    } else if (waiting && lane.still > 1.2 && clock > lane.quietUntil && onScreen && quiet && talking < 2) {
+      // Mention another agent on screen (one busy in a scene if possible), who answers a beat later.
+      const others = lanes.filter((l) => l !== lane && l.onScreen && clock >= l.sayUntil && !l.reply);
+      const peer = others.find((l) => l.shown && l.still === 0) ?? (others.length ? pickOne(others) : undefined);
+      // A mention only starts when nobody else is talking, so its reply never makes it crowded.
+      if (peer && talking === 0 && Math.random() < 0.5) {
+        say(lane, `@${label(peer)} ${pickOne(pings)}`, x, y);
+        peer.reply = { at: clock + 1.1, text: `@${label(lane)} ${pickOne(replies)}` };
+      } else say(lane, (upcoming?.a.firstTask && about[upcoming.a.firstTask]) ?? pickOne(busy), x, y);
+    }
+  };
+  // Streak: speed measured against the agent's scene (so scrolling the page doesn't count), drawn
+  // behind the arrow tip along the direction of travel, longer the faster it goes.
+  const streak = (lane: Lane, at: Pt, frame: Director, dt: number) => {
+    const o = origin(frame);
+    const rel = { x: at.x - o.x, y: at.y - o.y };
+    if (lane.frame !== frame || !lane.rel) lane.speed = { x: 0, y: 0 };
+    else {
+      const k = 1 - Math.exp(-dt / 0.06);
+      lane.speed.x += ((rel.x - lane.rel.x) / dt - lane.speed.x) * k;
+      lane.speed.y += ((rel.y - lane.rel.y) / dt - lane.speed.y) * k;
+    }
+    lane.frame = frame;
+    lane.rel = rel;
+    const v = Math.hypot(lane.speed.x, lane.speed.y);
+    const len = Math.min(150, (v - 500) * 0.08);
+    if (len < 6) {
+      lane.trail.style.opacity = "0";
+      return;
+    }
+    lane.trail.style.opacity = String(Math.min(1, len / 60));
+    lane.trail.style.width = `${len}px`;
+    lane.trail.style.transform = `translate(${at.x + off.x + 1}px, ${at.y + off.y + 1}px) rotate(${Math.atan2(lane.speed.y, lane.speed.x)}rad) translateX(-100%)`;
+  };
+
+  const tick = (_: number, dtMs: number) => {
+    if (scrollY !== lastY) down = scrollY > lastY;
+    lastY = scrollY;
+    const dt = Math.max(1, Math.min(dtMs, 50)) / 1000;
+    clock += dt;
+    // Positions below are without the idle offset; the offset rides on top as a CSS translate.
+    const base = (lane: Lane, s: Seg) => {
+      const p = where(s);
+      return { x: p.x - lane.off.x, y: p.y - lane.off.y };
+    };
+    for (const lane of lanes) {
+      if (lane.shown && live(lane.shown)) {
+        const at = base(lane, lane.shown);
+        streak(lane, at, lane.shown.d, dt);
+        idle(lane, at, lane.shown.a.el, lane.shown.a.svg, lane.segs[lane.segs.indexOf(lane.shown) + 1], dt);
+        continue;
+      }
+      if (lane.shown) {
+        // Its copy just stopped working here: pick up from exactly where it is.
+        lane.pos = base(lane, lane.shown);
+        lane.vel = { x: 0, y: 0 };
+        show(lane, null);
+      }
+      const next = lane.segs.find(live);
+      let goal: Pt | null = next ? where(next) : null;
+      let frame = next?.d ?? null;
+      if (!next) {
+        const i = lane.segs.findLastIndex((s) => s.tl.time() >= s.a.last);
+        const from = lane.segs[i];
+        const to = lane.segs[i + 1];
+        // Like a purposeful agent: stay by the work it just finished until the spot of its next task
+        // (scrolling back: the previous one) is on screen, then dart there and wait, riding along
+        // with the page. Only when neither spot is visible does it wait off screen.
+        if (from && to) {
+          const ahead = down ? { d: to.d, p: onPage(to.d, to.a.firstPos!) } : { d: from.d, p: onPage(from.d, from.a.lastPos!) };
+          const behind = down ? { d: from.d, p: onPage(from.d, from.a.lastPos!) } : { d: to.d, p: onPage(to.d, to.a.firstPos!) };
+          const pick = visible(ahead.p) || !visible(behind.p) ? ahead : behind;
+          frame = pick.d;
+          goal = pick.p;
+        }
+      }
+      if (!goal || !frame) {
+        lane.pos = null;
+        lane.el.style.visibility = "hidden";
+        lane.trail.style.opacity = "0";
+        lane.bubble.style.visibility = "hidden";
+        continue;
+      }
+      // Critically damped spring: quick, with a smooth start and stop (settles in about 0.5s).
+      const p = lane.pos ?? goal;
+      const w = 12;
+      const v = lane.vel;
+      v.x += (w * w * (goal.x - p.x) - 2 * w * v.x) * dt;
+      v.y += (w * w * (goal.y - p.y) - 2 * w * v.y) * dt;
+      lane.pos = { x: p.x + v.x * dt, y: p.y + v.y * dt };
+      if (next && Math.hypot(goal.x - lane.pos.x, goal.y - lane.pos.y) < 3) {
+        show(lane, next);
+        continue;
+      }
+      lane.el.style.visibility = "";
+      lane.el.style.transform = `translate(${lane.pos.x}px, ${lane.pos.y}px)`;
+      streak(lane, lane.pos, frame, dt);
+      const upcoming = lane.segs.find((s) => s.tl.time() < s.first);
+      idle(lane, lane.pos, lane.el, lane.el.querySelector("svg")!, upcoming, dt);
+    }
+  };
+  gsap.ticker.add(tick);
+  return () => {
+    gsap.ticker.remove(tick);
+    layer.remove();
   };
 }
 

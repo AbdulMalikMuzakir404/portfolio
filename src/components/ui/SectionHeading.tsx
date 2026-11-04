@@ -21,7 +21,11 @@ export function SectionHeading({ id, index, kicker, title, lede }: Props) {
             {title}
           </h2>
         </div>
-        {lede && <p className="text-lede text-muted md:col-span-5 md:pb-2">{lede}</p>}
+        {lede && (
+          <p className="text-lede text-muted md:col-span-5 md:pb-2" data-build={`${id}.lede`}>
+            {lede}
+          </p>
+        )}
       </div>
       <div className="mt-10 h-px origin-left bg-white/10" data-build={`${id}.rule`} />
     </header>

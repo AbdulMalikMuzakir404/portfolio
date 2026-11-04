@@ -71,7 +71,8 @@
 /* The swarm engine adds `html.swarm` before first paint (see layout.tsx) and `.swarm-ready`
    once it owns the build states. Until then buildable parts stay hidden to avoid a flash.
    Without JS, with reduced motion, or on small screens, the class is never added. */
-html.swarm:not(.swarm-ready) [data-build] {
+html.swarm:not(.swarm-ready) [data-build],
+html.swarm:not(.swarm-ready) [data-swarm-header] {
   visibility: hidden;
 }
 
@@ -89,6 +90,29 @@ html.swarm:not(.swarm-ready) [data-build] {
   }
 }
 
+/* Header entrance without the swarm (phones, skipped build); with it, the agents build the header
+   at the start of the hero scroll instead. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.swarm, .swarm-off) .hdr-bar { animation: hdr-bar 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  html:not(.swarm, .swarm-off) .hdr-pop { animation: hdr-pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both; animation-delay: calc(200ms + var(--i, 0) * 45ms); }
+  html:not(.swarm, .swarm-off) .hdr-wipe { animation: hdr-wipe 0.7s steps(18) 0.3s both; }
+  html:not(.swarm, .swarm-off) .hdr-drop { animation: hdr-drop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(350ms + var(--i, 0) * 60ms); }
+  html:not(.swarm, .swarm-off) .hdr-rise { animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s both; }
+}
+@keyframes hdr-bar { from { opacity: 0; transform: translateY(-14px) scale(0.98); } }
+@keyframes hdr-pop { from { opacity: 0; transform: scale(0.4); } }
+@keyframes hdr-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes hdr-drop { from { opacity: 0; transform: translateY(-8px); } }
+
+/* Footer: typed and slid in as it scrolls into view (scroll-driven; static where unsupported). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ftr-type { animation: hdr-wipe linear both; animation-timeline: view(); animation-range: entry 10% entry 90%; }
+    .ftr-in { animation: ftr-in linear both; animation-timeline: view(); animation-range: entry 40% entry 100%; }
+  }
+}
+@keyframes ftr-in { from { opacity: 0; transform: translateX(18px); } }
+
 /* ---- Swarm overlay (created by src/lib/swarm; positioned with transforms only) ---- */
 .sw-overlay {
   position: absolute;
@@ -98,6 +122,23 @@ html.swarm:not(.swarm-ready) [data-build] {
   pointer-events: none;
   contain: layout style;
 }
+/* Travelling cursors: carry each agent between sections (see travel() in src/lib/swarm/index.ts). */
+.sw-travel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sw-trail {
+  height: 2px;
+  border-radius: 2px;
+  opacity: 0;
+  transform-origin: 0 50%;
+  background: linear-gradient(to right, transparent, var(--c));
+  will-change: transform, width, opacity;
+}
+.sw-travel > *,
 .sw-overlay > * {
   position: absolute;
   left: 0;
@@ -218,6 +259,48 @@ html.swarm:not(.swarm-ready) [data-build] {
   height: 34px;
   border-radius: 7px;
   color: #8b8b92;
+}
+/* Colour-swatch popover (paint) and align bar share the toolbar's panel look. */
+.sw-swatches,
+.sw-alignbar {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: #17171a;
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.9);
+}
+.sw-swatches i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+.sw-swatches i:last-child {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+.sw-alignbar {
+  gap: 2px;
+  padding: 3px;
+}
+.sw-alignbar b {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #8b8b92;
+}
+.sw-alignbar b:nth-child(2) {
+  background: rgba(59, 130, 246, 0.18);
+  color: #ededef;
+}
+.sw-marquee {
+  box-sizing: border-box;
+  border: 1px solid var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
 }
 .sw-hint {
   display: flex;

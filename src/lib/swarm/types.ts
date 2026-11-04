@@ -39,6 +39,14 @@ export type Task =
   | { do: "thread"; target: string; messages: { who: string; text: string }[] }
   /** Whole swarm: gather into a ring around `center` (fractions of the root) for the closing orbit. */
   | { do: "orbit"; center: Pt }
+  /** Click the target and slide it up into place (paragraphs, links, small labels). */
+  | { do: "reveal"; target: string }
+  /** Open a colour-swatch popover and paint the target in its final colour (from the static page). */
+  | { do: "paint"; target: string }
+  /** Drag a marquee selection box across a group; its items appear as the box passes over them. */
+  | { do: "marquee"; target: string }
+  /** The group's items start scattered; select them, hit "align" in a small toolbar, they snap in. */
+  | { do: "align"; target: string }
   /** Drop a review comment pin with a short note on the target. */
   | { do: "comment"; target: string; text: string }
   | { do: "deselect" }
@@ -67,7 +75,7 @@ export type Scene = {
   /** Where cursors sit at progress 0 (fractions of the root). Defaults to their exit points. */
   start?: Record<string, Pt>;
   scroll: {
-    /** Element that drives the ScrollTrigger; defaults to the root. */
+    /** Element inside the root that drives the ScrollTrigger; defaults to the root. */
     trigger?: string;
     start: string;
     end: string;

@@ -13,7 +13,18 @@ type Agent = {
   t: number;
   side: 1 | -1;
   sel?: Sel;
+  // The agent's working window in this scene (timeline time), for the traveller in index.ts: from
+  // arriving at its first task (or 0 if it starts here) until the scene's exit begins.
+  first?: number;
+  firstPos?: Pt;
+  last: number;
+  lastPos?: Pt;
+  firstTask?: Step["do"]; // what it does first here, for the "about to…" line while it waits
 };
+
+/** A cursor's arrow and name tag; shared with the travelling cursors in index.ts. */
+export const cursorMarkup = (spec: CursorSpec) =>
+  `<svg width="22" height="24" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span>`;
 
 const ICONS: Record<Tool, string> = {
   move: '<path d="M5 3l11 5.2-4.7 1.6L9.6 14.5z"/>',
@@ -62,10 +73,29 @@ export class Director {
     private alias: Record<string, string>,
     private mode: "desktop" | "tablet",
   ) {
-    this.base = root.getBoundingClientRect();
+    // The layer spans the full screen width, so cursors and notes aren't cut off at the content column.
+    const r = root.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    this.base = new DOMRect(0, r.top, vw, r.height);
     root.querySelectorAll("[data-build], [data-ch]").forEach((el) => this.rects.set(el, this.measure(el)));
+    // Steps may target elements outside the root (the hero builds the fixed header): measure those
+    // and their parts now too, before any build state is applied.
+    for (const step of scene.steps) {
+      const el = "target" in step ? this.el(step.target) : null;
+      if (!el || root.contains(el)) continue;
+      // shortcut: assumes a fixed element (the header) belongs to a scene pinned at the top of the
+      // screen (the hero), so its viewport y is its y in the scene; fine while only the hero does this.
+      [el, ...el.querySelectorAll("[data-build-part], [data-ch]")].forEach((n) => {
+        this.rects.set(n, { ...this.measure(n), y: n.getBoundingClientRect().top });
+      });
+    }
 
-    this.overlay = div("sw-overlay", root);
+    // The hero also builds the fixed header, so its layer is fixed to the screen above it (the pinned
+    // hero is its own stacking context and could never draw over the header from inside).
+    const editor = scene.chrome === "editor";
+    this.overlay = div("sw-overlay", editor ? document.body : root);
+    if (editor) Object.assign(this.overlay.style, { position: "fixed", inset: "0 auto auto 0", width: `${vw}px`, height: `${r.height}px`, zIndex: "60" });
+    else Object.assign(this.overlay.style, { left: `${-r.left}px`, right: "auto", width: `${vw}px` });
     this.overlay.setAttribute("aria-hidden", "true");
     this.overlay.inert = true;
 
@@ -105,6 +135,7 @@ export class Director {
       const start = Math.max(a.t, s.at ?? 0, after);
       // A short beat before each action reads as intent rather than a mechanical chain.
       const t0 = start > 0 ? start + 0.12 : 0;
+      if (!a.firstTask && !["rest", "wait", "deselect", "tool"].includes(s.do)) a.firstTask = s.do;
       const end = this.task(a, s, t0);
       if (s.say) this.say(a, s.say, t0, end);
       // Never rewind a clock: a thread can book this agent for a reply later than the step's end.
@@ -152,6 +183,14 @@ export class Director {
         return this.import(a, s.target, t, s.from, s.guides);
       case "comment":
         return this.comment(a, s.target, s.text, t);
+      case "reveal":
+        return this.reveal(a, s.target, t);
+      case "paint":
+        return this.paint(a, s.target, t);
+      case "marquee":
+        return this.marquee(a, s.target, t);
+      case "align":
+        return this.align(a, s.target, t);
       case "write":
         return this.write(a, s.target, t);
       case "thread":
@@ -167,18 +206,23 @@ export class Director {
     }
   }
 
-  private move(a: Agent, p: Pt, t: number, ease = "power2.inOut"): number {
+  private move(a: Agent, p: Pt, t: number, ease = "power3.inOut"): number {
     const f = a.pos;
     const dx = p.x - f.x;
     const dy = p.y - f.y;
     const d = Math.hypot(dx, dy);
     if (d < 1) return t;
-    const dur = clamp(0.3, 0.95, 0.28 + d / 1500);
+    // Agents dart between tasks (quick, eased at both ends), then take their time on the work itself.
+    const dur = clamp(0.2, 0.55, 0.18 + d / 2400);
     // Hands move in arcs, not rulers: bow the path sideways, more for longer trips.
     const bend = a.side * Math.min(70, d * 0.16);
     const mid = { x: f.x + dx / 2 - (dy / d) * bend, y: f.y + dy / 2 + (dx / d) * bend };
     this.tl.to(a.el, { motionPath: { path: [f, mid, p], curviness: 1.1 }, duration: dur, ease }, t);
     a.pos = p;
+    if (a.first === undefined) {
+      a.first = t + dur;
+      a.firstPos = p;
+    }
     return t + dur;
   }
 
@@ -470,6 +514,103 @@ export class Director {
     this.tl.set(line, { autoAlpha: 0 }, off);
   }
 
+  private reveal(a: Agent, target: string, t: number): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const r = this.rect(el);
+    gsap.set(el, { autoAlpha: 0, y: 12 });
+    t = this.move(a, { x: r.x + Math.min(28, r.w * 0.2), y: r.y + r.h * 0.6 }, t);
+    this.hover(r, t - 0.15, t + 0.2);
+    t = this.press(a, t);
+    this.tl.to(el, { autoAlpha: 1, y: 0, duration: 0.4, ease: "power3.out" }, t);
+    return t + 0.4;
+  }
+
+  /** Colour-swatch popover; the last swatch is the element's real colour, which gets applied. */
+  private paint(a: Agent, target: string, t: number): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const r = this.rect(el);
+    const final = getComputedStyle(el).color;
+    gsap.set(el, { color: "#EDEDEF" });
+    t = this.move(a, { x: r.x + r.w * 0.5, y: r.y + r.h * 0.55 }, t);
+    this.hover(r, t - 0.15, t + 0.2);
+    t = this.press(a, t);
+    const swatches = ["#EDEDEF", "#60A5FA", "#F472B6", "#F5B93E", final];
+    const pop = div("sw-swatches", this.overlay, swatches.map((c) => `<i style="background:${c}"></i>`).join(""));
+    const px = clamp(8, this.size.w - pop.offsetWidth - 8, r.x + r.w + 14);
+    const py = clamp(8, this.size.h - pop.offsetHeight - 8, r.y + r.h * 0.5 - pop.offsetHeight / 2);
+    gsap.set(pop, { x: px, y: py, autoAlpha: 0 });
+    this.tl.to(pop, { autoAlpha: 1, duration: 0.15 }, t);
+    const dot = pop.children[swatches.length - 1] as HTMLElement;
+    let u = this.move(a, { x: px + dot.offsetLeft + dot.offsetWidth / 2, y: py + dot.offsetTop + dot.offsetHeight / 2 }, t + 0.15);
+    u = this.press(a, u);
+    this.tl.to(el, { color: final, duration: 0.3, ease: "none" }, u);
+    this.tl.to(pop, { autoAlpha: 0, duration: 0.15 }, u + 0.3);
+    return u + 0.4;
+  }
+
+  private marquee(a: Agent, target: string, t: number): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const parts = [...el.querySelectorAll<HTMLElement>("[data-build-part='item']")];
+    const items = parts.length ? parts : [el];
+    const r = this.rect(el);
+    gsap.set(items, { autoAlpha: 0, y: 6 });
+    const p0 = { x: r.x - 14, y: r.y - 12 };
+    const p1 = { x: r.x + r.w + 14, y: r.y + r.h + 12 };
+    t = this.move(a, p0, t);
+    t = this.press(a, t);
+    const box = div("sw-marquee", this.overlay);
+    box.style.setProperty("--c", a.spec.color);
+    gsap.set(box, { x: p0.x, y: p0.y, width: 0, height: 0, autoAlpha: 0 });
+    this.tl.set(box, { autoAlpha: 1 }, t);
+    const dur = clamp(0.6, 1.2, 0.4 + r.w / 1400);
+    this.dragTo(a, p1, t, dur, "none");
+    this.tl.to(box, { width: p1.x - p0.x, height: p1.y - p0.y, duration: dur, ease: "none" }, t);
+    // Each item appears as the box's edge sweeps past its centre.
+    items.forEach((it) => {
+      const ir = this.rect(it);
+      const f = clamp(0, 1, (ir.x + ir.w / 2 - p0.x) / (p1.x - p0.x));
+      this.tl.to(it, { autoAlpha: 1, y: 0, duration: 0.25, ease: "power2.out" }, t + dur * f);
+    });
+    this.tl.to(box, { autoAlpha: 0, duration: 0.2 }, t + dur + 0.1);
+    return t + dur + 0.25;
+  }
+
+  private align(a: Agent, target: string, t: number): number {
+    const el = this.el(target);
+    if (!el) return t;
+    const parts = [...el.querySelectorAll<HTMLElement>("[data-build-part='item']")];
+    if (!parts.length) return t;
+    const r = this.rect(el);
+    // Deterministic "messy" starting layout.
+    parts.forEach((it, i) =>
+      gsap.set(it, { x: (((i * 37) % 23) - 11) * 2, y: (((i * 53) % 19) - 9) * 2.4, rotation: (((i * 29) % 11) - 5) * 1.6, opacity: 0.45 }),
+    );
+    t = this.move(a, { x: r.x + r.w * 0.5, y: r.y + r.h * 0.5 }, t);
+    this.hover(r, t - 0.15, t + 0.05);
+    t = this.press(a, t);
+    this.sel(a, { x: r.x - 6, y: r.y - 6, w: r.w + 12, h: r.h + 12 }, t, r);
+    const icons = [
+      '<path d="M4 3v14M7 6h9M7 14h6"/>',
+      '<path d="M10 3v14M5 6h10M6 14h8"/>',
+      '<path d="M4 10h12M7 5v10M13 7v6"/>',
+      '<path d="M16 3v14M4 6h9M7 14h6"/>',
+    ];
+    const bar = div("sw-alignbar", this.overlay, icons.map((d) => `<b>${svgIcon(d)}</b>`).join(""));
+    const bx = clamp(8, this.size.w - bar.offsetWidth - 8, r.x + r.w / 2 - bar.offsetWidth / 2);
+    const by = r.y - bar.offsetHeight - 16 >= 8 ? r.y - bar.offsetHeight - 16 : r.y + r.h + 16;
+    gsap.set(bar, { x: bx, y: by, autoAlpha: 0 });
+    this.tl.to(bar, { autoAlpha: 1, duration: 0.15 }, t);
+    const btn = bar.children[1] as HTMLElement;
+    let u = this.move(a, { x: bx + btn.offsetLeft + btn.offsetWidth / 2, y: by + btn.offsetTop + btn.offsetHeight / 2 }, t + 0.2);
+    u = this.press(a, u);
+    this.tl.to(parts, { x: 0, y: 0, rotation: 0, opacity: 1, duration: 0.5, ease: "back.out(1.6)", stagger: 0.04 }, u);
+    this.tl.to(bar, { autoAlpha: 0, duration: 0.15 }, u + 0.35);
+    return u + 0.5 + parts.length * 0.04;
+  }
+
   /** Once fully revealed, drop the clip so shadows and overhanging labels render as in the static page. */
   private unclip(el: HTMLElement, t: number) {
     this.tl.set(el, { clipPath: "none" }, t);
@@ -710,7 +851,9 @@ export class Director {
     let end = t;
     [...this.agents.values()].forEach((a, i) => {
       if (a.sel) this.tl.set(a.sel.el, { autoAlpha: 0 }, t);
-      end = Math.max(end, this.move(a, this.exitPt(a.spec), t + i * 0.07, "power2.in"));
+      a.last = t + i * 0.07;
+      a.lastPos = a.pos;
+      end = Math.max(end, this.move(a, this.exitPt(a.spec), a.last, "power2.in"));
     });
     if (this.chrome.length) this.tl.to(this.chrome, { autoAlpha: 0, duration: 0.4, ease: "none" }, t + 0.1);
     return Math.max(end, t + 0.5);
@@ -809,7 +952,7 @@ export class Director {
   private cursor(spec: CursorSpec, i: number): Agent {
     const el = div("sw-cursor", this.overlay);
     const inner = div("sw-inner", el);
-    inner.innerHTML = `<svg width="22" height="24" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span>`;
+    inner.innerHTML = cursorMarkup(spec);
     const ring = div("sw-ring", inner);
     ring.style.borderColor = spec.color;
     gsap.set(ring, { autoAlpha: 0 });
@@ -818,7 +961,7 @@ export class Director {
     const start = this.scene.start?.[spec.id];
     const pos = start ? this.frac(start) : this.exitPt(spec);
     gsap.set(el, { x: pos.x, y: pos.y });
-    return { spec, el, inner, svg, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1 };
+    return { spec, el, inner, svg, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1, last: Infinity, ...(start ? { first: 0, firstPos: pos } : {}) };
   }
 
   private sel(a: Agent, from: Rect, t: number, final: Rect): Sel {
@@ -942,7 +1085,10 @@ export class Director {
     return { x: r.left - this.base.left, y: r.top - this.base.top, w: r.width, h: r.height };
   }
   private el(id: string) {
-    return this.root.querySelector<HTMLElement>(`[data-build="${id}"]`);
+    const sel = `[data-build="${id}"]`;
+    const el = this.root.querySelector<HTMLElement>(sel) ?? document.querySelector<HTMLElement>(sel);
+    // Hidden at this breakpoint (display: none): treat as absent rather than aiming at (0, 0).
+    return el && el.getClientRects().length ? el : null;
   }
   /** Layout rect captured before any build state was applied. */
   private rect(el: Element): Rect {

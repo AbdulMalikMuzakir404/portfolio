@@ -23,8 +23,11 @@ export function Projects() {
           ))}
         </div>
 
-        <h3 className="label mt-24">More projects</h3>
-        <ul data-swarm-row="more" className="relative mt-6 border-t border-line">
+        <div data-swarm-row="more" className="relative mt-24">
+        <h3 className="label w-fit" data-build="more.label">
+          More projects
+        </h3>
+        <ul className="mt-6 border-t border-line">
           {rest.map((p, i) => (
             <li key={p.slug} id={`project-${p.slug}`} data-build={`more.row-${i}`} className="border-b border-line">
               <details className="group">
@@ -56,6 +59,7 @@ export function Projects() {
             </li>
           ))}
         </ul>
+        </div>
       </div>
     </section>
   );
@@ -70,7 +74,7 @@ function Case({ project: p, index }: { project: Project; index: number }) {
     >
       {/* Not sticky: the swarm measures this column once, so it must move with its row. */}
       <div className={`self-start lg:col-span-5 ${index % 2 ? "lg:order-last lg:col-start-8" : ""}`}>
-        <p className="label">
+        <p className="label w-fit" data-build={`case-${index}.meta`}>
           {String(index + 1).padStart(2, "0")} · {p.period} · {p.kind}
         </p>
         <h3 className="mt-5 w-fit font-serif text-h3" data-build={`case-${index}.title`}>
@@ -90,9 +94,11 @@ function Case({ project: p, index }: { project: Project; index: number }) {
 function ProjectMeta({ project: p, build }: { project: Project; build?: string }) {
   return (
     <>
-      <p className="mt-5 text-[17px] leading-relaxed text-fg/85">{p.summary}</p>
+      <p className="mt-5 text-[17px] leading-relaxed text-fg/85" data-build={build && `${build}.summary`}>
+        {p.summary}
+      </p>
       {p.contribution && (
-        <p className="mt-4 text-[15px] leading-relaxed text-fg/80">
+        <p className="mt-4 text-[15px] leading-relaxed text-fg/80" data-build={build && `${build}.part`}>
           <span className="label mr-2">My part</span>
           {p.contribution}
         </p>
@@ -106,14 +112,14 @@ function ProjectMeta({ project: p, build }: { project: Project; build?: string }
           ))}
         </ul>
       )}
-      <details className="group/desc mt-6">
+      <details className="group/desc mt-6" data-build={build && `${build}.details`}>
         <summary className="label inline-flex items-center gap-2 transition-colors hover:text-fg">
           Full description <span aria-hidden className="transition-transform group-open/desc:rotate-45">+</span>
         </summary>
         <p className="mt-4 text-[15px] leading-relaxed text-muted">{p.description}</p>
       </details>
       {p.links.length > 0 && (
-        <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+        <ul className="mt-6 flex w-fit flex-wrap gap-x-6 gap-y-2" data-build={build && `${build}.links`}>
           {p.links.map((l) => (
             <li key={l.href}>
               <a href={l.href} target="_blank" rel="noopener noreferrer" className="link text-[15px]">

@@ -52,8 +52,14 @@ with alignment guides), `duplicate` (Alt-drag a ghost clone onto the next instan
 `highlight` (text-selection sweep), `import` (drag an element in from an offset and snap it to a guide),
 `comment` (review pin with a note), `thread` (Figma-style comment thread: the opener posts, each
 reply's author flies over, "is typing…" dots, then their line lands), `write` (paragraph revealed line
-by line), `rest`, `wait`, `exit`, `publish`, `orbit` (closing ring; the time-based galaxy takes over
-whenever the scene sits at its end).
+by line), `reveal` (click, element slides up into place), `paint` (colour-swatch popover; the last
+swatch is the element's real colour and gets applied), `marquee` (a selection box is dragged across a
+group and each item appears as the edge passes it), `align` (items start scattered, the group is
+selected and the align bar snaps them into line), `rest`, `wait`, `exit`, `publish`, `orbit` (closing
+ring; the time-based galaxy takes over whenever the scene sits at its end).
+
+**Every visible widget has a step.** When you add a widget, give it a `data-build` hook and a step,
+and keep the variety: don't reuse the neighbouring widget's task if another one fits.
 
 Comment boxes go to the right of their target, else above, left or below — the first spot that
 fits without covering the target. Exit points are always at least 60px outside the scene, so
@@ -65,20 +71,41 @@ with the gap in px, and `deselect` steps the cursor just off the finished elemen
 ### Scenes (every section has one)
 
 Every section heading has its own scene too (`heading()` in `scenes.ts`): the mono kicker is typed,
-the title drawn, written or scaled into place, and the divider drawn.
+the title drawn, written or scaled into place, the lede brought in by a third agent (written,
+revealed or painted), and the divider drawn.
 
 | Section | Choreography |
 | --- | --- |
-| Hero | full build: type, draw, scale/drag with guides, duplicate, image drop, comment threads |
-| About | heading select + rule, summary written line by line, facts stamped; cards drawn then duplicated; hobbies stamped, book imported, pin dropped on the map |
-| Skills | rule, then six agents each draw a component set and stamp its chips |
-| Experience | heading highlight + rule; per role (own scene): highlight title, write bullets, stamp tech |
-| Work | one scene per featured project, each different (draw + drop + duplicate, phones handed up, draw-short-then-resize, import from the side, phone frames drawn); More projects rows dragged into order |
-| Credentials | draw heading, draw + duplicate education cards; per certificate (own scene): import image, stamp highlights; extra CV certifications stamped in, honor highlighted and discussed in a thread |
+| Header | hidden at first; built at the start of the hero scroll by agents whose hero work comes later: Grok draws the bar, types the name and reveals Skip/Replay, DeepSeek imports the logo, Qwen marquee-selects the nav, Mistral aligns the avatar stack and draws the CV button. Without the swarm a short CSS entrance plays on load |
+| Hero | full build: type, draw, scale/drag with guides, emphasis painted, duplicate, image drop, comment threads |
+| About | heading select + rule, summary written line by line, facts stamped; cards drawn then duplicated; labels typed, hobbies stamped, qualities aligned, book imported and its title revealed, map drawn and dropped in, label typed, pin dropped |
+| Skills | rule, then six agents each draw a component set and stamp its chips; the Practice row is typed and aligned |
+| Experience | heading highlight + rule; per role (own scene): dates and type typed, title highlighted, location revealed, bullets filled, tech stamped |
+| Work | one scene per featured project, each different (draw + drop + duplicate, phones handed up, draw-short-then-resize, import from the side, phone frames drawn), plus meta typed, summary written, details and links revealed; More projects label typed and rows dragged into order |
+| Credentials | draw heading, draw + duplicate education cards; per certificate (own scene): import image, type date and title, reveal issuer, stamp highlights, paint the link; extra CV certifications stamped in, honor highlighted and discussed in a thread |
 | Contact | heading written line by line once it is on screen, "amazing" highlighted, each contact button and social link stamped in, thread, everyone gathers for Publish, then the swarm rings up beside the heading and keeps orbiting (galaxy, pointer-reactive) |
+| Footer | no cursor: the copyright is wiped in and Back to top slides in as the footer scrolls into view (CSS scroll-driven animation; static where unsupported) |
+
+**Agents never vanish between sections.** Each scene still compiles its own copy of every agent it
+uses, but a copy is only shown during that agent's working window there (from arriving at its first
+task until the scene's exit). Outside it, one shared traveller per agent (`travel()` in `index.ts`,
+a fixed full-screen layer) takes over exactly where the copy was and stays by the finished work
+until the spot of the agent's next task (scrolling up: the previous one) is on screen, then zips
+there (a critically damped spring, ~0.5s) and waits riding along with the page; it hands back once it sits on top of
+the next copy. Any fast move (measured against the agent's scene, so plain scrolling doesn't count)
+leaves a short streak in the agent's colour. **Waiting agents keep working**: they hop around the spot inspecting
+things and click now and then, say what they're about to do (from their next task: "Measuring the
+frame", "Mixing the palette", …), or @-mention another agent on screen, who answers a beat later.
+At most a few bubbles show at once, and never over a step's own chat bubble. Moves inside a scene are short
+darts (`power3.inOut`, 0.2–0.55 units) so agents read as quick and purposeful; the work itself keeps
+its pace. Scenes scrub with a 0.4s lag. Every scene layer also spans the full
+screen width, so cursors and notes are never cut off at the content column.
 
 Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
 built while it is actually on screen instead of on one long, loosely synced timeline.
+The hero's overlay is fixed to the screen (z-index above the header) because the pinned hero is its own
+stacking context and could never draw over the fixed header from inside; it hides once the hero has
+scrolled past.
 Any step can carry `say: "…"`, a Figma-style cursor-chat bubble shown while that step runs.
 
 ## Breakpoints
@@ -121,7 +148,7 @@ console: `ScrollTrigger.getAll()[0].animation.progress(0.5)`.
 
 ## Escape hatches
 
-- Header **Skip build** (visible while the hero builds) reverts everything and remembers the
+- The header has a **Skip build / Replay build** toggle (desktop and tablet): Skip reverts everything and remembers the choice for the session; Replay clears it and reloads at the top with the build on. After any revert, `clearBuildStyles()` wipes leftover inline styles so the page always renders fully.
   choice for the session.
 - Keyboard focus on any buildable control does the same and restores focus, so Tab never
   lands on a clipped button.

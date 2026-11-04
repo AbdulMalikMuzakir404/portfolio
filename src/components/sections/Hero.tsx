@@ -35,7 +35,7 @@ export function Hero() {
             </p>
 
             <p data-build="hero.headline" className="rise mt-7 max-w-[13ch] origin-top-left font-serif text-display [--d:180ms]">
-              {headline.before} <em className="text-accent/95">{headline.emphasis}</em> {headline.after}
+              {headline.before} <em className="text-accent/95" data-build="hero.emphasis">{headline.emphasis}</em> {headline.after}
             </p>
 
             <div className="rise mt-10 flex flex-wrap gap-3 [--d:260ms]">
