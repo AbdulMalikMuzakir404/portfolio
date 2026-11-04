@@ -47,11 +47,24 @@ const hero: Scene = {
   start: ring(0.5, 0.47, 0.13, 0.17),
   scroll: { start: "top top", end: "bottom top", pin: { desktop: 3, tablet: 1.9 } },
   steps: [
-    // Agents whose turn comes later step out of the way first, into the gutters.
-    { who: "grok", at: 0.3, do: "rest", to: { x: 0.6, y: 0.2 } },
-    { who: "qwen", at: 0.4, do: "rest", to: { x: 0.6, y: 0.5 } },
-    { who: "mistral", at: 0.5, do: "rest", to: { x: 0.6, y: 0.74 } },
-    { who: "deepseek", at: 0.6, do: "rest", to: { x: 0.935, y: 0.42 } },
+    // The header isn't there yet: agents whose hero work comes later build it first (Grok draws the
+    // bar, the others fill it), then step out of the way into the gutters.
+    { who: "grok", at: 0.1, do: "draw", target: "header.bar", id: "bar", say: "Header first" },
+    { who: "grok", do: "deselect" },
+    // The Skip button goes in first: it's the way out of the build.
+    { who: "grok", do: "reveal", target: "header.toggle" },
+    { who: "grok", do: "type", target: "header.name" },
+    { who: "grok", do: "rest", to: { x: 0.6, y: 0.2 } },
+    { who: "deepseek", after: "bar", do: "import", target: "header.logo", from: { x: -40, y: 50 } },
+    { who: "deepseek", do: "deselect" },
+    { who: "deepseek", do: "rest", to: { x: 0.935, y: 0.42 } },
+    { who: "qwen", after: "bar", do: "marquee", target: "header.nav", say: "Selecting the nav" },
+    { who: "qwen", do: "rest", to: { x: 0.6, y: 0.5 } },
+    { who: "mistral", after: "bar", do: "align", target: "header.agents" },
+    { who: "mistral", do: "reveal", target: "header.menu" },
+    { who: "mistral", do: "draw", target: "header.cv" },
+    { who: "mistral", do: "deselect" },
+    { who: "mistral", do: "rest", to: { x: 0.6, y: 0.74 } },
 
     // Claude types the name.
     { who: "claude", do: "tool", tool: "text" },

@@ -90,14 +90,14 @@ html.swarm:not(.swarm-ready) [data-swarm-header] {
   }
 }
 
-/* Header entrance without the swarm (phones, skipped build); with it, the header is built by
-   scrolling instead (buildHeader in src/lib/swarm/index.ts), with the same parts and moves. */
+/* Header entrance without the swarm (phones, skipped build); with it, the agents build the header
+   at the start of the hero scroll instead. */
 @media (prefers-reduced-motion: no-preference) {
-  html:not(.swarm) .hdr-bar { animation: hdr-bar 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-  html:not(.swarm) .hdr-pop { animation: hdr-pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both; animation-delay: calc(200ms + var(--i, 0) * 45ms); }
-  html:not(.swarm) .hdr-wipe { animation: hdr-wipe 0.7s steps(18) 0.3s both; }
-  html:not(.swarm) .hdr-drop { animation: hdr-drop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(350ms + var(--i, 0) * 60ms); }
-  html:not(.swarm) .hdr-rise { animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s both; }
+  html:not(.swarm, .swarm-off) .hdr-bar { animation: hdr-bar 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  html:not(.swarm, .swarm-off) .hdr-pop { animation: hdr-pop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both; animation-delay: calc(200ms + var(--i, 0) * 45ms); }
+  html:not(.swarm, .swarm-off) .hdr-wipe { animation: hdr-wipe 0.7s steps(18) 0.3s both; }
+  html:not(.swarm, .swarm-off) .hdr-drop { animation: hdr-drop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(350ms + var(--i, 0) * 60ms); }
+  html:not(.swarm, .swarm-off) .hdr-rise { animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s both; }
 }
 @keyframes hdr-bar { from { opacity: 0; transform: translateY(-14px) scale(0.98); } }
 @keyframes hdr-pop { from { opacity: 0; transform: scale(0.4); } }

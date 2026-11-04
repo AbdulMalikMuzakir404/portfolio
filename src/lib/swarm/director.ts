@@ -64,8 +64,26 @@ export class Director {
   ) {
     this.base = root.getBoundingClientRect();
     root.querySelectorAll("[data-build], [data-ch]").forEach((el) => this.rects.set(el, this.measure(el)));
+    // Steps may target elements outside the root (the hero builds the fixed header): measure those
+    // and their parts now too, before any build state is applied.
+    for (const step of scene.steps) {
+      const el = "target" in step ? this.el(step.target) : null;
+      if (!el || root.contains(el)) continue;
+      // shortcut: assumes a fixed element (the header) belongs to a scene pinned at the top of the
+      // screen (the hero), so its viewport y is its y in the scene; fine while only the hero does this.
+      [el, ...el.querySelectorAll("[data-build-part], [data-ch]")].forEach((n) => {
+        this.rects.set(n, { ...this.measure(n), y: n.getBoundingClientRect().top });
+      });
+    }
 
-    this.overlay = div("sw-overlay", root);
+    // The hero also builds the fixed header, so its layer is fixed to the screen above it (the pinned
+    // hero is its own stacking context and could never draw over the header from inside).
+    const editor = scene.chrome === "editor";
+    this.overlay = div("sw-overlay", editor ? document.body : root);
+    if (editor) {
+      const { left, width, height } = this.base;
+      Object.assign(this.overlay.style, { position: "fixed", inset: `0 auto auto ${left}px`, width: `${width}px`, height: `${height}px`, zIndex: "60" });
+    }
     this.overlay.setAttribute("aria-hidden", "true");
     this.overlay.inert = true;
 
@@ -1047,7 +1065,8 @@ export class Director {
     return { x: r.left - this.base.left, y: r.top - this.base.top, w: r.width, h: r.height };
   }
   private el(id: string) {
-    const el = this.root.querySelector<HTMLElement>(`[data-build="${id}"]`);
+    const sel = `[data-build="${id}"]`;
+    const el = this.root.querySelector<HTMLElement>(sel) ?? document.querySelector<HTMLElement>(sel);
     // Hidden at this breakpoint (display: none): treat as absent rather than aiming at (0, 0).
     return el && el.getClientRects().length ? el : null;
   }

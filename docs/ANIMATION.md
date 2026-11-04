@@ -76,7 +76,7 @@ revealed or painted), and the divider drawn.
 
 | Section | Choreography |
 | --- | --- |
-| Header | hidden while the swarm gathers, then built part by part over the first 60% of a screen of scrolling (`buildHeader()` in `index.ts`, no cursor): the bar drops in, the logo and avatars pop, the name is wiped in, the nav items drop, the buttons rise. Without the swarm the same moves play once on load (CSS) |
+| Header | hidden at first; built at the start of the hero scroll by agents whose hero work comes later: Grok draws the bar, types the name and reveals Skip/Replay, DeepSeek imports the logo, Qwen marquee-selects the nav, Mistral aligns the avatar stack and draws the CV button. Without the swarm a short CSS entrance plays on load |
 | Hero | full build: type, draw, scale/drag with guides, emphasis painted, duplicate, image drop, comment threads |
 | About | heading select + rule, summary written line by line, facts stamped; cards drawn then duplicated; labels typed, hobbies stamped, qualities aligned, book imported and its title revealed, map drawn and dropped in, label typed, pin dropped |
 | Skills | rule, then six agents each draw a component set and stamp its chips; the Practice row is typed and aligned |
@@ -88,6 +88,9 @@ revealed or painted), and the divider drawn.
 
 Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
 built while it is actually on screen instead of on one long, loosely synced timeline.
+The hero's overlay is fixed to the screen (z-index above the header) because the pinned hero is its own
+stacking context and could never draw over the fixed header from inside; it hides once the hero has
+scrolled past.
 Any step can carry `say: "…"`, a Figma-style cursor-chat bubble shown while that step runs.
 
 ## Breakpoints

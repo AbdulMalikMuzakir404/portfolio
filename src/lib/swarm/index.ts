@@ -101,6 +101,8 @@ export function startSwarm(): () => void {
           built.revert();
           clearBuildStyles();
           html.classList.remove("swarm-ready");
+          // The header is already on screen: don't replay its no-swarm entrance.
+          html.classList.add("swarm-off");
           delete html.dataset.swarm;
         };
       },
@@ -135,6 +137,8 @@ export function startSwarm(): () => void {
         const sync = (p: number) => {
           if (editor) {
             html.dataset.swarm = p < 0.995 ? "building" : "done";
+            // The hero's layer is fixed to the screen: put it away once the hero has scrolled past.
+            d.overlay.style.visibility = p < 1 ? "" : "hidden";
             if (p > 0.002) intro?.release();
           }
           if (outro && p > 0.995) outro.start();
@@ -182,7 +186,6 @@ export function startSwarm(): () => void {
         if (editor || finale) sync(st.progress);
       }
 
-      buildHeader();
       html.classList.add("swarm-ready");
       return () => {
         stops.forEach((stop) => stop());
@@ -294,24 +297,7 @@ function galaxy(d: Director, anchor: "home" | "end", enter: boolean) {
  * typed letter at opacity 0), not to what the page had. Wipe every inline style the build touched.
  */
 function clearBuildStyles() {
-  gsap.set(document.querySelectorAll("[data-build], [data-build-part], [data-ch]"), { clearProps: "all" });
-}
-
-/**
- * The header isn't there while the swarm gathers; it is built, part by part, over the first stretch
- * of scrolling. No cursor does this: the ten agents are busy with the hero.
- */
-function buildHeader() {
-  const header = document.querySelector<HTMLElement>("[data-swarm-header]");
-  if (!header) return;
-  const q = (sel: string) => [...header.querySelectorAll<HTMLElement>(sel)].filter((e) => e.getClientRects().length);
-  const tl = gsap.timeline({ defaults: { ease: "power3.out", duration: 0.5 } });
-  tl.fromTo(q(".hdr-bar"), { autoAlpha: 0, y: -18, scale: 0.98 }, { autoAlpha: 1, y: 0, scale: 1 })
-    .fromTo(q(".hdr-pop"), { autoAlpha: 0, scale: 0.4 }, { autoAlpha: 1, scale: 1, ease: "back.out(2)", stagger: 0.05 }, 0.25)
-    .fromTo(q(".hdr-wipe"), { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "steps(18)", duration: 0.7 }, 0.3)
-    .fromTo(q(".hdr-drop"), { autoAlpha: 0, y: -8 }, { autoAlpha: 1, y: 0, stagger: 0.06 }, 0.4)
-    .fromTo(q(".hdr-rise"), { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, stagger: 0.08 }, 0.7);
-  ScrollTrigger.create({ start: 0, end: () => innerHeight * 0.6, scrub: 0.6, animation: tl });
+  gsap.set(document.querySelectorAll("[data-build], [data-build-part], [data-ch]"), { clearProps: "opacity,visibility,transform,clipPath,color" });
 }
 
 /** Pin spacers shift every section down, so deep links need re-resolving once they exist. */
