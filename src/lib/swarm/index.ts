@@ -3,7 +3,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import Lenis from "lenis";
 import { Director } from "./director";
-import { cursors, owner, scenes, tabletAlias } from "./scenes";
+import { cursors, scenes, tabletAlias } from "./scenes";
 
 type Mode = "desktop" | "tablet";
 
@@ -117,7 +117,7 @@ export function startSwarm(): () => void {
       for (const scene of scenes) {
         const root = document.querySelector<HTMLElement>(scene.root);
         if (!root) continue;
-        const d = new Director(root, scene, [...cursors, owner], alias, mode);
+        const d = new Director(root, scene, cursors, alias, mode);
         overlays.push(d.overlay);
         const tl = d.build();
         const pinSpec = scene.scroll.pin;
@@ -168,14 +168,8 @@ export function startSwarm(): () => void {
           end = () => `${hold.end}`;
         }
 
-        const sel = scene.scroll.trigger;
-        const trigger = sel ? (root.querySelector(sel) ?? document.querySelector(sel) ?? root) : root;
-        if (scene.scroll.play === "enter") {
-          ScrollTrigger.create({ trigger, start, animation: tl, toggleActions: "play none none reverse" });
-          continue;
-        }
         const st = ScrollTrigger.create({
-          trigger,
+          trigger: scene.scroll.trigger ? (root.querySelector(scene.scroll.trigger) ?? root) : root,
           start,
           end,
           pin: !!pin,
@@ -188,6 +182,7 @@ export function startSwarm(): () => void {
         if (editor || finale) sync(st.progress);
       }
 
+      buildHeader();
       html.classList.add("swarm-ready");
       return () => {
         stops.forEach((stop) => stop());
@@ -300,6 +295,23 @@ function galaxy(d: Director, anchor: "home" | "end", enter: boolean) {
  */
 function clearBuildStyles() {
   gsap.set(document.querySelectorAll("[data-build], [data-build-part], [data-ch]"), { clearProps: "all" });
+}
+
+/**
+ * The header isn't there while the swarm gathers; it is built, part by part, over the first stretch
+ * of scrolling. No cursor does this: the ten agents are busy with the hero.
+ */
+function buildHeader() {
+  const header = document.querySelector<HTMLElement>("[data-swarm-header]");
+  if (!header) return;
+  const q = (sel: string) => [...header.querySelectorAll<HTMLElement>(sel)].filter((e) => e.getClientRects().length);
+  const tl = gsap.timeline({ defaults: { ease: "power3.out", duration: 0.5 } });
+  tl.fromTo(q(".hdr-bar"), { autoAlpha: 0, y: -18, scale: 0.98 }, { autoAlpha: 1, y: 0, scale: 1 })
+    .fromTo(q(".hdr-pop"), { autoAlpha: 0, scale: 0.4 }, { autoAlpha: 1, scale: 1, ease: "back.out(2)", stagger: 0.05 }, 0.25)
+    .fromTo(q(".hdr-wipe"), { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "steps(18)", duration: 0.7 }, 0.3)
+    .fromTo(q(".hdr-drop"), { autoAlpha: 0, y: -8 }, { autoAlpha: 1, y: 0, stagger: 0.06 }, 0.4)
+    .fromTo(q(".hdr-rise"), { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, stagger: 0.08 }, 0.7);
+  ScrollTrigger.create({ start: 0, end: () => innerHeight * 0.6, scrub: 0.6, animation: tl });
 }
 
 /** Pin spacers shift every section down, so deep links need re-resolving once they exist. */

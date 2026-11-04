@@ -76,7 +76,7 @@ revealed or painted), and the divider drawn.
 
 | Section | Choreography |
 | --- | --- |
-| Header | scrubbed over the first 90% of a screen of scrolling (the page drives it, since the bar is fixed), alongside the hero: "Abdul", the owner's cursor, imports the logo, types the name, marquee-selects the nav, aligns the avatar stack, draws the CV button and paints Skip/Replay (never hidden) |
+| Header | hidden while the swarm gathers, then built part by part over the first 60% of a screen of scrolling (`buildHeader()` in `index.ts`, no cursor): the bar drops in, the logo and avatars pop, the name is wiped in, the nav items drop, the buttons rise. Without the swarm the same moves play once on load (CSS) |
 | Hero | full build: type, draw, scale/drag with guides, emphasis painted, duplicate, image drop, comment threads |
 | About | heading select + rule, summary written line by line, facts stamped; cards drawn then duplicated; labels typed, hobbies stamped, qualities aligned, book imported and its title revealed, map drawn and dropped in, label typed, pin dropped |
 | Skills | rule, then six agents each draw a component set and stamp its chips; the Practice row is typed and aligned |
@@ -84,11 +84,10 @@ revealed or painted), and the divider drawn.
 | Work | one scene per featured project, each different (draw + drop + duplicate, phones handed up, draw-short-then-resize, import from the side, phone frames drawn), plus meta typed, summary written, details and links revealed; More projects label typed and rows dragged into order |
 | Credentials | draw heading, draw + duplicate education cards; per certificate (own scene): import image, type date and title, reveal issuer, stamp highlights, paint the link; extra CV certifications stamped in, honor highlighted and discussed in a thread |
 | Contact | heading written line by line once it is on screen, "amazing" highlighted, each contact button and social link stamped in, thread, everyone gathers for Publish, then the swarm rings up beside the heading and keeps orbiting (galaxy, pointer-reactive) |
-| Footer | own scene that plays (over time, not scrubbed) as it slides in, because there is almost no page left below it: "Abdul", the site owner's cursor rather than an agent, types the copyright and reveals Back to top |
+| Footer | no cursor: the copyright is wiped in and Back to top slides in as the footer scrolls into view (CSS scroll-driven animation; static where unsupported) |
 
 Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
 built while it is actually on screen instead of on one long, loosely synced timeline.
-The footer's overlay reaches 110px above it (`bleed`) so the cursor has room.
 Any step can carry `say: "…"`, a Figma-style cursor-chat bubble shown while that step runs.
 
 ## Breakpoints

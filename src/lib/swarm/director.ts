@@ -54,7 +54,6 @@ export class Director {
   private progressBar?: HTMLElement;
   private cue?: HTMLElement;
   private base: DOMRect;
-  private unclipped = false;
 
   constructor(
     readonly root: HTMLElement,
@@ -64,15 +63,9 @@ export class Director {
     private mode: "desktop" | "tablet",
   ) {
     this.base = root.getBoundingClientRect();
-    const bleed = scene.bleed ?? 0;
-    if (bleed) this.base = new DOMRect(this.base.x, this.base.y - bleed, this.base.width, this.base.height + bleed);
     root.querySelectorAll("[data-build], [data-ch]").forEach((el) => this.rects.set(el, this.measure(el)));
 
     this.overlay = div("sw-overlay", root);
-    if (bleed) this.overlay.style.top = `${-bleed}px`;
-    // A fixed root (the header bar) can't stretch the page, so its cursor may hang below it unclipped.
-    this.unclipped = getComputedStyle(root).position === "fixed";
-    if (this.unclipped) this.overlay.style.overflow = "visible";
     this.overlay.setAttribute("aria-hidden", "true");
     this.overlay.inert = true;
 
@@ -230,10 +223,8 @@ export class Director {
     // Text at the very left edge of a scene: keep the pointer inside it so it isn't clipped.
     t = this.move(a, { x: Math.max(r.x - 2, 4), y: r.y + r.h * 0.6 }, t);
     t = this.press(a, t);
-    // The pointer steps aside so the words stay readable while they're typed (above them when
-    // there's no room below for its name tag).
-    const roomBelow = this.unclipped || r.y + r.h + 56 <= this.size.h;
-    this.dragTo(a, { x: Math.max(r.x - 22, 4), y: roomBelow ? r.y + r.h + 18 : r.y - 46 }, t, 0.35, "power2.out");
+    // The pointer steps aside so the words stay readable while they're typed.
+    this.dragTo(a, { x: Math.max(r.x - 22, 4), y: r.y + r.h + 18 }, t, 0.35, "power2.out");
     this.tl.set(caret, { autoAlpha: 1 }, t);
 
     const chars = [...el.querySelectorAll<HTMLElement>("[data-ch]")];

@@ -19,8 +19,6 @@ const exits: Record<string, Pt> = {
   grok: { x: 0.5, y: -0.08 },
 };
 export const cursors: CursorSpec[] = agents.map((a) => ({ ...a, exit: exits[a.id] }));
-/** Not one of the agents: the site's owner, who sets up the header and signs the footer. */
-export const owner: CursorSpec = { id: "abdul", label: "Abdul", color: "#34D399", exit: { x: 0.3, y: -0.3 } };
 
 /** Tablet runs five agents; the others' work queues behind the agent they fold into. */
 export const tabletAlias: Record<string, string> = {
@@ -589,39 +587,7 @@ const contact: Scene = {
   ],
 };
 
-// Abdul builds the header over the first screen of scrolling, alongside the hero build. The bar is
-// fixed, so the page itself drives it.
-const header: Scene = {
-  root: "[data-swarm-row='header']",
-  scroll: { trigger: "body", start: "top top", end: "+=90%" },
-  steps: [
-    { who: "abdul", do: "import", target: "header.logo", from: { x: -40, y: 40 } },
-    { who: "abdul", do: "deselect" },
-    { who: "abdul", do: "type", target: "header.name" },
-    { who: "abdul", do: "marquee", target: "header.nav" },
-    { who: "abdul", do: "align", target: "header.agents" },
-    { who: "abdul", do: "reveal", target: "header.menu" },
-    { who: "abdul", do: "draw", target: "header.cv" },
-    { who: "abdul", do: "deselect" },
-    { who: "abdul", do: "paint", target: "header.toggle" },
-    { who: "*", do: "exit" },
-  ],
-};
-
-// The footer slides in over the last few pixels of the page, so it plays on arrival.
-const footer: Scene = {
-  root: "[data-swarm-row='footer']",
-  bleed: 110,
-  scroll: { start: "top 92%", end: "", play: "enter" },
-  steps: [
-    { who: "abdul", do: "type", target: "footer.copy" },
-    { who: "abdul", do: "reveal", target: "footer.top" },
-    { who: "*", do: "exit" },
-  ],
-};
-
 export const scenes = [
-  header,
   hero,
   headings.about,
   about,
@@ -641,5 +607,4 @@ export const scenes = [
   ...certRows,
   cvMore,
   contact,
-  footer,
 ];

@@ -72,20 +72,13 @@ export type Scene = {
   root: string;
   steps: Step[];
   chrome?: "editor" | "publish";
-  /** Pixels the overlay reaches above the root, for a root too short to hold a cursor (the footer). */
-  bleed?: number;
   /** Where cursors sit at progress 0 (fractions of the root). Defaults to their exit points. */
   start?: Record<string, Pt>;
   scroll: {
-    /** Element that drives the ScrollTrigger (inside the root, else anywhere); defaults to the root. */
+    /** Element inside the root that drives the ScrollTrigger; defaults to the root. */
     trigger?: string;
     start: string;
     end: string;
-    /**
-     * "enter": play the timeline over time once `start` is crossed (reversing on the way back)
-     * instead of scrubbing; for the footer, which has almost no scroll left below it.
-     */
-    play?: "enter";
     /**
      * Pin length in viewport heights, per breakpoint (the hero). "fit" pins at the offset that frames
      * the parts being built, for a length that follows the timeline (Contact, the last section).
