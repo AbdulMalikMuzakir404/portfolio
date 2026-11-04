@@ -204,13 +204,14 @@ export class Director {
     }
   }
 
-  private move(a: Agent, p: Pt, t: number, ease = "power2.inOut"): number {
+  private move(a: Agent, p: Pt, t: number, ease = "power3.inOut"): number {
     const f = a.pos;
     const dx = p.x - f.x;
     const dy = p.y - f.y;
     const d = Math.hypot(dx, dy);
     if (d < 1) return t;
-    const dur = clamp(0.3, 0.95, 0.28 + d / 1500);
+    // Agents dart between tasks (quick, eased at both ends), then take their time on the work itself.
+    const dur = clamp(0.2, 0.55, 0.18 + d / 2400);
     // Hands move in arcs, not rulers: bow the path sideways, more for longer trips.
     const bend = a.side * Math.min(70, d * 0.16);
     const mid = { x: f.x + dx / 2 - (dy / d) * bend, y: f.y + dy / 2 + (dx / d) * bend };

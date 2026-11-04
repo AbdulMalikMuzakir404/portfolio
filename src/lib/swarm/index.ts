@@ -180,7 +180,7 @@ export function startSwarm(): () => void {
           end,
           pin: !!pin,
           anticipatePin: pin ? 1 : 0,
-          scrub: 0.6,
+          scrub: 0.4,
           animation: tl,
           onUpdate: editor || finale ? (self) => sync(self.progress) : undefined,
         });
@@ -309,9 +309,9 @@ type Run = { d: Director; st: ScrollTrigger; tl: gsap.core.Timeline };
 /**
  * Agents never vanish between sections. A scene shows its own copy of an agent only while the agent
  * works there (from arriving at its first task until the scene's exit). Whenever an agent leaves one
- * copy, a shared traveller takes over exactly where that copy was and glides on: towards where the
- * agent starts next (driven by scroll, so it rewinds), or straight to the next copy if that one is
- * already working, handing back to it once it's on top of it. No hand-off ever jumps.
+ * copy, a shared traveller takes over exactly where that copy was and flies (spring-eased) to where
+ * the agent works next, or back where it came from when scrolling up, and waits there; it hands back
+ * to the next copy once it's on top of it. No hand-off ever jumps.
  */
 function travel(runs: Run[]) {
   const layer = document.createElement("div");
@@ -333,7 +333,7 @@ function travel(runs: Run[]) {
     el.innerHTML = `<div class="sw-inner">${cursorMarkup(all[0].a.spec)}</div>`;
     el.style.visibility = "hidden";
     layer.append(el);
-    return { segs, el, shown: null as (typeof segs)[number] | null, pos: null as Pt | null };
+    return { segs, el, shown: null as (typeof segs)[number] | null, pos: null as Pt | null, vel: { x: 0, y: 0 } };
   });
   type Seg = (typeof lanes)[number]["segs"][number];
 
@@ -345,31 +345,29 @@ function travel(runs: Run[]) {
     return { x: r.left - off.x, y: r.top - off.y };
   };
   const live = (s: Seg) => s.tl.time() >= s.first && s.tl.time() < s.a.last;
-  // Scroll position where a scene's timeline is at time t (ignoring the scrub lag), and where it is now.
-  const at = (s: Seg, t: number) => s.st.start + (s.st.end - s.st.start) * Math.min(1, t / s.tl.duration());
-  const now = (s: Seg) => s.st.start + (s.st.end - s.st.start) * s.tl.progress();
   const onScreen = (b: DOMRect, p: Pt) => ({
     x: gsap.utils.clamp(8, innerWidth - 24, b.left + p.x),
     y: gsap.utils.clamp(8, innerHeight - 24, b.top + p.y),
   });
-  const ease = gsap.parseEase("sine.inOut");
   const show = (lane: (typeof lanes)[number], seg: Seg | null) => {
     if (lane.shown) lane.shown.a.el.style.visibility = "hidden";
     if (seg) seg.a.el.style.visibility = "";
     lane.shown = seg;
     lane.el.style.visibility = seg ? "hidden" : "";
   };
-  let smooth = scrollY;
+  let lastY = scrollY;
+  let down = true;
 
-  const tick = (_: number, dt: number) => {
-    // Between scenes nothing is scrubbing, so follow scroll with a similar lag.
-    smooth += (scrollY - smooth) * (1 - Math.exp(-dt / 200));
-    const k = 1 - Math.exp(-dt / 90);
+  const tick = (_: number, dtMs: number) => {
+    if (scrollY !== lastY) down = scrollY > lastY;
+    lastY = scrollY;
+    const dt = Math.min(dtMs, 50) / 1000;
     for (const lane of lanes) {
       if (lane.shown && live(lane.shown)) continue;
       if (lane.shown) {
         // Its copy just stopped working here: pick up from exactly where it is.
         lane.pos = where(lane.shown);
+        lane.vel = { x: 0, y: 0 };
         show(lane, null);
       }
       const next = lane.segs.find(live);
@@ -378,23 +376,22 @@ function travel(runs: Run[]) {
         const i = lane.segs.findLastIndex((s) => s.tl.time() >= s.a.last);
         const from = lane.segs[i];
         const to = lane.segs[i + 1];
-        if (from && to) {
-          const s0 = at(from, from.a.last);
-          const s1 = at(to, to.first);
-          const y = to.tl.progress() > 0 ? now(to) : from.tl.progress() < 1 ? now(from) : smooth;
-          const f = ease(s1 > s0 ? gsap.utils.clamp(0, 1, (y - s0) / (s1 - s0)) : 1);
-          const a = onScreen(from.d.overlay.getBoundingClientRect(), from.a.lastPos!);
-          const b = onScreen(to.d.overlay.getBoundingClientRect(), to.a.firstPos!);
-          goal = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
-        }
+        // Like a purposeful agent: head straight for the spot it works at next (or, scrolling back,
+        // the one it came from) and wait there, kept on screen until that spot scrolls into view.
+        if (from && to) goal = down ? onScreen(to.d.overlay.getBoundingClientRect(), to.a.firstPos!) : onScreen(from.d.overlay.getBoundingClientRect(), from.a.lastPos!);
       }
       if (!goal) {
         lane.pos = null;
         lane.el.style.visibility = "hidden";
         continue;
       }
+      // Critically damped spring: quick, with a smooth start and stop (settles in about 0.5s).
       const p = lane.pos ?? goal;
-      lane.pos = { x: p.x + (goal.x - p.x) * k, y: p.y + (goal.y - p.y) * k };
+      const w = 12;
+      const v = lane.vel;
+      v.x += (w * w * (goal.x - p.x) - 2 * w * v.x) * dt;
+      v.y += (w * w * (goal.y - p.y) - 2 * w * v.y) * dt;
+      lane.pos = { x: p.x + v.x * dt, y: p.y + v.y * dt };
       if (next && Math.hypot(goal.x - lane.pos.x, goal.y - lane.pos.y) < 3) {
         show(lane, next);
         continue;
