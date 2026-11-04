@@ -66,7 +66,12 @@ export function About() {
           <div className="flex gap-6 rounded-md border border-line bg-ink-900 p-6 md:col-span-3 md:flex-col md:p-7">
             <div data-build="about.book" className="shrink-0">
               {read.cover ? (
-                <Image src={read.cover} alt={`${read.title} by ${read.author} — book cover`} className="h-auto w-24 md:w-28" sizes="112px" />
+                <Image
+                  src={read.cover}
+                  alt={`${read.title} by ${read.author} — book cover`}
+                  className="h-auto w-24 rounded-[3px] shadow-[4px_6px_16px_-6px_rgba(0,0,0,0.8)] md:w-28"
+                  sizes="112px"
+                />
               ) : (
                 // Typographic stand-in until a cover image is added in src/data/profile.ts.
                 <div
