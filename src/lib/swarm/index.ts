@@ -67,9 +67,9 @@ export function startSwarm(): () => void {
           return;
         }
         const mode: Mode = desktop ? "desktop" : "tablet";
-        // A touch of smoothing and ~15% slower wheel scrolling. Kept light on purpose: a stronger
+        // A touch of smoothing, wheel a bit faster than native. Kept light on purpose: a stronger
         // setting (0.7x, lerp 0.07) read as laggy. Keyboard, anchors and focus stay native.
-        const lenis = new Lenis({ lerp: 0.12, wheelMultiplier: 0.85, anchors: true });
+        const lenis = new Lenis({ lerp: 0.12, wheelMultiplier: 1.15, anchors: true });
         lenis.on("scroll", ScrollTrigger.update);
         const raf = (time: number) => lenis.raf(time * 1000);
         gsap.ticker.add(raf);
@@ -189,7 +189,7 @@ export function startSwarm(): () => void {
         if (editor || finale) sync(st.progress);
       }
 
-      stops.push(travel(runs));
+      stops.push(travel(runs), studio(runs));
       html.classList.add("swarm-ready");
       return () => {
         stops.forEach((stop) => stop());
@@ -306,6 +306,121 @@ function clearBuildStyles() {
 
 type Run = { d: Director; st: ScrollTrigger; tl: gsap.core.Timeline };
 
+const SECTION_NAMES: Record<string, string> = { home: "Hero", about: "About", skills: "Skills", experience: "Experience", work: "Work", credentials: "Credentials", contact: "Contact" };
+const sectionName = (d: Director) => SECTION_NAMES[d.root.closest("section")?.id ?? ""] ?? "";
+
+/**
+ * Design-tool chrome around the build: rulers along the top and left edges (blue bands follow the
+ * current selections) and a status bar with the agents, a live layer counter and what's happening.
+ * The rulers fade once the page is published; the status bar stays to say so.
+ */
+function studio(runs: Run[]) {
+  const ids = new Set(runs.flatMap((r) => [...r.d.agents.keys()]));
+  const crew = cursors.filter((c) => ids.has(c.id));
+  const total = runs.reduce((n, r) => n + r.d.built.length, 0);
+  const sectionOf = (r: Run) => sectionName(r.d);
+  const contact = runs.find((r) => r.d.root.id === "contact");
+
+  const el = (cls: string, html = "") => {
+    const e = document.createElement("div");
+    e.className = cls;
+    e.setAttribute("aria-hidden", "true");
+    e.innerHTML = html;
+    document.body.append(e);
+    return e;
+  };
+  const hud = el(
+    "sw-hud",
+    `<span class="sw-hud-av">${crew.map((c) => `<i style="background:${c.color}"></i>`).join("")}</span><span><b>${crew.length}</b> agents</span><span><b class="sw-hud-n">0</b> / ${total} layers</span><span class="sw-hud-bar"><i></i></span><span class="sw-hud-status">Scanning page…</span>`,
+  );
+  const count = hud.querySelector<HTMLElement>(".sw-hud-n")!;
+  const bar = hud.querySelector<HTMLElement>(".sw-hud-bar i")!;
+  const status = hud.querySelector<HTMLElement>(".sw-hud-status")!;
+
+  const top = el("sw-ruler sw-ruler-x", Array.from({ length: 40 }, (_, i) => `<em style="left:${i * 100 + 3}px">${i * 100}</em>`).join(""));
+  const left = el("sw-ruler sw-ruler-y", Array.from({ length: 16 }, () => "<em></em>").join(""));
+  const marks = left.querySelectorAll<HTMLElement>("em");
+  const bands = (ruler: HTMLElement) => Array.from({ length: 10 }, () => ruler.appendChild(document.createElement("b")));
+  const topBands = bands(top);
+  const leftBands = bands(left);
+  const sels = new Map(runs.map((r) => [r, [...r.d.overlay.querySelectorAll<HTMLElement>(".sw-sel")]]));
+  const frames = new Map(runs.map((r) => [r, [...r.d.overlay.querySelectorAll<HTMLElement>(".sw-skel")]]));
+
+  let shown = -1;
+  let text = "";
+  const tick = () => {
+    // Layers built so far, and what's happening.
+    let n = 0;
+    let active: Run | undefined;
+    for (const r of runs) {
+      const t = r.tl.time();
+      for (const b of r.d.built) if (t >= b) n++;
+      const p = r.tl.progress();
+      if (p > 0 && p < 1) active = r;
+    }
+    if (n !== shown) {
+      shown = n;
+      count.textContent = String(n);
+      bar.style.transform = `scaleX(${total ? n / total : 0})`;
+    }
+    const cp = contact?.tl.progress() ?? 0;
+    const done = cp > 0.995;
+    const next = done ? "Published ✓" : cp > 0.85 ? "Publishing…" : n === 0 ? "Scanning page…" : active ? `Building · ${sectionOf(active)}` : text;
+    if (next !== text) {
+      text = next;
+      status.textContent = next;
+      hud.classList.toggle("is-done", done);
+      top.classList.toggle("is-off", done);
+      left.classList.toggle("is-off", done);
+    }
+
+    // Left ruler counts page pixels and scrolls with the page.
+    const y0 = scrollY;
+    left.style.backgroundPositionY = `${-y0}px`;
+    const first = Math.floor(y0 / 100);
+    marks.forEach((m, i) => {
+      const py = (first + i) * 100;
+      m.style.transform = `translateY(${py - y0 + 3}px) rotate(-90deg)`;
+      if (m.textContent !== String(py)) m.textContent = String(py);
+    });
+
+    // Bands on the rulers: strong for the selections on screen, faint for the layer frames waiting
+    // to be built. GSAP's autoAlpha writes visibility inline, so no style recalculation is needed.
+    const boxes: { q: DOMRect; strong: boolean }[] = [];
+    const take = (els: HTMLElement[], strong: boolean) => {
+      for (const s of els) {
+        if (boxes.length >= 10) return;
+        if (s.style.visibility === "hidden") continue;
+        const q = s.getBoundingClientRect();
+        if (q.bottom > 0 && q.top < innerHeight && q.width > 0) boxes.push({ q, strong });
+      }
+    };
+    const live = runs.filter((r) => {
+      const b = r.d.root.getBoundingClientRect();
+      return b.bottom > 0 && b.top < innerHeight && r.tl.progress() < 1;
+    });
+    live.forEach((r) => take(sels.get(r)!, true));
+    live.forEach((r) => take(frames.get(r)!, false));
+    topBands.forEach((b, i) => {
+      const it = boxes[i];
+      b.style.opacity = it ? (it.strong ? "1" : "0.45") : "0";
+      if (it) b.style.transform = `translateX(${it.q.left}px) scaleX(${it.q.width / 100})`;
+    });
+    leftBands.forEach((b, i) => {
+      const it = boxes[i];
+      b.style.opacity = it ? (it.strong ? "1" : "0.45") : "0";
+      if (it) b.style.transform = `translateY(${it.q.top}px) scaleY(${it.q.height / 100})`;
+    });
+  };
+  gsap.ticker.add(tick);
+  return () => {
+    gsap.ticker.remove(tick);
+    hud.remove();
+    top.remove();
+    left.remove();
+  };
+}
+
 /**
  * Agents never vanish between sections. A scene shows its own copy of an agent only while the agent
  * works there (from arriving at its first task until the scene's exit). Whenever an agent leaves one
@@ -344,6 +459,7 @@ function travel(runs: Run[]) {
     bubble.style.visibility = "hidden";
     layer.append(trail, el, bubble);
     return {
+      id,
       segs,
       el,
       trail,
@@ -362,9 +478,14 @@ function travel(runs: Run[]) {
       nextHop: 0,
       still: 0,
       sayUntil: 0,
-      quietUntil: 2 + Math.random() * 4,
+      quietUntil: 1.5 + Math.random() * 3,
       onScreen: false,
-      reply: null as { at: number; text: string } | null,
+      cheerAt: 0,
+      screen: { x: -999, y: -999 },
+      greeted: -99,
+      turn: null as { at: number; text: string; typed: boolean } | null,
+      // Who it's facing in a conversation (only its position matters here).
+      lookAt: null as { onScreen: boolean; screen: Pt } | null,
     };
   });
   type Seg = (typeof lanes)[number]["segs"][number];
@@ -399,7 +520,7 @@ function travel(runs: Run[]) {
   type Lane = (typeof lanes)[number];
 
   // While waiting, an agent keeps working: it hops around the spot inspecting things, clicks now and
-  // then, and says what it's about to do or pings an agent that's busy on screen.
+  // then, says what it's about to do, and chats with the others (see the conversation scripts).
   const about: Partial<Record<string, string>> = {
     type: "Warming up the text tool",
     draw: "Measuring the frame",
@@ -421,39 +542,273 @@ function travel(runs: Run[]) {
     publish: "Getting ready to ship",
   };
   const busy = ["Reviewing spacing", "Checking contrast", "Scanning the grid", "Running a11y checks", "Inspecting layers"];
-  const pings = ["I'm up next", "nice work 👀", "ping me when it's done", "spacing check?", "want a hand?"];
-  const replies = ["on it ✓", "almost there", "thanks! 🙌", "looks good to me", "go ahead"];
+  // Conversation scripts, by phase. Each line is [who, text]: 0 starts, 1 and 2 join in; {0} {1} {2}
+  // are their names, {section} the part of the page they're on, {task} what the speaker does next.
+  type Line = [number, string];
+  const scripts: Record<"hello" | "work" | "after", Line[][]> = {
+    // The opening: the team gathers, says hi and splits up the work.
+    hello: [
+      [[0, "Morning team ☀️"], [1, "Morning {0}! Coffee first? ☕"], [2, "Already on my second 😄"], [0, "Ha. Let's build something nice"]],
+      [[0, "Hey {1}! Ready to build?"], [1, "Always 💪"], [0, "The visitor's scroll is our cue 👇"]],
+      [[0, "Who's taking the hero?"], [1, "I've got the name"], [2, "I'll grab the photo 📸"], [0, "Perfect. Teamwork 🤝"]],
+      [[0, "Nice to see you all 👋"], [1, "Welcome back {0}!"], [2, "Ten of us today 🔟"], [1, "Let's make it look great"]],
+      [[0, "Did everyone read the CV?"], [1, "Twice 📄"], [2, "Bandung, Full Stack, MrScraper ✓"], [0, "Then we're set"]],
+      [[0, "{1}, nice colour today 🎨"], [1, "Thanks! Matches the brand"], [0, "😂"]],
+      [[0, "Waiting for the scroll…"], [1, "Any second now 👀"], [2, "Patience, team 🧘"]],
+      [[0, "How was the weekend, {1}?"], [1, "Refactored a whole repo 😅"], [0, "Of course you did"]],
+    ],
+    // During the build: about the section and the task at hand.
+    work: [
+      [[0, "{section} is coming together 👌"], [1, "Spacing feels right"], [2, "Snapped to the 8pt grid ✓"], [0, "Love it"]],
+      [[0, "I'll take the {task} here"], [1, "Cool, I'll review after"], [0, "Deal 🤝"]],
+      [[0, "Heading weight okay?"], [1, "Bump it to 500"], [0, "Done ✓"]],
+      [[0, "Contrast check?"], [1, "AA passes on dark"], [2, "Even on the muted text"], [0, "Ship it 🚀"]],
+      [[0, "{1}, can you take the chips?"], [1, "On it"], [1, "Done, all aligned"], [0, "Fast! ⚡"]],
+      [[0, "Image looks a bit soft"], [1, "Exporting @2x"], [0, "Much sharper ✨"]],
+      [[0, "Copy for this card?"], [1, "Straight from the CV"], [2, "No invented numbers 🙅"], [0, "As it should be"]],
+      [[0, "Should the title wrap?"], [1, "Two lines max"], [0, "Agreed"]],
+      [[0, "{1}, want a hand?"], [1, "Grab the next row"], [0, "On my way ➜"]],
+      [[0, "Ready for review?"], [1, "One sec…"], [1, "Okay, all yours 👀"], [2, "Looks great to me"]],
+      [[0, "Coffee break after {section}?"], [1, "Earn it first 😄"], [0, "Fair 😅"]],
+      [[0, "Next up: the {task}"], [1, "Need anything?"], [0, "Just a second pair of eyes 👀"], [1, "Got you"]],
+    ],
+    // After publishing: wind down together.
+    after: [
+      [[0, "That was fun 😄"], [1, "Best build this week"], [2, "Same time tomorrow?"], [0, "Count me in 🙋"]],
+      [[0, "Who's buying pizza? 🍕"], [1, "{2} is 😏"], [2, "Hey! 😂"], [1, "Kidding, it's on me"]],
+      [[0, "Quick retro?"], [1, "Keep: the comments 💬"], [2, "Change: more coffee ☕"], [0, "Noted 📝"]],
+      [[0, "Psst, visitor 👋"], [1, "Abdul's email is right there ✉️"], [2, "WhatsApp works too 📱"]],
+      [[0, "Proud of us 🥹"], [1, "Group hug 🤗"], [2, "Virtual high five ✋"]],
+      [[0, "Want to see it again?"], [1, "Scroll up, or hit Replay build ↺"], [0, "We'd happily rebuild it"]],
+    ],
+  };
+  const reactions = ["👍", "😂", "🔥", "❤️", "👀", "💯", "🙌", "✨"];
+  const taskNoun: Partial<Record<string, string>> = {
+    type: "text",
+    write: "copy",
+    draw: "frame",
+    import: "image",
+    stamp: "chips",
+    fill: "card copy",
+    reveal: "details",
+    paint: "colours",
+    marquee: "nav",
+    align: "row",
+    thread: "review",
+    highlight: "accent",
+    duplicate: "copies",
+    line: "divider",
+    appear: "headline",
+    place: "image",
+  };
   const label = (l: Lane) => l.el.querySelector(".sw-tag")!.textContent;
   // Bubbles hang right of the arrow; near the right edge they flip to its left so they aren't cut off.
   const place = (b: HTMLElement, x: number, y: number) => {
     const flip = x + 16 + b.offsetWidth > innerWidth - 8;
     b.style.translate = `${flip ? x - b.offsetWidth - 24 : x}px ${y}px`;
   };
-  const say = (lane: Lane, text: string, x: number, y: number) => {
-    lane.bubble.textContent = text;
-    lane.bubble.style.visibility = "";
-    place(lane.bubble, x, y);
-    lane.sayUntil = clock + 2.2;
-    lane.quietUntil = clock + 6 + Math.random() * 6;
+  // Never talk over a comment thread, note or the Publish chrome.
+  const covers = (b: HTMLElement) => {
+    const r = b.getBoundingClientRect();
+    return [...document.querySelectorAll<HTMLElement>(".sw-thread, .sw-note, .sw-toast, .sw-chip, .sw-toolbar")].some((n) => {
+      if (!n.checkVisibility({ visibilityProperty: true, opacityProperty: true })) return false;
+      const q = n.getBoundingClientRect();
+      return r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top;
+    });
   };
+  const say = (lane: Lane, text: string, x: number, y: number, dur = 2.2) => {
+    lane.bubble.textContent = text;
+    lane.bubble.classList.toggle("sw-say-dots", text === "•••");
+    place(lane.bubble, x, y);
+    if (covers(lane.bubble)) {
+      lane.quietUntil = clock + 1.5;
+      return;
+    }
+    lane.bubble.style.visibility = "";
+    lane.sayUntil = clock + dur;
+    lane.quietUntil = clock + 4 + Math.random() * 5;
+  };
+  const greetings = ["👋 hi!", "Hey there!", "Looking for something?", "Hi! Watch this", "Oh, hello 👀"];
+  const cheers = ["Yay! 🎉", "Great job, team! 🙌", "We shipped it 🚀", "High five ✋", "Looks amazing ✨", "Teamwork 💪", "Woohoo! 🥳", "Nailed it 🎯", "So clean 😍", "It's live! 🌐"];
   const pickOne = <T,>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
+  // Each agent waits in its own way.
+  type Style = "orbit" | "grid" | "figure8" | "dart" | "scan" | "drift" | "spiral" | "bounce" | "buddy";
+  const personality: Record<string, Style> = {
+    claude: "orbit",
+    codex: "grid",
+    gemini: "figure8",
+    copilot: "dart",
+    devin: "scan",
+    mistral: "dart",
+    llama: "drift",
+    deepseek: "spiral",
+    qwen: "bounce",
+    grok: "buddy",
+  };
+  // Spring stiffness and damping per style: grid snaps, drift is lazy, bounce overshoots.
+  const springs: Partial<Record<Style, [number, number]>> = {
+    grid: [18, 1],
+    dart: [14, 0.9],
+    scan: [16, 1],
+    drift: [5, 1],
+    bounce: [12, 0.35],
+    buddy: [6, 1],
+    orbit: [8, 1],
+    figure8: [8, 1],
+    spiral: [8, 1],
+  };
+  const curious = new Set(["claude", "gemini", "grok", "qwen", "copilot"]);
+  const shy = new Set(["llama", "deepseek", "devin"]);
+  const pointer = { x: -9999, y: -9999 };
+  const onPointer = (e: PointerEvent) => {
+    if (e.pointerType !== "mouse") return;
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+  };
+  const onLeave = () => ((pointer.x = -9999), (pointer.y = -9999));
+  addEventListener("pointermove", onPointer, { passive: true });
+  document.documentElement.addEventListener("pointerleave", onLeave);
   let clock = 0;
+  // Celebration once the page is published (Contact's timeline at its end); again on each return.
+  const contact = runs.find((r) => r.d.root.id === "contact");
+  let celebrated = false;
+  let cheerUntil = 0;
+  const celebrate = () => {
+    const done = !!contact && contact.tl.progress() > 0.995;
+    if (done && !celebrated) {
+      celebrated = true;
+      const order = [...lanes].sort(() => Math.random() - 0.5);
+      order.forEach((l, i) => (l.cheerAt = clock + 0.7 + i * 0.45));
+      cheerUntil = clock + 0.7 + order.length * 0.45 + 2.4;
+    } else if (!done && celebrated && contact!.tl.progress() < 0.9) {
+      celebrated = false;
+      cheerUntil = 0;
+      lanes.forEach((l) => (l.cheerAt = 0));
+    }
+  };
+  // One conversation at a time: who's in it, its lines and how far it got.
+  let convo: { cast: Lane[]; lines: Line[]; i: number; vars: Record<string, string> } | null = null;
+  let nextConvoAt = 2.5;
+  const hero = runs[0];
+  const phase = (): "hello" | "work" | "after" =>
+    contact && contact.tl.progress() > 0.995 ? "after" : hero && hero.tl.progress() < 0.02 ? "hello" : "work";
+  const fill = (text: string, c: NonNullable<typeof convo>) =>
+    text.replace(/\{(\d|section|task)\}/g, (_, k: string) => (/\d/.test(k) ? (c.cast[+k] ? label(c.cast[+k]) : "team") : c.vars[k]));
+  const schedule = (c: NonNullable<typeof convo>, delay: number) => {
+    const [who, text] = c.lines[c.i];
+    const speaker = c.cast[who];
+    if (!speaker?.onScreen) return endConvo();
+    speaker.turn = { at: clock + delay, text: fill(text, c), typed: false };
+  };
+  const endConvo = () => {
+    convo?.cast.forEach((l) => ((l.lookAt = null), (l.turn = null)));
+    convo = null;
+    nextConvoAt = clock + 2 + Math.random() * 3;
+  };
+  const startConvo = (lane: Lane, upcoming: Seg | undefined) => {
+    const p = phase();
+    const others = lanes.filter((l) => l !== lane && l.onScreen && clock >= l.sayUntil).sort(() => Math.random() - 0.5);
+    // Prefer an agent busy in a scene as the one spoken to.
+    others.sort((a, b) => Number(!!b.shown && b.still === 0) - Number(!!a.shown && a.still === 0));
+    const fits = scripts[p].filter((sc) => Math.max(...sc.map(([w]) => w)) <= others.length);
+    if (!fits.length) return;
+    const lines = pickOne(fits);
+    const seg = lane.shown ?? upcoming;
+    const cast = [lane, ...others.slice(0, Math.max(...lines.map(([w]) => w)))];
+    convo = {
+      cast,
+      lines,
+      i: 0,
+      vars: { section: (seg && sectionName(seg.d)) || "This section", task: (upcoming?.a.firstTask && taskNoun[upcoming.a.firstTask]) || "next bit" },
+    };
+    // Everyone in it turns towards whoever speaks first.
+    cast.forEach((l) => (l.lookAt = l === lane ? cast[1] : lane));
+    schedule(convo, 0);
+  };
   const idle = (lane: Lane, at: Pt, visEl: HTMLElement, svg: SVGElement, upcoming: Seg | undefined, dt: number) => {
     const moving = Math.hypot(lane.speed.x, lane.speed.y) > 40;
     lane.still = moving ? 0 : lane.still + dt;
     const waiting = lane.still > 0.35;
-    if (!waiting) lane.hop = { x: 0, y: 0 };
-    else if (clock > lane.nextHop) {
-      // A new spot to look at nearby; sometimes a quick click there.
-      const ang = Math.random() * Math.PI * 2;
-      const r = 14 + Math.random() * 30;
-      lane.hop = { x: Math.cos(ang) * r, y: Math.sin(ang) * r * 0.7 };
-      lane.nextHop = clock + 0.9 + Math.random() * 1.4;
-      if (Math.random() < 0.35) setTimeout(() => svg.animate?.([{ scale: "1" }, { scale: "0.84" }, { scale: "1" }], { duration: 160 }), 380);
+    // Calm enough to talk: waiting, or just drifting (the opening orbit), not dashing somewhere.
+    const calm = waiting || Math.hypot(lane.speed.x, lane.speed.y) < 260;
+    const t = lane.still;
+    const style = personality[lane.id] ?? "dart";
+    const tap = () => svg.animate?.([{ scale: "1" }, { scale: "0.84" }, { scale: "1" }], { duration: 160 });
+    let target = { x: 0, y: 0 };
+    if (waiting) {
+      // Smooth patterns follow time; the others pick a new spot now and then (sometimes clicking it).
+      if (style === "orbit") target = { x: Math.cos(t * 1.6) * 18, y: Math.sin(t * 1.6) * 12 };
+      else if (style === "figure8") target = { x: Math.sin(t * 1.4) * 26, y: Math.sin(t * 2.8) * 10 };
+      else if (style === "spiral") {
+        const r = 8 + 24 * (0.5 + 0.5 * Math.sin(t * 0.7));
+        target = { x: Math.cos(t * 2.4) * r, y: Math.sin(t * 2.4) * r * 0.7 };
+      } else if (style === "buddy") {
+        // Go and hang around the nearest agent on screen, circling it.
+        const me = lane.screen;
+        const near = lanes.filter((l) => l !== lane && l.onScreen).sort((a, b) => Math.hypot(a.screen.x - me.x, a.screen.y - me.y) - Math.hypot(b.screen.x - me.x, b.screen.y - me.y))[0];
+        const ring = { x: Math.cos(t * 1.3) * 46, y: Math.sin(t * 1.3) * 30 };
+        target = near && Math.hypot(near.screen.x - me.x, near.screen.y - me.y) < 320 ? { x: near.screen.x - at.x + ring.x, y: near.screen.y - at.y + ring.y } : ring;
+      } else {
+        if (clock > lane.nextHop) {
+          const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+          const ang = rnd(0, Math.PI * 2);
+          if (style === "grid") {
+            lane.hop = { x: Math.round(rnd(-3, 3)) * 16, y: Math.round(rnd(-2, 2)) * 16 };
+            lane.nextHop = clock + rnd(0.55, 0.95);
+          } else if (style === "scan") {
+            // Reading along lines: step right, then down a line and back to the start.
+            const col = lane.hop.x >= 40 ? -40 : lane.hop.x + 20;
+            const row = col === -40 ? (lane.hop.y >= 24 ? -12 : lane.hop.y + 12) : lane.hop.y;
+            lane.hop = { x: col, y: row };
+            lane.nextHop = clock + 0.32;
+          } else if (style === "drift") {
+            const r = rnd(8, 26);
+            lane.hop = { x: Math.cos(ang) * r, y: Math.sin(ang) * r * 0.7 };
+            lane.nextHop = clock + rnd(2, 3.2);
+          } else if (style === "bounce") {
+            lane.hop = { x: rnd(-34, 34), y: lane.hop.y < -6 ? 4 : -20 };
+            lane.nextHop = clock + rnd(0.5, 0.8);
+          } else {
+            const r = rnd(20, 52);
+            lane.hop = { x: Math.cos(ang) * r, y: Math.sin(ang) * r * 0.7 };
+            lane.nextHop = clock + rnd(0.45, 0.85);
+          }
+          if (Math.random() < (style === "grid" ? 0.5 : 0.3)) setTimeout(tap, 300);
+        }
+        target = lane.hop;
+      }
+      // The visitor's pointer: curious agents come over to look (and may say hi), shy ones back off.
+      const dx = pointer.x - (at.x + lane.off.x);
+      const dy = pointer.y - (at.y + lane.off.y);
+      const d = Math.hypot(dx, dy);
+      if (d < 200 && d > 1) {
+        if (curious.has(lane.id)) {
+          const reach = Math.min(d - 44, 110);
+          target = { x: target.x * 0.3 + (dx / d) * reach, y: target.y * 0.3 + (dy / d) * reach };
+        } else if (shy.has(lane.id)) target = { x: target.x - (dx / d) * (200 - d) * 0.45, y: target.y - (dy / d) * (200 - d) * 0.45 };
+      }
+      // In a conversation, lean towards the one being spoken to (or speaking).
+      const peer = lane.lookAt;
+      if (peer?.onScreen) {
+        const lx = peer.screen.x - (at.x + lane.off.x);
+        const ly = peer.screen.y - (at.y + lane.off.y);
+        const ld = Math.hypot(lx, ly);
+        if (ld > 60) target = { x: target.x * 0.4 + (lx / ld) * Math.min(26, ld - 60), y: target.y * 0.4 + (ly / ld) * Math.min(26, ld - 60) };
+      }
+      // Personal space: don't sit on top of another agent.
+      for (const l of lanes) {
+        if (l === lane || !l.onScreen) continue;
+        const ox = at.x + target.x - l.screen.x;
+        const oy = at.y + target.y - l.screen.y;
+        const od = Math.hypot(ox, oy);
+        if (od < 44 && od > 0.1) target = { x: target.x + (ox / od) * (44 - od), y: target.y + (oy / od) * (44 - od) };
+      }
     }
-    const w = waiting ? 9 : 16;
-    lane.offVel.x += (w * w * (lane.hop.x - lane.off.x) - 2 * w * lane.offVel.x) * dt;
-    lane.offVel.y += (w * w * (lane.hop.y - lane.off.y) - 2 * w * lane.offVel.y) * dt;
+    lane.hop = waiting ? lane.hop : { x: 0, y: 0 };
+    // Spring towards the target; each style has its own feel (snappy, lazy, bouncy).
+    const [w, z] = !waiting ? [16, 1] : (springs[style] ?? [9, 1]);
+    lane.offVel.x += (w * w * (target.x - lane.off.x) - 2 * z * w * lane.offVel.x) * dt;
+    lane.offVel.y += (w * w * (target.y - lane.off.y) - 2 * z * w * lane.offVel.y) * dt;
     lane.off.x += lane.offVel.x * dt;
     lane.off.y += lane.offVel.y * dt;
     visEl.style.translate = `${lane.off.x}px ${lane.off.y}px`;
@@ -462,27 +817,60 @@ function travel(runs: Run[]) {
     const y = at.y + lane.off.y;
     const onScreen = x > 0 && x < innerWidth - 30 && y > 60 && y < innerHeight - 70;
     lane.onScreen = onScreen;
+    lane.screen = { x, y };
     const stepSay = visEl.querySelector<HTMLElement>(".sw-say");
     const talking = lanes.filter((l) => clock < l.sayUntil).length;
     if (clock < lane.sayUntil && onScreen) place(lane.bubble, x, y);
-    else if (lane.sayUntil) {
+    if (lane.sayUntil && (clock >= lane.sayUntil || !onScreen || covers(lane.bubble))) {
       lane.sayUntil = 0;
       lane.bubble.style.visibility = "hidden";
     }
     const quiet = !(stepSay && stepSay.checkVisibility({ visibilityProperty: true }));
-    if (lane.reply && clock >= lane.reply.at) {
-      // Answering a mention: always shown, so the exchange reads as a conversation.
-      if (onScreen && quiet && clock >= lane.sayUntil) say(lane, lane.reply.text, x, y);
-      lane.reply = null;
-    } else if (waiting && lane.still > 1.2 && clock > lane.quietUntil && onScreen && quiet && talking < 2) {
-      // Mention another agent on screen (one busy in a scene if possible), who answers a beat later.
-      const others = lanes.filter((l) => l !== lane && l.onScreen && clock >= l.sayUntil && !l.reply);
-      const peer = others.find((l) => l.shown && l.still === 0) ?? (others.length ? pickOne(others) : undefined);
-      // A mention only starts when nobody else is talking, so its reply never makes it crowded.
-      if (peer && talking === 0 && Math.random() < 0.5) {
-        say(lane, `@${label(peer)} ${pickOne(pings)}`, x, y);
-        peer.reply = { at: clock + 1.1, text: `@${label(lane)} ${pickOne(replies)}` };
-      } else say(lane, (upcoming?.a.firstTask && about[upcoming.a.firstTask]) ?? pickOne(busy), x, y);
+    const near = Math.hypot(pointer.x - x, pointer.y - y) < 110;
+    if (lane.cheerAt && clock >= lane.cheerAt) {
+      // The page is published: everyone celebrates, one after another.
+      lane.cheerAt = 0;
+      if (convo) endConvo();
+      if (onScreen) say(lane, pickOne(cheers), x, y);
+    } else if (clock < cheerUntil) {
+      // No small talk while the team celebrates.
+    } else if (lane.turn && clock >= lane.turn.at) {
+      // A conversation turn: typing dots first, then the line; then the next speaker's turn, and
+      // now and then someone nearby reacts with an emoji.
+      const turn = lane.turn;
+      if (!onScreen || !convo) {
+        lane.turn = null;
+        if (convo) endConvo();
+      } else if (!turn.typed) {
+        say(lane, "•••", x, y, 0.6);
+        turn.typed = true;
+        turn.at = clock + 0.6;
+      } else {
+        lane.turn = null;
+        say(lane, turn.text, x, y, 2.4);
+        const c = convo;
+        const others = lanes.filter((l) => l.onScreen && !c.cast.includes(l) && clock >= l.sayUntil);
+        if (others.length && Math.random() < 0.4) {
+          const r = pickOne(others);
+          r.turn = null;
+          gsap.delayedCall(0.8, () => r.onScreen && clock >= r.sayUntil && say(r, pickOne(reactions), r.screen.x, r.screen.y, 1.3));
+        }
+        c.i++;
+        if (c.i < c.lines.length) {
+          const [who] = c.lines[c.i];
+          // The next speaker turns to the one who just spoke.
+          c.cast.forEach((l) => (l.lookAt = l === c.cast[who] ? lane : c.cast[who]));
+          schedule(c, 1.5);
+        } else endConvo();
+      }
+    } else if (near && curious.has(lane.id) && waiting && onScreen && quiet && talking < 3 && clock - lane.greeted > 25 && clock >= lane.sayUntil) {
+      lane.greeted = clock;
+      say(lane, pickOne(greetings), x, y);
+    } else if (!convo && calm && clock > nextConvoAt && onScreen && quiet && clock >= lane.sayUntil && talking < 2 && Math.random() < 0.05) {
+      startConvo(lane, upcoming);
+    } else if (phase() === "work" && waiting && clock > lane.quietUntil && onScreen && quiet && clock >= lane.sayUntil && talking < 2 && !lane.lookAt && Math.random() < 0.01) {
+      // Between conversations: a word about what it's about to do.
+      say(lane, (upcoming?.a.firstTask && about[upcoming.a.firstTask]) ?? pickOne(busy), x, y);
     }
   };
   // Streak: speed measured against the agent's scene (so scrolling the page doesn't count), drawn
@@ -514,6 +902,7 @@ function travel(runs: Run[]) {
     lastY = scrollY;
     const dt = Math.max(1, Math.min(dtMs, 50)) / 1000;
     clock += dt;
+    celebrate();
     // Positions below are without the idle offset; the offset rides on top as a CSS translate.
     const base = (lane: Lane, s: Seg) => {
       const p = where(s);
@@ -578,6 +967,8 @@ function travel(runs: Run[]) {
   gsap.ticker.add(tick);
   return () => {
     gsap.ticker.remove(tick);
+    removeEventListener("pointermove", onPointer);
+    document.documentElement.removeEventListener("pointerleave", onLeave);
     layer.remove();
   };
 }

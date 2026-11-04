@@ -122,6 +122,201 @@ html.swarm:not(.swarm-ready) [data-swarm-header] {
   pointer-events: none;
   contain: layout style;
 }
+/* Layer frames an agent drags out before building a widget (frame() in src/lib/swarm/director.ts). */
+.sw-skel {
+  box-sizing: border-box;
+  z-index: -1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(59, 130, 246, 0.6);
+  border-radius: 1px;
+  color: rgba(255, 255, 255, 0.3);
+}
+.sw-skel > i {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ededef;
+  border: 1px solid #3b82f6;
+}
+.sw-skel > i:nth-child(1) { left: -3.5px; top: -3.5px; }
+.sw-skel > i:nth-child(2) { right: -3.5px; top: -3.5px; }
+.sw-skel > i:nth-child(3) { left: -3.5px; bottom: -3.5px; }
+.sw-skel > i:nth-child(4) { right: -3.5px; bottom: -3.5px; }
+.sw-skel > span {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 6px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: #3b82f6;
+  color: #fff;
+  font: 500 9px/13px var(--font-mono), monospace;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.sw-skel-box {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+.sw-skel-box svg {
+  width: 22px;
+  height: 22px;
+}
+.sw-skel-box::before,
+.sw-skel-box::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.sw-skel-box::before {
+  top: -1px;
+  right: 100%;
+  width: var(--gx);
+  border-top: 1px dotted rgba(59, 130, 246, 0.35);
+}
+.sw-skel-box::after {
+  left: -1px;
+  bottom: 100%;
+  height: var(--gy);
+  border-left: 1px dotted rgba(59, 130, 246, 0.35);
+}
+
+/* Rulers and the build status bar (studio() in src/lib/swarm/index.ts). */
+.sw-ruler {
+  position: fixed;
+  z-index: 49;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: #0e0e10;
+  transition: opacity 0.6s;
+}
+.sw-ruler.is-off {
+  opacity: 0;
+}
+.sw-ruler-x {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background-image:
+    repeating-linear-gradient(to right, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px 100px),
+    repeating-linear-gradient(to right, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px 10px);
+  background-size: 100% 100%, 100% 4px;
+  background-position: 0 0, 0 100%;
+  background-repeat: no-repeat;
+}
+.sw-ruler-y {
+  top: 13px;
+  left: 0;
+  bottom: 0;
+  width: 13px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background-image:
+    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px 100px),
+    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px 10px);
+  background-size: 100% 100%, 4px 100%;
+  background-position: 0 0, 100% 0;
+  background-repeat: repeat-y;
+}
+.sw-ruler em {
+  position: absolute;
+  top: 1px;
+  color: #6b6b72;
+  font: 500 8px/10px var(--font-mono), monospace;
+  font-style: normal;
+}
+.sw-ruler-y em {
+  top: 0;
+  left: 1px;
+  transform-origin: 5px 5px;
+}
+.sw-ruler b {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(59, 130, 246, 0.4);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.sw-ruler-x b {
+  width: 100px;
+  height: 100%;
+  transform-origin: 0 0;
+}
+.sw-ruler-y b {
+  width: 100%;
+  height: 100px;
+  transform-origin: 0 0;
+}
+.sw-hud {
+  position: fixed;
+  left: 26px;
+  bottom: 16px;
+  z-index: 61;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 12px 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(23, 23, 26, 0.92);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.9);
+  color: #8b8b92;
+  font: 500 12px/16px var(--font-sans), system-ui, sans-serif;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+.sw-hud b {
+  color: #ededef;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.sw-hud-av {
+  display: flex;
+}
+.sw-hud-av i {
+  width: 14px;
+  height: 14px;
+  margin-left: -5px;
+  border: 2px solid #17171a;
+  border-radius: 50%;
+}
+.sw-hud-av i:first-child {
+  margin-left: 0;
+}
+.sw-hud-bar {
+  width: 64px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.sw-hud-bar i {
+  display: block;
+  height: 100%;
+  background: #3b82f6;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.25s;
+}
+.sw-hud-status {
+  color: #ededef;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+}
+.sw-hud.is-done .sw-hud-status {
+  color: #34d399;
+}
+/* Once published it says so for a moment, then gets out of the way of the footer. */
+.sw-hud.is-done {
+  animation: sw-hud-out 0.5s ease 2.6s forwards;
+}
+@keyframes sw-hud-out {
+  to { opacity: 0; transform: translateY(8px); }
+}
+
 /* Travelling cursors: carry each agent between sections (see travel() in src/lib/swarm/index.ts). */
 .sw-travel {
   position: fixed;
@@ -165,6 +360,49 @@ html.swarm:not(.swarm-ready) [data-swarm-header] {
   color: #0a0a0b;
   font: 600 12px/16px var(--font-sans), system-ui, sans-serif;
   white-space: nowrap;
+}
+/* Crosshair a cursor turns into while dragging out a selection, with a live size readout. */
+.sw-xh {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  opacity: 0;
+}
+.sw-xh::before,
+.sw-xh::after {
+  content: "";
+  position: absolute;
+  background: var(--c, #ededef);
+  box-shadow: 0 0 0 1px rgba(10, 10, 11, 0.55);
+}
+.sw-xh::before {
+  left: -12px;
+  top: -0.75px;
+  width: 24px;
+  height: 1.5px;
+}
+.sw-xh::after {
+  left: -0.75px;
+  top: -12px;
+  width: 1.5px;
+  height: 24px;
+}
+.sw-xh em {
+  position: absolute;
+  left: 9px;
+  top: 7px;
+  color: #ededef;
+  font: 500 10px/11px var(--font-mono), monospace;
+  font-style: normal;
+  white-space: pre;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+/* On an agent the readout sits above-right, clear of its name tag. */
+.sw-inner .sw-xh em {
+  top: -30px;
 }
 .sw-ring {
   position: absolute;
@@ -364,6 +602,14 @@ html.swarm:not(.swarm-ready) [data-swarm-header] {
   color: #0a0a0b;
   font: 500 12px/16px var(--font-sans), system-ui, sans-serif;
   white-space: nowrap;
+}
+/* Typing indicator before a conversation line. */
+.sw-say-dots {
+  letter-spacing: 2px;
+  animation: sw-dots 0.6s steps(3) infinite;
+}
+@keyframes sw-dots {
+  50% { opacity: 0.55; }
 }
 .sw-pin {
   display: grid;
