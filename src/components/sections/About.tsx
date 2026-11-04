@@ -65,7 +65,23 @@ export function About() {
 
           <div className="flex gap-6 rounded-md border border-line bg-ink-900 p-6 md:col-span-3 md:flex-col md:p-7">
             <div data-build="about.book" className="shrink-0">
-              <Image src={read.cover} alt={`${read.title} by ${read.author} — book cover`} className="h-auto w-24 md:w-28" sizes="112px" />
+              {read.cover ? (
+                <Image src={read.cover} alt={`${read.title} by ${read.author} — book cover`} className="h-auto w-24 md:w-28" sizes="112px" />
+              ) : (
+                // Typographic stand-in until a cover image is added in src/data/profile.ts.
+                <div
+                  role="img"
+                  aria-label={`${read.title} by ${read.author}`}
+                  className="flex aspect-[2/3] w-24 flex-col justify-between rounded-[3px] border border-white/15 bg-[linear-gradient(160deg,#1e1e22,#111113)] p-2.5 shadow-[4px_6px_16px_-6px_rgba(0,0,0,0.8)] md:w-28"
+                >
+                  <span aria-hidden className="font-serif text-[15px] leading-[1.05] text-fg">
+                    {read.title}
+                  </span>
+                  <span aria-hidden className="font-mono text-[8px] uppercase leading-tight text-muted">
+                    {read.author}
+                  </span>
+                </div>
+              )}
             </div>
             <div>
               <h3 className="label">My reads</h3>

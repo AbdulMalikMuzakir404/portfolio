@@ -237,7 +237,7 @@ const aboutMore: Scene = {
       messages: [
         { who: "grok", text: "Pin is on Bandung 📍" },
         { who: "deepseek", text: "Same city as the CV ✓" },
-        { who: "llama", text: "Book cover placed — Atomic Habits" },
+        { who: "llama", text: "Book added — Software Architecture" },
       ],
     },
     { who: "*", do: "exit" },

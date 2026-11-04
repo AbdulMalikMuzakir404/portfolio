@@ -1,5 +1,4 @@
 import type { StaticImageData } from "next/image";
-import BookCover from "@/assets/images/book-cover.png";
 import Portrait from "@/assets/images/me.jpeg";
 
 export type Photo = {
@@ -64,5 +63,7 @@ export const profile = {
     { title: "Fitness", emoji: "🏋️‍♀️" },
     { title: "Reading", emoji: "📚" },
   ],
-  reads: [{ title: "Atomic Habits", author: "James Clear", cover: BookCover }],
+  // `cover` is optional: import a cover image (e.g. from src/assets/images) to show it instead of
+  // the typographic placeholder.
+  reads: [{ title: "Fundamentals of Software Architecture", author: "Mark Richards & Neal Ford", cover: null as StaticImageData | null }],
 };
