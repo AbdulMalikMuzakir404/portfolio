@@ -75,7 +75,7 @@ export function Header() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-3 z-50 px-3 sm:px-4">
+    <header data-swarm-row="header" className="fixed inset-x-0 top-3 z-50 px-3 sm:px-4">
       <div className="mx-auto flex h-14 max-w-page items-center justify-between gap-4 rounded-xl border border-white/10 bg-ink-950/80 pl-2.5 pr-2 shadow-[0_12px_32px_-16px_rgba(0,0,0,0.9)] backdrop-blur-md">
         <a href="#home" className="flex min-w-0 items-center gap-3" onClick={() => setOpen(false)}>
           <span aria-hidden data-build="header.logo" className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/10 bg-ink-900 text-accent">

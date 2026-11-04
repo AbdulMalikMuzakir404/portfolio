@@ -19,7 +19,7 @@ const exits: Record<string, Pt> = {
   grok: { x: 0.5, y: -0.08 },
 };
 export const cursors: CursorSpec[] = agents.map((a) => ({ ...a, exit: exits[a.id] }));
-/** Not one of the agents: the site's owner, who signs the footer while the swarm orbits above. */
+/** Not one of the agents: the site's owner, who sets up the header on arrival and signs the footer. */
 export const owner: CursorSpec = { id: "abdul", label: "Abdul", color: "#34D399", exit: { x: 0.3, y: -0.3 } };
 
 /** Tablet runs five agents; the others' work queues behind the agent they fold into. */
@@ -49,20 +49,11 @@ const hero: Scene = {
   start: ring(0.5, 0.47, 0.13, 0.17),
   scroll: { start: "top top", end: "bottom top", pin: { desktop: 3, tablet: 1.9 } },
   steps: [
-    // Agents whose turn comes later build the header bar first, then step into the gutters.
-    { who: "deepseek", at: 0.2, do: "import", target: "header.logo", from: { x: -40, y: 50 } },
-    { who: "deepseek", do: "deselect" },
-    { who: "deepseek", do: "rest", to: { x: 0.935, y: 0.42 } },
-    { who: "grok", at: 0.3, do: "type", target: "header.name", say: "Header first" },
-    { who: "grok", do: "paint", target: "header.toggle" },
-    { who: "grok", do: "rest", to: { x: 0.6, y: 0.2 } },
-    { who: "qwen", at: 0.4, do: "marquee", target: "header.nav", say: "Selecting the nav" },
-    { who: "qwen", do: "rest", to: { x: 0.6, y: 0.5 } },
-    { who: "mistral", at: 0.5, do: "align", target: "header.agents" },
-    { who: "mistral", do: "reveal", target: "header.menu" },
-    { who: "mistral", do: "draw", target: "header.cv" },
-    { who: "mistral", do: "deselect" },
-    { who: "mistral", do: "rest", to: { x: 0.6, y: 0.74 } },
+    // Agents whose turn comes later step out of the way first, into the gutters.
+    { who: "grok", at: 0.3, do: "rest", to: { x: 0.6, y: 0.2 } },
+    { who: "qwen", at: 0.4, do: "rest", to: { x: 0.6, y: 0.5 } },
+    { who: "mistral", at: 0.5, do: "rest", to: { x: 0.6, y: 0.74 } },
+    { who: "deepseek", at: 0.6, do: "rest", to: { x: 0.935, y: 0.42 } },
 
     // Claude types the name.
     { who: "claude", do: "tool", tool: "text" },
@@ -598,6 +589,24 @@ const contact: Scene = {
   ],
 };
 
+// The header can't wait for a scroll: Abdul builds it on arrival while the swarm orbits below.
+const header: Scene = {
+  root: "[data-swarm-row='header']",
+  scroll: { start: "", end: "", play: "load" },
+  steps: [
+    { who: "abdul", do: "import", target: "header.logo", from: { x: -40, y: 40 } },
+    { who: "abdul", do: "deselect" },
+    { who: "abdul", do: "type", target: "header.name" },
+    { who: "abdul", do: "marquee", target: "header.nav" },
+    { who: "abdul", do: "align", target: "header.agents" },
+    { who: "abdul", do: "reveal", target: "header.menu" },
+    { who: "abdul", do: "draw", target: "header.cv" },
+    { who: "abdul", do: "deselect" },
+    { who: "abdul", do: "paint", target: "header.toggle" },
+    { who: "*", do: "exit" },
+  ],
+};
+
 // The footer slides in over the last few pixels of the page, so it plays on arrival.
 const footer: Scene = {
   root: "[data-swarm-row='footer']",
@@ -611,6 +620,7 @@ const footer: Scene = {
 };
 
 export const scenes = [
+  header,
   hero,
   headings.about,
   about,

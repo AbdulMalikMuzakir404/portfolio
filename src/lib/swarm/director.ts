@@ -54,6 +54,7 @@ export class Director {
   private progressBar?: HTMLElement;
   private cue?: HTMLElement;
   private base: DOMRect;
+  private unclipped = false;
 
   constructor(
     readonly root: HTMLElement,
@@ -66,31 +67,12 @@ export class Director {
     const bleed = scene.bleed ?? 0;
     if (bleed) this.base = new DOMRect(this.base.x, this.base.y - bleed, this.base.width, this.base.height + bleed);
     root.querySelectorAll("[data-build], [data-ch]").forEach((el) => this.rects.set(el, this.measure(el)));
-    // Steps may target elements outside the root (the hero builds the fixed header): measure those
-    // and their parts now too, before any build state is applied.
-    for (const step of scene.steps) {
-      for (const id of [(step as { target?: string }).target, (step as { source?: string }).source]) {
-        const el = id && this.el(id);
-        if (!el || root.contains(el)) continue;
-        // shortcut: assumes a fixed element (the header) belongs to a scene pinned at the top of the
-        // screen (the hero), so its viewport y is its y in the scene; fine while only the hero does this.
-        const fixed = el.closest("header") !== null;
-        [el, ...el.querySelectorAll("[data-build-part], [data-ch]")].forEach((n) => {
-          const m = this.measure(n);
-          this.rects.set(n, fixed ? { ...m, y: n.getBoundingClientRect().top } : m);
-        });
-      }
-    }
 
-    // The hero also builds the fixed header, so its layer is fixed to the screen above it (the pinned
-    // hero is its own stacking context and could never draw over the header from inside).
-    const editor = scene.chrome === "editor";
-    this.overlay = div("sw-overlay", editor ? document.body : root);
-    if (editor) {
-      const { left, width, height } = this.base;
-      Object.assign(this.overlay.style, { position: "fixed", inset: `0 auto auto ${left}px`, width: `${width}px`, height: `${height}px`, zIndex: "60" });
-    }
+    this.overlay = div("sw-overlay", root);
     if (bleed) this.overlay.style.top = `${-bleed}px`;
+    // A fixed root (the header bar) can't stretch the page, so its cursor may hang below it unclipped.
+    this.unclipped = getComputedStyle(root).position === "fixed";
+    if (this.unclipped) this.overlay.style.overflow = "visible";
     this.overlay.setAttribute("aria-hidden", "true");
     this.overlay.inert = true;
 
@@ -250,7 +232,7 @@ export class Director {
     t = this.press(a, t);
     // The pointer steps aside so the words stay readable while they're typed (above them when
     // there's no room below for its name tag).
-    const roomBelow = r.y + r.h + 56 <= this.size.h;
+    const roomBelow = this.unclipped || r.y + r.h + 56 <= this.size.h;
     this.dragTo(a, { x: Math.max(r.x - 22, 4), y: roomBelow ? r.y + r.h + 18 : r.y - 46 }, t, 0.35, "power2.out");
     this.tl.set(caret, { autoAlpha: 1 }, t);
 
@@ -1074,8 +1056,7 @@ export class Director {
     return { x: r.left - this.base.left, y: r.top - this.base.top, w: r.width, h: r.height };
   }
   private el(id: string) {
-    const sel = `[data-build="${id}"]`;
-    const el = this.root.querySelector<HTMLElement>(sel) ?? document.querySelector<HTMLElement>(sel);
+    const el = this.root.querySelector<HTMLElement>(`[data-build="${id}"]`);
     // Hidden at this breakpoint (display: none): treat as absent rather than aiming at (0, 0).
     return el && el.getClientRects().length ? el : null;
   }

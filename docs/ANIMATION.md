@@ -76,7 +76,7 @@ revealed or painted), and the divider drawn.
 
 | Section | Choreography |
 | --- | --- |
-| Header | built inside the hero scene by the agents whose hero work comes later: logo imported, name typed, nav marquee-selected, avatar stack aligned, Skip/Replay painted (never hidden, so it is always usable), CV drawn |
+| Header | plays once on arrival (`play: "load"`, not scrubbed) so the bar is never left empty: "Abdul", the owner's cursor, imports the logo, types the name, marquee-selects the nav, aligns the avatar stack, draws the CV button and paints Skip/Replay (never hidden) |
 | Hero | full build: type, draw, scale/drag with guides, emphasis painted, duplicate, image drop, comment threads |
 | About | heading select + rule, summary written line by line, facts stamped; cards drawn then duplicated; labels typed, hobbies stamped, qualities aligned, book imported and its title revealed, map drawn and dropped in, label typed, pin dropped |
 | Skills | rule, then six agents each draw a component set and stamp its chips; the Practice row is typed and aligned |
@@ -88,9 +88,7 @@ revealed or painted), and the divider drawn.
 
 Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
 built while it is actually on screen instead of on one long, loosely synced timeline.
-The hero's overlay is fixed to the screen (z-index above the header) because the pinned hero is its own
-stacking context and could never draw over the fixed header from inside; it hides once the hero has
-scrolled past. The footer's overlay reaches 110px above it (`bleed`) so the cursor has room.
+The footer's overlay reaches 110px above it (`bleed`) so the cursor has room.
 Any step can carry `say: "…"`, a Figma-style cursor-chat bubble shown while that step runs.
 
 ## Breakpoints

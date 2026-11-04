@@ -135,8 +135,6 @@ export function startSwarm(): () => void {
         const sync = (p: number) => {
           if (editor) {
             html.dataset.swarm = p < 0.995 ? "building" : "done";
-            // The hero's layer is fixed to the screen: put it away once the hero has scrolled past.
-            d.overlay.style.visibility = p < 1 ? "" : "hidden";
             if (p > 0.002) intro?.release();
           }
           if (outro && p > 0.995) outro.start();
@@ -171,6 +169,10 @@ export function startSwarm(): () => void {
         }
 
         const trigger = scene.scroll.trigger ? (root.querySelector(scene.scroll.trigger) ?? root) : root;
+        if (scene.scroll.play === "load") {
+          tl.timeScale(2.2).play();
+          continue;
+        }
         if (scene.scroll.play === "enter") {
           ScrollTrigger.create({ trigger, start, animation: tl, toggleActions: "play none none reverse" });
           continue;

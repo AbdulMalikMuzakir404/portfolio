@@ -83,9 +83,10 @@ export type Scene = {
     end: string;
     /**
      * "enter": play the timeline over time once `start` is crossed (reversing on the way back)
-     * instead of scrubbing; for the footer, which has almost no scroll left below it.
+     * instead of scrubbing; for the footer, which has almost no scroll left below it. "load": play
+     * once as soon as the page is ready (the header, which must not wait for a scroll).
      */
-    play?: "enter";
+    play?: "enter" | "load";
     /**
      * Pin length in viewport heights, per breakpoint (the hero). "fit" pins at the offset that frames
      * the parts being built, for a length that follows the timeline (Contact, the last section).
