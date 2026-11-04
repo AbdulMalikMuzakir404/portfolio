@@ -21,6 +21,7 @@ export function startSwarm(): () => void {
     mm.revert();
     html.classList.remove("swarm", "swarm-ready");
     delete html.dataset.swarm;
+    dispatchEvent(new CustomEvent("swarm:skipped"));
   };
 
   const onSkip = () => {
@@ -84,6 +85,7 @@ export function startSwarm(): () => void {
             if (innerWidth === width) return;
             width = innerWidth;
             built.revert();
+            clearBuildStyles();
             built = mount(mode);
             ScrollTrigger.refresh();
           }, 250);
@@ -97,6 +99,7 @@ export function startSwarm(): () => void {
           clearTimeout(timer);
           removeEventListener("resize", onResize);
           built.revert();
+          clearBuildStyles();
           html.classList.remove("swarm-ready");
           delete html.dataset.swarm;
         };
@@ -283,6 +286,14 @@ function galaxy(d: Director, anchor: "home" | "end", enter: boolean) {
       gsap.to(inners, { x: 0, y: 0, duration: 0.7, ease: "power3.out" });
     },
   };
+}
+
+/**
+ * Reverting a context mid-build can restore an element to the state the build set first (e.g. a
+ * typed letter at opacity 0), not to what the page had. Wipe every inline style the build touched.
+ */
+function clearBuildStyles() {
+  gsap.set(document.querySelectorAll("main [data-build], main [data-build-part], main [data-ch]"), { clearProps: "all" });
 }
 
 /** Pin spacers shift every section down, so deep links need re-resolving once they exist. */

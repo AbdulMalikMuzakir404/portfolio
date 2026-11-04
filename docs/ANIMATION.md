@@ -121,7 +121,7 @@ console: `ScrollTrigger.getAll()[0].animation.progress(0.5)`.
 
 ## Escape hatches
 
-- Header **Skip build** (visible while the hero builds) reverts everything and remembers the
+- The header has a **Skip build / Replay build** toggle (desktop and tablet): Skip reverts everything and remembers the choice for the session; Replay clears it and reloads at the top with the build on. After any revert, `clearBuildStyles()` wipes leftover inline styles so the page always renders fully.
   choice for the session.
 - Keyboard focus on any buildable control does the same and restores focus, so Tab never
   lands on a clipped button.

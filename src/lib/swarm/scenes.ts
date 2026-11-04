@@ -2,21 +2,23 @@ import { roles } from "@/data/experience";
 import { certifications } from "@/data/certifications";
 import { skillGroups } from "@/data/skills";
 import { projects } from "@/data/projects";
+import { agents } from "@/data/agents";
 import type { CursorSpec, Pt, Scene } from "./types";
 
-// A swarm of AI coding agents helping build the page. Labels only (no logos); colors are loose nods.
-export const cursors: CursorSpec[] = [
-  { id: "claude", label: "Claude", color: "#E08A68", exit: { x: -0.06, y: 0.18 } },
-  { id: "codex", label: "Codex", color: "#E4E4E7", exit: { x: 1.06, y: 0.12 } },
-  { id: "gemini", label: "Gemini", color: "#6EA8FE", exit: { x: -0.06, y: 0.5 } },
-  { id: "copilot", label: "Copilot", color: "#C084FC", exit: { x: 1.06, y: 0.4 } },
-  { id: "devin", label: "Devin", color: "#2DD4BF", exit: { x: -0.06, y: 0.84 } },
-  { id: "mistral", label: "Mistral", color: "#FF8A3D", exit: { x: 1.06, y: 0.68 } },
-  { id: "llama", label: "Llama", color: "#F5B93E", exit: { x: 0.74, y: 1.08 } },
-  { id: "deepseek", label: "DeepSeek", color: "#8B9CFF", exit: { x: 1.06, y: 0.94 } },
-  { id: "qwen", label: "Qwen", color: "#F472B6", exit: { x: 0.26, y: 1.08 } },
-  { id: "grok", label: "Grok", color: "#A3E635", exit: { x: 0.5, y: -0.08 } },
-];
+// Where each agent enters and leaves (off-canvas, fractions of the scene root).
+const exits: Record<string, Pt> = {
+  claude: { x: -0.06, y: 0.18 },
+  codex: { x: 1.06, y: 0.12 },
+  gemini: { x: -0.06, y: 0.5 },
+  copilot: { x: 1.06, y: 0.4 },
+  devin: { x: -0.06, y: 0.84 },
+  mistral: { x: 1.06, y: 0.68 },
+  llama: { x: 0.74, y: 1.08 },
+  deepseek: { x: 1.06, y: 0.94 },
+  qwen: { x: 0.26, y: 1.08 },
+  grok: { x: 0.5, y: -0.08 },
+};
+export const cursors: CursorSpec[] = agents.map((a) => ({ ...a, exit: exits[a.id] }));
 
 /** Tablet runs five agents; the others' work queues behind the agent they fold into. */
 export const tabletAlias: Record<string, string> = {
