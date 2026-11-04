@@ -7,6 +7,7 @@ type Agent = {
   el: HTMLElement; // driven by the scroll timeline
   inner: HTMLElement; // free for the time-based intro drift
   svg: SVGElement;
+  xh: HTMLElement; // crosshair the arrow turns into while dragging out a selection
   ring: HTMLElement;
   pos: Pt; // advances as steps compile; ends wherever the timeline leaves the cursor
   home: Pt; // where the cursor sits at progress 0
@@ -24,7 +25,22 @@ type Agent = {
 
 /** A cursor's arrow and name tag; shared with the travelling cursors in index.ts. */
 export const cursorMarkup = (spec: CursorSpec) =>
-  `<svg width="22" height="24" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span>`;
+  `<svg width="22" height="24" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span><i class="sw-xh" style="--c:${spec.color}"><em></em></i>`;
+
+/**
+ * Steps whose agent frames the widget before building it, and the frame's look. Draw, marquee and
+ * align are selections already, so they don't get one.
+ */
+const FRAMES: Partial<Record<Step["do"], "lines" | "box">> = {
+  type: "lines",
+  write: "lines",
+  reveal: "lines",
+  fill: "lines",
+  appear: "lines",
+  stamp: "lines",
+  import: "box",
+  duplicate: "box",
+};
 
 const ICONS: Record<Tool, string> = {
   move: '<path d="M5 3l11 5.2-4.7 1.6L9.6 14.5z"/>',
@@ -56,6 +72,8 @@ export class Director {
   readonly tl = gsap.timeline({ paused: true, defaults: { ease: "power2.inOut" } });
   readonly overlay: HTMLElement;
   readonly agents = new Map<string, Agent>();
+  /** When each built layer (a step with a target) is finished, for the build status counter. */
+  readonly built: number[] = [];
   private ends = new Map<string, number>();
   private rects = new Map<Element, Rect>();
   private xf = new Map<Element, { dx: number; dy: number; s: number }>();
@@ -77,7 +95,7 @@ export class Director {
     const r = root.getBoundingClientRect();
     const vw = document.documentElement.clientWidth;
     this.base = new DOMRect(0, r.top, vw, r.height);
-    root.querySelectorAll("[data-build], [data-ch]").forEach((el) => this.rects.set(el, this.measure(el)));
+    root.querySelectorAll("[data-build], [data-build-part], [data-ch]").forEach((el) => this.rects.set(el, this.measure(el)));
     // Steps may target elements outside the root (the hero builds the fixed header): measure those
     // and their parts now too, before any build state is applied.
     for (const step of scene.steps) {
@@ -136,8 +154,14 @@ export class Director {
       // A short beat before each action reads as intent rather than a mechanical chain.
       const t0 = start > 0 ? start + 0.12 : 0;
       if (!a.firstTask && !["rest", "wait", "deselect", "tool"].includes(s.do)) a.firstTask = s.do;
-      const end = this.task(a, s, t0);
+      const frame = "target" in s ? this.frame(a, s, t0) : null;
+      const t1 = frame?.t ?? t0;
+      const end = this.task(a, s, t1);
       if (s.say) this.say(a, s.say, t0, end);
+      if ("target" in s) {
+        this.built.push(end);
+        if (frame) this.unframe(frame, t1, end);
+      }
       // Never rewind a clock: a thread can book this agent for a reply later than the step's end.
       a.t = Math.max(a.t, end);
       if (s.id) this.ends.set(s.id, end);
@@ -145,6 +169,61 @@ export class Director {
     if (this.cue) this.tl.to(this.cue, { autoAlpha: 0, duration: 0.25, ease: "none" }, 0);
     if (this.progressBar) this.tl.fromTo(this.progressBar, { scaleX: 0 }, { scaleX: 1, ease: "none", duration: this.tl.duration() }, 0);
     return this.tl;
+  }
+
+  /**
+   * Before building, the agent drags out the widget's layer frame itself, like a screenshot
+   * selection: its arrow turns into a crosshair with a live size readout and the frame (blue outline,
+   * corner handles, size badge; boxes grey with an image icon or guides to the rulers) grows with
+   * it. Nothing is framed before an agent gets there, so a scene starts clean.
+   */
+  private frame(a: Agent, s: Step & { target: string }, t: number) {
+    const kind = FRAMES[s.do];
+    const el = this.el(s.target);
+    if (!kind || !el || !this.rects.has(el)) return null;
+    const r = this.rect(el);
+    if (r.w < 8 || r.h < 8) return null;
+    const badge = r.w >= 60 && r.h >= 14 ? `<span>${dims(r)}</span>` : "";
+    const icon = kind === "box" && el.querySelector("img") ? svgIcon(ICONS.image) : "";
+    const sk = div(`sw-skel sw-skel-${kind}`, this.overlay, `<i></i><i></i><i></i><i></i>${badge}${icon}`);
+    if (kind === "box") {
+      // Dotted guides out to the left ruler and up towards the top.
+      sk.style.setProperty("--gx", `${r.x}px`);
+      sk.style.setProperty("--gy", `${Math.min(r.y, 140)}px`);
+    }
+    gsap.set(sk, { x: r.x, y: r.y, width: 0, height: 0, autoAlpha: 0 });
+    t = this.move(a, { x: r.x, y: r.y }, t);
+    t = this.press(a, t);
+    const dd = clamp(0.25, 0.5, 0.2 + (r.w + r.h) / 3000);
+    this.tl.set(sk, { autoAlpha: 1 }, t);
+    this.tl.to(sk, { width: r.w, height: r.h, duration: dd, ease: "power2.inOut" }, t);
+    this.tl.fromTo([...sk.children], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.12 }, t + dd);
+    this.dragTo(a, { x: r.x + r.w, y: r.y + r.h }, t, dd);
+    this.crosshair(a.svg, a.xh, t, dd, r.w, r.h, "power2.inOut", this.tl);
+    return { sk, kind, t: t + dd + 0.08 };
+  }
+
+  /** The frame gives way as the widget is built: a box's fill clears, then the frame goes. */
+  private unframe(f: { sk: HTMLElement; kind: string }, t0: number, end: number) {
+    const mid = t0 + (end - t0) * 0.45;
+    if (f.kind === "box") {
+      this.tl.fromTo(f.sk, { backgroundColor: "rgba(255,255,255,0.07)" }, { backgroundColor: "rgba(255,255,255,0)", duration: Math.max(0.2, (end - t0) * 0.4), ease: "none", immediateRender: false }, mid);
+    }
+    this.tl.fromTo(f.sk, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.2, ease: "none", immediateRender: false }, end);
+  }
+
+  /**
+   * Shows a crosshair with a live width/height readout for a drag (the agent's arrow swaps for it,
+   * or a free-standing one draws a layer frame), then puts the arrow back.
+   */
+  private crosshair(arrow: SVGElement | null, xh: HTMLElement, t: number, dur: number, w: number, h: number, ease: string, tl: gsap.core.Timeline) {
+    const read = xh.querySelector("em");
+    const p = { w: 0, h: 0 };
+    if (arrow) tl.set(arrow, { autoAlpha: 0 }, t);
+    tl.set(xh, { autoAlpha: 1 }, t);
+    if (read) tl.fromTo(p, { w: 0, h: 0 }, { w, h, duration: dur, ease, immediateRender: false, onUpdate: () => void (read.textContent = `${Math.round(p.w)}\n${Math.round(p.h)}`) }, t);
+    if (arrow) tl.set(arrow, { autoAlpha: 1 }, t + dur + 0.05);
+    tl.to(xh, { autoAlpha: 0, duration: 0.12 }, t + dur + 0.05);
   }
 
   // ---------------------------------------------------------------- tasks
@@ -311,6 +390,7 @@ export class Director {
     const h = r.h * until;
     const cut = `${(1 - until) * 100}%`;
     this.dragTo(a, { x: r.x + w, y: r.y + h }, t, dur);
+    this.crosshair(a.svg, a.xh, t, dur, w, h, "power2.inOut", this.tl);
     this.tl.to(el, { clipPath: `inset(0% ${cut} ${cut} 0%)`, duration: dur }, t);
     this.tl.to(boxes, { width: w, height: h, duration: dur }, t);
     sel.r = { x: r.x, y: r.y, w, h };
@@ -567,6 +647,7 @@ export class Director {
     this.tl.set(box, { autoAlpha: 1 }, t);
     const dur = clamp(0.6, 1.2, 0.4 + r.w / 1400);
     this.dragTo(a, p1, t, dur, "none");
+    this.crosshair(a.svg, a.xh, t, dur, p1.x - p0.x, p1.y - p0.y, "none", this.tl);
     this.tl.to(box, { width: p1.x - p0.x, height: p1.y - p0.y, duration: dur, ease: "none" }, t);
     // Each item appears as the box's edge sweeps past its centre.
     items.forEach((it) => {
@@ -957,11 +1038,12 @@ export class Director {
     ring.style.borderColor = spec.color;
     gsap.set(ring, { autoAlpha: 0 });
     const svg = inner.querySelector("svg")!;
+    const xh = inner.querySelector<HTMLElement>(".sw-xh")!;
     gsap.set(svg, { transformOrigin: "1px 1px" });
     const start = this.scene.start?.[spec.id];
     const pos = start ? this.frac(start) : this.exitPt(spec);
     gsap.set(el, { x: pos.x, y: pos.y });
-    return { spec, el, inner, svg, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1, last: Infinity, ...(start ? { first: 0, firstPos: pos } : {}) };
+    return { spec, el, inner, svg, xh, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1, last: Infinity, ...(start ? { first: 0, firstPos: pos } : {}) };
   }
 
   private sel(a: Agent, from: Rect, t: number, final: Rect): Sel {

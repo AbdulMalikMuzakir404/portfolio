@@ -30,7 +30,7 @@ empty and what remains is the actual site.
   `who: "*"` steps (exit, publish) wait for everyone.
 - **Scroll is the only clock.** Timelines are paused and driven by ScrollTrigger `scrub: 0.6`. No
   section pins except the hero. While the swarm runs, a gentle Lenis (`lerp 0.12`,
-  `wheelMultiplier 0.85`) smooths the wheel slightly; keyboard, anchors and focus stay native.
+  `wheelMultiplier 1.15`) smooths the wheel slightly; keyboard, anchors and focus stay native.
   Contact, the last section, has almost no page below it, so it is the one other scene that holds
   (`pin: "fit"`): a separate pin keeps it framed below the header while you scroll through its
   build, then the page continues to the footer. The build itself starts earlier, as the section
@@ -86,6 +86,19 @@ revealed or painted), and the divider drawn.
 | Contact | heading written line by line once it is on screen, "amazing" highlighted, each contact button and social link stamped in, thread, everyone gathers for Publish, then the swarm rings up beside the heading and keeps orbiting (galaxy, pointer-reactive) |
 | Footer | no cursor: the copyright is wiped in and Back to top slides in as the footer scrolls into view (CSS scroll-driven animation; static where unsupported) |
 
+**Studio chrome.** Before building a widget, its agent drags out the widget's layer frame itself,
+like a screenshot selection: the arrow turns into a crosshair with a live size readout while a blue
+frame with corner handles and a size badge grows with it (boxes are grey, with an image icon where an
+image goes and dotted guides out to the rulers; text gets an empty text box the agent then types
+into). The frame gives way as the widget is built. Draw, marquee and align are selections already, so
+they don't get one, but the agent's arrow still becomes the crosshair for them. Nothing is framed
+before an agent gets there, so every scene, the opening included, starts clean. Rulers run along the top
+and left edges while the build runs (the left one counts page pixels; blue bands follow the current
+selections, fainter ones the layer frames being built) and fade once the page is published. A status bar in the bottom-left shows the agents,
+a live "built / total layers" counter, a progress line and what's happening ("Scanning page…",
+"Building · About", "Publishing…", "Published ✓"), then fades after publishing so it never covers
+the footer.
+
 **Agents never vanish between sections.** Each scene still compiles its own copy of every agent it
 uses, but a copy is only shown during that agent's working window there (from arriving at its first
 task until the scene's exit). Outside it, one shared traveller per agent (`travel()` in `index.ts`,
@@ -95,8 +108,20 @@ there (a critically damped spring, ~0.5s) and waits riding along with the page; 
 the next copy. Any fast move (measured against the agent's scene, so plain scrolling doesn't count)
 leaves a short streak in the agent's colour. **Waiting agents keep working**: they hop around the spot inspecting
 things and click now and then, say what they're about to do (from their next task: "Measuring the
-frame", "Mixing the palette", …), or @-mention another agent on screen, who answers a beat later.
-At most a few bubbles show at once, and never over a step's own chat bubble. Moves inside a scene are short
+frame", "Mixing the palette", …), and they talk to each other. Conversations (one at a time, 2–3 agents, 3–4 turns) follow the build's
+three phases: greetings and small talk in the opening ("Morning team ☀️", who takes which part of
+the hero), work talk during the build (about the section they're on and the task at hand: reviews,
+contrast checks, offers of help), and winding down after publishing (pizza, a quick retro, a nudge to
+email or WhatsApp Abdul). Each line is preceded by typing dots, speakers lean towards each other,
+and bystanders sometimes react with an emoji. Right after publishing, everyone first celebrates in
+turn ("Yay! 🎉", "Great job, team! 🙌", …), again on each return to the end. Scripts live in
+`travel()` in `index.ts`.
+At most a few bubbles show at once, never over a step's own chat bubble, a comment thread or the
+Publish chrome. Each agent waits in its own way (Claude circles, Codex snaps to a grid, Gemini
+traces figure-eights, Copilot and Mistral dart, Devin scans like reading, Llama drifts, DeepSeek
+spirals, Qwen bounces, Grok hangs around the nearest agent), each with its own spring feel, and
+they keep a little personal space. They notice the visitor's mouse: curious ones (Claude, Gemini,
+Grok, Qwen, Copilot) come over to look and may say hi, shy ones (Llama, DeepSeek, Devin) back off. Moves inside a scene are short
 darts (`power3.inOut`, 0.2–0.55 units) so agents read as quick and purposeful; the work itself keeps
 its pace. Scenes scrub with a 0.4s lag. Every scene layer also spans the full
 screen width, so cursors and notes are never cut off at the content column.
