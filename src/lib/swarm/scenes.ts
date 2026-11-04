@@ -501,11 +501,14 @@ const cvMore: Scene = {
 const contact: Scene = {
   root: "#contact",
   chrome: "publish",
-  // Scrubbed like the others. It is the last section, so the range runs to the end of the page;
-  // the extra bottom padding (globals.css) leaves room to scroll through the whole build.
-  scroll: { start: "top 60%", end: "max" },
+  // The last section has almost no page below it, so it also holds (like the hero) while its build
+  // is scrubbed. The build starts as the section comes into view and finishes as the hold ends.
+  scroll: { start: "top 92%", end: "", pin: "fit" },
   steps: [
-    { who: "qwen", do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
+    // Already working as the section slides in: the label is typed first, then the headline.
+    { who: "copilot", do: "type", target: "contact.kicker" },
+    { who: "copilot", do: "rest", to: { x: 0.5, y: 0.08 } },
+    { who: "qwen", at: 0.9, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
     { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
     { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
@@ -524,7 +527,7 @@ const contact: Scene = {
     // Last beat of the page: everyone gathers, Publish is clicked, then the swarm orbits.
     ...cursors.map((c) => ({ who: c.id, do: "wait" as const, dur: 0 })),
     { who: "*", do: "publish", id: "published" },
-    // No exit: the swarm settles under the social links and keeps orbiting there.
+    // No exit: the swarm settles in the right-hand column beside the heading and keeps orbiting.
     { who: "*", do: "orbit", center: { x: 0.8, y: 0.38 } },
   ],
 };

@@ -717,17 +717,31 @@ export class Director {
   }
 
   /**
-   * The empty area for the closing orbit: under the social links, which is what is on screen when
-   * the contact scene reaches the end of the page.
+   * The empty area for the closing orbit: the right-hand column beside the contact heading.
    * Insets leave room for a cursor's name tag (it hangs right and down).
    */
-  private freeBox(minRx: number, minRy: number) {
+  private freeBox() {
+    const p = this.publishChip;
+    const title = this.el("contact.title");
+    const actions = this.el("contact.actions");
     const socials = this.el("contact.socials");
-    if (!this.publishChip || !socials) return undefined;
+    if (!p || !title || !actions || !socials) return undefined;
+    const chip = this.rects.get(p.chip)!;
+    const range = document.createRange();
+    range.selectNodeContents(title);
+    const textRight = Math.max(0, ...[...range.getClientRects()].map((r) => r.right - this.base.left));
+    const ar = this.rect(actions);
     const sr = this.rect(socials);
-    // Under the social links, above the end of the section (the extra bottom padding).
-    const box = { l: sr.x + 40, r: sr.x + sr.w - 110, t: sr.y + sr.h + 40, b: this.size.h - 56 };
-    return box.r - box.l >= minRx * 2 && box.b - box.t >= minRy * 2 ? box : undefined;
+    // The right-hand column beside the heading: right of its text and of the buttons, below the
+    // publish toast, above the social links. On narrow screens it can be smaller than the ring;
+    // the ring then keeps its minimum size, centred in what room there is.
+    const box = {
+      l: Math.max(textRight, ar.x + ar.w) + 24,
+      r: chip.x + chip.w - 110,
+      t: chip.y + chip.h + 10 + p.toast.offsetHeight + 24,
+      b: sr.y - 24,
+    };
+    return box.r > box.l && box.b > box.t ? box : undefined;
   }
 
   /** Closing formation: everyone rings a point; the time-based galaxy orbit takes over from there. */
@@ -739,13 +753,20 @@ export class Director {
     const minRy = minRx * 0.72;
     let rx = Math.max(minRx, Math.min(180, this.size.w * 0.12));
     let ry = rx * 0.8;
-    const free = this.freeBox(minRx, minRy);
+    const free = this.freeBox();
     if (free) {
       // Fit the ring into the measured empty area instead of a fixed fraction of the section.
       c = { x: (free.l + free.r) / 2, y: (free.t + free.b) / 2 };
       rx = Math.max(minRx, Math.min(rx, (free.r - free.l) / 2));
       ry = Math.max(minRy, Math.min(rx * 0.8, (free.b - free.t) / 2));
     }
+    // Don't let the ring spill left over the heading text when the column is narrower than it.
+    if (free) c.x = Math.max(c.x, free.l + rx);
+    // Keep the whole ring, name tags included (~100px right, ~45px down), inside the scene.
+    c = {
+      x: clamp(rx + 16, Math.max(rx + 16, this.size.w - rx - 100), c.x),
+      y: clamp(ry + 16, Math.max(ry + 16, this.size.h - ry - 50), c.y),
+    };
     let end = t;
     list.forEach((a, i) => {
       if (a.sel) this.tl.set(a.sel.el, { autoAlpha: 0 }, t);
@@ -868,10 +889,9 @@ export class Director {
   }
 
   /**
-   * Publish button and toast in the right-hand column beside the contact heading. Publish is the
-   * last beat of the page, so they sit no higher than the top of the screen at the end of the
-   * scroll: beside the heading's lines on tall screens, a little lower on short ones. Only if they
-   * would overlap the heading's actual text do they move under the action buttons.
+   * Publish button and toast at the top right, beside the contact heading (Contact holds while it
+   * builds, so they stay on screen). Only if they would overlap the heading's actual text — narrow
+   * screens where it fills the width — do they move under the action buttons.
    */
   private publishChrome() {
     const page = this.root.querySelector(".page");
@@ -885,9 +905,6 @@ export class Director {
     const right = pr.x + pr.w - 32;
     const blockH = chip.offsetHeight + 10 + toast.offsetHeight;
     const left = right - Math.max(chip.offsetWidth, toast.offsetWidth);
-    // Section-relative y of the top of the screen when the page is scrolled to its end.
-    const footer = document.querySelector("footer")?.offsetHeight ?? 0;
-    const endTop = this.base.height + footer - innerHeight + 84;
     const lines = (() => {
       const range = document.createRange();
       range.selectNodeContents(title);
@@ -896,8 +913,7 @@ export class Director {
     const clearOfText = (y: number) => lines.filter((l) => l.bottom > y && l.top < y + blockH).every((l) => left > l.right + 16);
     const actions = this.el("contact.actions");
     const under = actions ? this.rect(actions) : kr;
-    let y = Math.max(kr.y - 10, endTop);
-    if (!clearOfText(y)) y = Math.max(under.y + under.h + 28, endTop);
+    const y = clearOfText(kr.y - 10) ? kr.y - 10 : under.y + under.h + 28;
     gsap.set(chip, { x: right - chip.offsetWidth, y, autoAlpha: 0 });
     gsap.set(toast, { x: right - toast.offsetWidth, autoAlpha: 0 });
     this.rects.set(chip, this.measure(chip));

@@ -71,7 +71,11 @@ export type Scene = {
     trigger?: string;
     start: string;
     end: string;
-    /** Pin length in viewport heights, per breakpoint. Omit for unpinned scenes. */
-    pin?: { desktop: number; tablet: number };
+    /**
+     * Pin length in viewport heights, per breakpoint (the hero). "fit" pins at the offset that frames
+     * the parts being built, for a length that follows the timeline (Contact, the last section).
+     * Omit for unpinned scenes.
+     */
+    pin?: { desktop: number; tablet: number } | "fit";
   };
 };

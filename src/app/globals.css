@@ -378,12 +378,6 @@ html.swarm:not(.swarm-ready) [data-build] {
   }
 }
 
-/* Contact is the last section: extra room below it gives its scrubbed build enough scroll, and the
-   closing orbit lives there. Only while the swarm runs; set before first paint, so no layout shift. */
-html.swarm #contact {
-  padding-bottom: 24rem;
-}
-
 /* Lenis (gentle smooth scroll), active only while the swarm runs. */
 html.lenis,
 html.lenis body {

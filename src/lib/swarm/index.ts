@@ -117,7 +117,8 @@ export function startSwarm(): () => void {
         const d = new Director(root, scene, cursors, alias, mode);
         overlays.push(d.overlay);
         const tl = d.build();
-        const pin = scene.scroll.pin?.[mode];
+        const pinSpec = scene.scroll.pin;
+        const pin = typeof pinSpec === "object" ? pinSpec[mode] : undefined;
 
         // The editor scene opens with the galaxy and drives the header's Skip button; a scene that
         // ends in an orbit step resumes the galaxy whenever its timeline sits at the end.
@@ -137,10 +138,37 @@ export function startSwarm(): () => void {
           else outro?.release();
         };
 
+        const start = scene.scroll.start;
+        let end: string | (() => string) = pin ? () => `+=${innerHeight * pin}` : scene.scroll.end;
+        if (pinSpec === "fit") {
+          // Hold so the built parts are framed below the header, for ~15% of a screen per timeline unit.
+          const vh = innerHeight;
+          const base = root.getBoundingClientRect().top;
+          const boxes = [...root.querySelectorAll("[data-build]")].map((e) => e.getBoundingClientRect());
+          const top = Math.min(...boxes.map((r) => r.top)) - base;
+          const bottom = Math.max(...boxes.map((r) => r.bottom)) - base;
+          let offset = gsap.utils.clamp(0, Math.max(0, root.offsetHeight - vh), top - Math.max(96, (vh - (bottom - top)) / 2));
+          // When the section plus the footer is shorter than the screen, the page can't scroll far
+          // enough to bring the section's top to the top of the screen: hold it lower instead, so the
+          // footer meets the bottom edge exactly as the hold ends and the last beat is reachable.
+          const tail = root.offsetHeight + (document.querySelector("footer")?.offsetHeight ?? 0) - vh;
+          offset = Math.min(offset, tail);
+          // The hold is its own trigger; the build starts earlier, as the section comes into view,
+          // and runs on through the hold so it is already under way when the section arrives.
+          const hold = ScrollTrigger.create({
+            trigger: root,
+            start: offset >= 0 ? `top+=${Math.round(offset)} top` : `top ${Math.round(-offset)}px`,
+            end: `+=${Math.round(gsap.utils.clamp(vh * 0.8, vh * 2.2, tl.duration() * vh * 0.15))}`,
+            pin: true,
+            anticipatePin: 1,
+          });
+          end = () => `${hold.end}`;
+        }
+
         const st = ScrollTrigger.create({
           trigger: scene.scroll.trigger ? (root.querySelector(scene.scroll.trigger) ?? root) : root,
-          start: scene.scroll.start,
-          end: pin ? () => `+=${innerHeight * pin}` : scene.scroll.end,
+          start,
+          end,
           pin: !!pin,
           anticipatePin: pin ? 1 : 0,
           scrub: 0.6,
