@@ -19,7 +19,7 @@ const exits: Record<string, Pt> = {
   grok: { x: 0.5, y: -0.08 },
 };
 export const cursors: CursorSpec[] = agents.map((a) => ({ ...a, exit: exits[a.id] }));
-/** Not one of the agents: the site's owner, who sets up the header on arrival and signs the footer. */
+/** Not one of the agents: the site's owner, who sets up the header and signs the footer. */
 export const owner: CursorSpec = { id: "abdul", label: "Abdul", color: "#34D399", exit: { x: 0.3, y: -0.3 } };
 
 /** Tablet runs five agents; the others' work queues behind the agent they fold into. */
@@ -589,10 +589,11 @@ const contact: Scene = {
   ],
 };
 
-// The header can't wait for a scroll: Abdul builds it on arrival while the swarm orbits below.
+// Abdul builds the header over the first screen of scrolling, alongside the hero build. The bar is
+// fixed, so the page itself drives it.
 const header: Scene = {
   root: "[data-swarm-row='header']",
-  scroll: { start: "", end: "", play: "load" },
+  scroll: { trigger: "body", start: "top top", end: "+=90%" },
   steps: [
     { who: "abdul", do: "import", target: "header.logo", from: { x: -40, y: 40 } },
     { who: "abdul", do: "deselect" },

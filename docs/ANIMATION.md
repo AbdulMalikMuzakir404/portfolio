@@ -76,7 +76,7 @@ revealed or painted), and the divider drawn.
 
 | Section | Choreography |
 | --- | --- |
-| Header | plays once on arrival (`play: "load"`, not scrubbed) so the bar is never left empty: "Abdul", the owner's cursor, imports the logo, types the name, marquee-selects the nav, aligns the avatar stack, draws the CV button and paints Skip/Replay (never hidden) |
+| Header | scrubbed over the first 90% of a screen of scrolling (the page drives it, since the bar is fixed), alongside the hero: "Abdul", the owner's cursor, imports the logo, types the name, marquee-selects the nav, aligns the avatar stack, draws the CV button and paints Skip/Replay (never hidden) |
 | Hero | full build: type, draw, scale/drag with guides, emphasis painted, duplicate, image drop, comment threads |
 | About | heading select + rule, summary written line by line, facts stamped; cards drawn then duplicated; labels typed, hobbies stamped, qualities aligned, book imported and its title revealed, map drawn and dropped in, label typed, pin dropped |
 | Skills | rule, then six agents each draw a component set and stamp its chips; the Practice row is typed and aligned |

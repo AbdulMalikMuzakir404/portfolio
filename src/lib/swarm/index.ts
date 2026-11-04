@@ -168,11 +168,8 @@ export function startSwarm(): () => void {
           end = () => `${hold.end}`;
         }
 
-        const trigger = scene.scroll.trigger ? (root.querySelector(scene.scroll.trigger) ?? root) : root;
-        if (scene.scroll.play === "load") {
-          tl.timeScale(2.2).play();
-          continue;
-        }
+        const sel = scene.scroll.trigger;
+        const trigger = sel ? (root.querySelector(sel) ?? document.querySelector(sel) ?? root) : root;
         if (scene.scroll.play === "enter") {
           ScrollTrigger.create({ trigger, start, animation: tl, toggleActions: "play none none reverse" });
           continue;
