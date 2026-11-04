@@ -3,7 +3,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import Lenis from "lenis";
 import { Director } from "./director";
-import { cursors, scenes, tabletAlias } from "./scenes";
+import { cursors, owner, scenes, tabletAlias } from "./scenes";
 
 type Mode = "desktop" | "tablet";
 
@@ -117,7 +117,7 @@ export function startSwarm(): () => void {
       for (const scene of scenes) {
         const root = document.querySelector<HTMLElement>(scene.root);
         if (!root) continue;
-        const d = new Director(root, scene, cursors, alias, mode);
+        const d = new Director(root, scene, [...cursors, owner], alias, mode);
         overlays.push(d.overlay);
         const tl = d.build();
         const pinSpec = scene.scroll.pin;
@@ -135,6 +135,8 @@ export function startSwarm(): () => void {
         const sync = (p: number) => {
           if (editor) {
             html.dataset.swarm = p < 0.995 ? "building" : "done";
+            // The hero's layer is fixed to the screen: put it away once the hero has scrolled past.
+            d.overlay.style.visibility = p < 1 ? "" : "hidden";
             if (p > 0.002) intro?.release();
           }
           if (outro && p > 0.995) outro.start();
@@ -168,8 +170,13 @@ export function startSwarm(): () => void {
           end = () => `${hold.end}`;
         }
 
+        const trigger = scene.scroll.trigger ? (root.querySelector(scene.scroll.trigger) ?? root) : root;
+        if (scene.scroll.play === "enter") {
+          ScrollTrigger.create({ trigger, start, animation: tl, toggleActions: "play none none reverse" });
+          continue;
+        }
         const st = ScrollTrigger.create({
-          trigger: scene.scroll.trigger ? (root.querySelector(scene.scroll.trigger) ?? root) : root,
+          trigger,
           start,
           end,
           pin: !!pin,
@@ -293,7 +300,7 @@ function galaxy(d: Director, anchor: "home" | "end", enter: boolean) {
  * typed letter at opacity 0), not to what the page had. Wipe every inline style the build touched.
  */
 function clearBuildStyles() {
-  gsap.set(document.querySelectorAll("main [data-build], main [data-build-part], main [data-ch]"), { clearProps: "all" });
+  gsap.set(document.querySelectorAll("[data-build], [data-build-part], [data-ch]"), { clearProps: "all" });
 }
 
 /** Pin spacers shift every section down, so deep links need re-resolving once they exist. */

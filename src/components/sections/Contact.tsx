@@ -11,7 +11,7 @@ export function Contact() {
         <h2 id="contact-title" data-build="contact.title" className="mt-6 max-w-[17ch] font-serif text-[clamp(3rem,1.8rem+5.4vw,7.5rem)] leading-[0.95] tracking-[-0.02em]">
           Let&rsquo;s create something <em className="text-accent/95" data-build="contact.accent">amazing</em> together
         </h2>
-        <p className="mt-8 max-w-xl text-lede text-muted">
+        <p className="mt-8 max-w-xl text-lede text-muted" data-build="contact.lede">
           Ready to bring your next project to life? Let&rsquo;s connect and discuss how I can help you achieve your goals.
         </p>
 

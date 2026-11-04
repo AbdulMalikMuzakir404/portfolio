@@ -19,6 +19,8 @@ const exits: Record<string, Pt> = {
   grok: { x: 0.5, y: -0.08 },
 };
 export const cursors: CursorSpec[] = agents.map((a) => ({ ...a, exit: exits[a.id] }));
+/** Not one of the agents: the site's owner, who signs the footer while the swarm orbits above. */
+export const owner: CursorSpec = { id: "abdul", label: "Abdul", color: "#34D399", exit: { x: 0.3, y: -0.3 } };
 
 /** Tablet runs five agents; the others' work queues behind the agent they fold into. */
 export const tabletAlias: Record<string, string> = {
@@ -47,11 +49,20 @@ const hero: Scene = {
   start: ring(0.5, 0.47, 0.13, 0.17),
   scroll: { start: "top top", end: "bottom top", pin: { desktop: 3, tablet: 1.9 } },
   steps: [
-    // Agents whose turn comes later step out of the way first, into the gutters.
-    { who: "grok", at: 0.3, do: "rest", to: { x: 0.6, y: 0.2 } },
-    { who: "qwen", at: 0.4, do: "rest", to: { x: 0.6, y: 0.5 } },
-    { who: "mistral", at: 0.5, do: "rest", to: { x: 0.6, y: 0.74 } },
-    { who: "deepseek", at: 0.6, do: "rest", to: { x: 0.935, y: 0.42 } },
+    // Agents whose turn comes later build the header bar first, then step into the gutters.
+    { who: "deepseek", at: 0.2, do: "import", target: "header.logo", from: { x: -40, y: 50 } },
+    { who: "deepseek", do: "deselect" },
+    { who: "deepseek", do: "rest", to: { x: 0.935, y: 0.42 } },
+    { who: "grok", at: 0.3, do: "type", target: "header.name", say: "Header first" },
+    { who: "grok", do: "paint", target: "header.toggle" },
+    { who: "grok", do: "rest", to: { x: 0.6, y: 0.2 } },
+    { who: "qwen", at: 0.4, do: "marquee", target: "header.nav", say: "Selecting the nav" },
+    { who: "qwen", do: "rest", to: { x: 0.6, y: 0.5 } },
+    { who: "mistral", at: 0.5, do: "align", target: "header.agents" },
+    { who: "mistral", do: "reveal", target: "header.menu" },
+    { who: "mistral", do: "draw", target: "header.cv" },
+    { who: "mistral", do: "deselect" },
+    { who: "mistral", do: "rest", to: { x: 0.6, y: 0.74 } },
 
     // Claude types the name.
     { who: "claude", do: "tool", tool: "text" },
@@ -72,6 +83,7 @@ const hero: Scene = {
     { who: "gemini", do: "appear", target: "hero.headline", offset: { x: 110, y: 70 }, scale: 0.4 },
     { who: "gemini", do: "scale", target: "hero.headline", say: "Scaling to display size" },
     { who: "gemini", do: "drag", target: "hero.headline", guides: [{ edge: "left", with: "hero.name" }] },
+    { who: "gemini", do: "paint", target: "hero.emphasis" },
     { who: "gemini", do: "deselect", id: "headline" },
     { who: "gemini", do: "rest", to: { x: 0.53, y: 0.64 } },
 
@@ -141,9 +153,16 @@ const hero: Scene = {
 
 /**
  * Section headings, each built a different way: the mono kicker is typed, the title revealed,
- * the divider drawn, scrubbed while the heading block crosses the screen.
+ * the lede brought in by a third agent, the divider drawn, scrubbed while the heading block crosses
+ * the screen.
  */
-function heading(id: string, lead: string, helper: string, reveal: "draw" | "write" | "appear"): Scene {
+function heading(
+  id: string,
+  lead: string,
+  helper: string,
+  reveal: "draw" | "write" | "appear",
+  lede: [who: string, how: "reveal" | "write" | "paint"],
+): Scene {
   const title = `${id}.title`;
   const build: Scene["steps"] =
     reveal === "appear"
@@ -160,6 +179,7 @@ function heading(id: string, lead: string, helper: string, reveal: "draw" | "wri
       { who: lead, do: "type", target: `${id}.kicker` },
       ...build,
       { who: lead, do: "deselect" },
+      { who: lede[0], at: 0.3, do: lede[1], target: `${id}.lede` },
       { who: helper, at: 0.5, do: "line", target: `${id}.rule` },
       { who: "*", do: "exit" },
     ],
@@ -167,11 +187,11 @@ function heading(id: string, lead: string, helper: string, reveal: "draw" | "wri
 }
 
 const headings = {
-  about: heading("about", "claude", "gemini", "draw"),
-  skills: heading("skills", "mistral", "codex", "write"),
-  experience: heading("experience", "copilot", "deepseek", "appear"),
-  work: heading("work", "llama", "qwen", "draw"),
-  credentials: heading("credentials", "devin", "claude", "write"),
+  about: heading("about", "claude", "gemini", "draw", ["qwen", "write"]),
+  skills: heading("skills", "mistral", "codex", "write", ["grok", "reveal"]),
+  experience: heading("experience", "copilot", "deepseek", "appear", ["devin", "write"]),
+  work: heading("work", "llama", "qwen", "draw", ["mistral", "reveal"]),
+  credentials: heading("credentials", "devin", "claude", "write", ["codex", "paint"]),
 };
 
 const about: Scene = {
@@ -226,10 +246,18 @@ const aboutMore: Scene = {
   root: "[data-swarm-row='about-more']",
   scroll: { start: "top 100%", end: "bottom 28%" },
   steps: [
+    { who: "qwen", do: "type", target: "about.label-0" },
     { who: "qwen", do: "stamp", target: "about.hobbies", say: "Adding hobbies" },
-    { who: "llama", at: 0.3, do: "import", target: "about.book", from: { x: -120, y: 40 } },
+    { who: "gemini", at: 0.6, do: "type", target: "about.label-1" },
+    { who: "gemini", do: "align", target: "about.qualities", say: "Tidying the row" },
+    { who: "llama", at: 0.2, do: "type", target: "about.label-2" },
+    { who: "llama", do: "import", target: "about.book", from: { x: -120, y: 40 } },
     { who: "llama", do: "deselect" },
-    { who: "deepseek", at: 0.6, do: "import", target: "about.pin", from: { x: -90, y: -60 }, say: "Pinning Bandung" },
+    { who: "llama", do: "reveal", target: "about.book-meta" },
+    { who: "deepseek", at: 0.3, do: "draw", target: "about.map", drop: true },
+    { who: "deepseek", do: "place", target: "about.map", id: "map" },
+    { who: "codex", after: "map", do: "type", target: "about.map-label" },
+    { who: "deepseek", do: "import", target: "about.pin", from: { x: -90, y: -60 }, say: "Pinning Bandung" },
     { who: "deepseek", do: "deselect", id: "pin" },
     {
       who: "grok",
@@ -262,7 +290,15 @@ const caseScenes: Scene[] = projects
       { a: "devin", b: "mistral", c: "grok" },
     ];
     const { a, b, c: lead } = crews[i % crews.length];
-    add({ who: lead, do: "highlight", target: `${c}.title` });
+    const writer = ["qwen", "deepseek", "claude", "qwen", "qwen"][i % 5];
+    add(
+      { who: lead, do: "type", target: `${c}.meta` },
+      { who: lead, do: "highlight", target: `${c}.title` },
+      { who: writer, at: 0.3, do: "write", target: `${c}.summary` },
+      { who: writer, do: "reveal", target: `${c}.part` },
+      { who: writer, do: "reveal", target: `${c}.details` },
+      { who: writer, do: "reveal", target: `${c}.links` },
+    );
     if (p.media === "phone") {
       // Phones are handed up into place, or drawn as frames and filled, alternating by case.
       const phoneCrew = i % 2 ? [a, b, "copilot", "grok"] : [a, b, lead];
@@ -343,6 +379,7 @@ const moreList: Scene = {
   root: "[data-swarm-row='more']",
   scroll: { start: "top 100%", end: "bottom 30%" },
   steps: [
+    { who: "mistral", do: "type", target: "more.label" },
     ...projects
       .filter((p) => !p.featured)
       .flatMap((_, j) => {
@@ -396,20 +433,34 @@ const skills: Scene = {
   ],
 };
 
+// The practices row starts out scattered and gets aligned.
+const practice: Scene = {
+  root: "[data-swarm-row='skills-practice']",
+  scroll: { start: "top 100%", end: "bottom 40%" },
+  steps: [
+    { who: "grok", do: "type", target: "skills.practice-label" },
+    { who: "qwen", at: 0.2, do: "align", target: "skills.practice", say: "Aligning the row" },
+    { who: "*", do: "exit" },
+  ],
+};
+
 // Each role is its own short scene, so the work happens while that row is on screen.
 const roleCrew = [
-  ["claude", "devin"],
-  ["codex", "mistral"],
-  ["gemini", "qwen"],
-  ["llama", "grok"],
+  ["claude", "devin", "qwen"],
+  ["codex", "mistral", "grok"],
+  ["gemini", "qwen", "deepseek"],
+  ["llama", "grok", "copilot"],
 ];
 const experienceRows: Scene[] = roles.map((_, i) => {
-  const [lead, helper] = roleCrew[i % roleCrew.length];
+  const [lead, helper, dates] = roleCrew[i % roleCrew.length];
   return {
     root: `[data-swarm-row='experience-${i}']`,
     scroll: { start: "top 100%", end: "bottom 28%" },
     steps: [
+      { who: dates, do: "type", target: `experience.period-${i}` },
+      { who: dates, do: "type", target: `experience.type-${i}` },
       { who: lead, do: "highlight", target: `experience.role-${i}` },
+      { who: lead, do: "reveal", target: `experience.loc-${i}` },
       { who: lead, do: "fill", target: `experience.points-${i}`, id: "points" },
       { who: helper, at: 0.6, do: "stamp", target: `experience.stack-${i}`, id: "stack" },
       ...(i === 0
@@ -436,6 +487,7 @@ const credentials: Scene = {
   root: "[data-swarm-row='edu']",
   scroll: { start: "top 100%", end: "bottom 20%" },
   steps: [
+    { who: "copilot", do: "type", target: "edu.label" },
     { who: "gemini", do: "draw", target: "edu.0" },
     { who: "gemini", do: "fill", target: "edu.0", id: "edu0" },
     { who: "gemini", do: "deselect" },
@@ -455,6 +507,11 @@ const credentials: Scene = {
     { who: "*", do: "exit" },
   ],
 };
+const certLabel: Scene = {
+  root: "[data-swarm-row='cert-label']",
+  scroll: { start: "top 100%", end: "top 55%" },
+  steps: [{ who: "claude", do: "type", target: "cert.label" }, { who: "*", do: "exit" }],
+};
 const certCrew = [
   ["deepseek", "copilot"],
   ["qwen", "claude"],
@@ -470,7 +527,11 @@ const certRows: Scene[] = certifications.map((_, i) => {
     steps: [
       { who: importer, do: "import", target: `cert.image-${i}`, from: { x: 110, y: 40 }, guides: [{ edge: "top", with: `cert.title-${i}` }] },
       { who: importer, do: "deselect" },
-      { who: stamper, at: 0.4, do: "stamp", target: `cert.highlights-${i}` },
+      { who: importer, do: "type", target: `cert.date-${i}` },
+      { who: importer, do: "reveal", target: `cert.issuer-${i}` },
+      { who: stamper, do: "type", target: `cert.title-${i}` },
+      { who: stamper, do: "stamp", target: `cert.highlights-${i}` },
+      { who: stamper, do: "paint", target: `cert.link-${i}` },
       { who: "*", do: "exit" },
     ],
   };
@@ -482,8 +543,10 @@ const cvMore: Scene = {
   root: "[data-swarm-row='cv-more']",
   scroll: { start: "top 100%", end: "bottom 25%" },
   steps: [
-    { who: "codex", at: 0.4, do: "stamp", target: "cv.more", say: "Adding the rest of the CV" },
-    { who: "grok", at: 0.9, do: "highlight", target: "cv.honor-0", id: "honor" },
+    { who: "codex", do: "type", target: "cv.label-0" },
+    { who: "codex", do: "stamp", target: "cv.more", say: "Adding the rest of the CV" },
+    { who: "grok", at: 0.6, do: "type", target: "cv.label-1" },
+    { who: "grok", do: "highlight", target: "cv.honor-0", id: "honor" },
     {
       who: "grok",
       after: "honor",
@@ -513,6 +576,7 @@ const contact: Scene = {
     { who: "qwen", at: 0.9, do: "write", target: "contact.title", id: "title", say: "Writing the headline" },
     { who: "qwen", do: "rest", to: { x: 0.6, y: 0.2 } },
     { who: "gemini", after: "title", do: "highlight", target: "contact.accent", say: "Accent on “amazing”" },
+    { who: "llama", after: "title", do: "write", target: "contact.lede" },
     { who: "mistral", after: "title", do: "stamp", target: "contact.actions", say: "Wiring email, WhatsApp, phone, CV", id: "actions" },
     { who: "devin", after: "actions", do: "stamp", target: "contact.socials", id: "socials" },
     {
@@ -534,6 +598,18 @@ const contact: Scene = {
   ],
 };
 
+// The footer slides in over the last few pixels of the page, so it plays on arrival.
+const footer: Scene = {
+  root: "[data-swarm-row='footer']",
+  bleed: 110,
+  scroll: { start: "top 92%", end: "", play: "enter" },
+  steps: [
+    { who: "abdul", do: "type", target: "footer.copy" },
+    { who: "abdul", do: "reveal", target: "footer.top" },
+    { who: "*", do: "exit" },
+  ],
+};
+
 export const scenes = [
   hero,
   headings.about,
@@ -542,6 +618,7 @@ export const scenes = [
   aboutMore,
   headings.skills,
   skills,
+  practice,
   headings.experience,
   ...experienceRows,
   headings.work,
@@ -549,7 +626,9 @@ export const scenes = [
   moreList,
   headings.credentials,
   credentials,
+  certLabel,
   ...certRows,
   cvMore,
   contact,
+  footer,
 ];

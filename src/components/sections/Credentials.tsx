@@ -18,7 +18,9 @@ export function Credentials() {
         />
 
         <div data-swarm-row="edu" className="relative mt-14">
-          <h3 className="label">Education</h3>
+          <h3 className="label w-fit" data-build="edu.label">
+            Education
+          </h3>
           <ul className="mt-5 grid gap-4 md:grid-cols-2">
             {education.map((e, i) => (
               <li key={e.school} data-build={`edu.${i}`} className="rounded-md border border-line bg-ink-900 p-6 md:p-7">
@@ -41,16 +43,22 @@ export function Credentials() {
           </ul>
         </div>
 
-        <h3 className="label mt-20">Certifications</h3>
+        <h3 data-swarm-row="cert-label" className="label relative mt-20 w-fit">
+          <span data-build="cert.label">Certifications</span>
+        </h3>
         <ul className="mt-5 border-t border-line">
           {certifications.map((c, i) => (
             <li key={c.title} data-swarm-row={`cert-${i}`} className="relative grid gap-6 border-b border-line py-8 md:grid-cols-12 md:gap-8">
-              <p className="font-mono text-[13px] text-muted md:col-span-2">{c.date}</p>
+              <p className="font-mono text-[13px] text-muted md:col-span-2">
+                <span className="inline-block" data-build={`cert.date-${i}`}>{c.date}</span>
+              </p>
               <div className="md:col-span-6">
                 <p className="w-fit text-[1.375rem] tracking-tight" data-build={`cert.title-${i}`}>
                   {c.title}
                 </p>
-                <p className="text-[15px] text-muted">{c.issuer}</p>
+                <p className="w-fit text-[15px] text-muted" data-build={`cert.issuer-${i}`}>
+                  {c.issuer}
+                </p>
                 <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-[14px] text-fg/75" data-build={`cert.highlights-${i}`}>
                   {c.highlights.map((h) => (
                     <li key={h} className="flex items-center gap-2" data-build-part="item">
@@ -59,7 +67,7 @@ export function Credentials() {
                     </li>
                   ))}
                 </ul>
-                <a href={c.link} target="_blank" rel="noopener noreferrer" className="link mt-5 inline-block text-[15px]">
+                <a href={c.link} target="_blank" rel="noopener noreferrer" className="link mt-5 inline-block text-[15px]" data-build={`cert.link-${i}`}>
                   View certification <span aria-hidden>↗</span>
                   <span className="sr-only"> for {c.title}</span>
                 </a>
@@ -78,7 +86,9 @@ export function Credentials() {
 
         <div data-swarm-row="cv-more" className="relative mt-12 grid gap-10 md:grid-cols-12">
           <div className="md:col-span-8">
-            <h3 className="label">Also on my CV</h3>
+            <h3 className="label w-fit" data-build="cv.label-0">
+              Also on my CV
+            </h3>
             <ul className="mt-4 space-y-3 text-[15px]" data-build="cv.more">
               {moreCertifications.map((c) => (
                 <li key={c.title} data-build-part="item" className="w-fit">
@@ -88,7 +98,9 @@ export function Credentials() {
             </ul>
           </div>
           <div className="md:col-span-4">
-            <h3 className="label">Honors</h3>
+            <h3 className="label w-fit" data-build="cv.label-1">
+              Honors
+            </h3>
             <ul className="mt-4 space-y-3 text-[15px]">
               {honors.map((h, i) => (
                 <li key={h} data-build={`cv.honor-${i}`} className="w-fit">

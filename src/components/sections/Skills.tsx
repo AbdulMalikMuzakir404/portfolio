@@ -42,9 +42,18 @@ export function Skills() {
           ))}
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 border-t border-line pt-6 md:flex-row md:items-baseline md:gap-10">
-          <h3 className="label shrink-0">Practice</h3>
-          <p className="text-[15px] text-fg/80">{practices.join(" · ")}</p>
+        <div data-swarm-row="skills-practice" className="relative mt-10 flex flex-col gap-4 border-t border-line pt-6 md:flex-row md:items-baseline md:gap-10">
+          <h3 className="label w-fit shrink-0" data-build="skills.practice-label">
+            Practice
+          </h3>
+          <ul data-build="skills.practice" className="flex flex-wrap gap-x-2 text-[15px] text-fg/80">
+            {practices.map((pr, i) => (
+              <li key={pr} data-build-part="item">
+                {i > 0 && <span aria-hidden className="mr-2 text-muted">·</span>}
+                {pr}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

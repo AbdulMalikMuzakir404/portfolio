@@ -219,6 +219,48 @@ html.swarm:not(.swarm-ready) [data-build] {
   border-radius: 7px;
   color: #8b8b92;
 }
+/* Colour-swatch popover (paint) and align bar share the toolbar's panel look. */
+.sw-swatches,
+.sw-alignbar {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: #17171a;
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.9);
+}
+.sw-swatches i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+.sw-swatches i:last-child {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+.sw-alignbar {
+  gap: 2px;
+  padding: 3px;
+}
+.sw-alignbar b {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #8b8b92;
+}
+.sw-alignbar b:nth-child(2) {
+  background: rgba(59, 130, 246, 0.18);
+  color: #ededef;
+}
+.sw-marquee {
+  box-sizing: border-box;
+  border: 1px solid var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+}
 .sw-hint {
   display: flex;
   align-items: center;
