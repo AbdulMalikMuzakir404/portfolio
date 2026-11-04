@@ -130,6 +130,14 @@ html.swarm:not(.swarm-ready) [data-swarm-header] {
   overflow: hidden;
   pointer-events: none;
 }
+.sw-trail {
+  height: 2px;
+  border-radius: 2px;
+  opacity: 0;
+  transform-origin: 0 50%;
+  background: linear-gradient(to right, transparent, var(--c));
+  will-change: transform, width, opacity;
+}
 .sw-travel > *,
 .sw-overlay > * {
   position: absolute;

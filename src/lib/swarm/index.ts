@@ -309,9 +309,11 @@ type Run = { d: Director; st: ScrollTrigger; tl: gsap.core.Timeline };
 /**
  * Agents never vanish between sections. A scene shows its own copy of an agent only while the agent
  * works there (from arriving at its first task until the scene's exit). Whenever an agent leaves one
- * copy, a shared traveller takes over exactly where that copy was and flies (spring-eased) to where
- * the agent works next, or back where it came from when scrolling up, and waits there; it hands back
- * to the next copy once it's on top of it. No hand-off ever jumps.
+ * copy, a shared traveller takes over exactly where that copy was. It stays by the finished work until
+ * the spot of the agent's next task (scrolling up: the previous one) is on screen, then zips there
+ * (spring-eased) and waits riding along with the page; it hands back to the next copy once it's on
+ * top of it. No
+ * hand-off ever jumps. Fast moves (in a scene or between scenes) leave a short streak.
  */
 function travel(runs: Run[]) {
   const layer = document.createElement("div");
@@ -332,8 +334,23 @@ function travel(runs: Run[]) {
     el.className = "sw-cursor";
     el.innerHTML = `<div class="sw-inner">${cursorMarkup(all[0].a.spec)}</div>`;
     el.style.visibility = "hidden";
-    layer.append(el);
-    return { segs, el, shown: null as (typeof segs)[number] | null, pos: null as Pt | null, vel: { x: 0, y: 0 } };
+    // A speed streak behind the arrow, shown only on fast moves.
+    const trail = document.createElement("div");
+    trail.className = "sw-trail";
+    trail.style.setProperty("--c", all[0].a.spec.color);
+    layer.append(trail, el);
+    return {
+      segs,
+      el,
+      trail,
+      shown: null as (typeof segs)[number] | null,
+      pos: null as Pt | null,
+      vel: { x: 0, y: 0 },
+      // For the streak: last position relative to the scene the agent belongs to, and smoothed speed.
+      frame: null as Director | null,
+      rel: null as Pt | null,
+      speed: { x: 0, y: 0 },
+    };
   });
   type Seg = (typeof lanes)[number]["segs"][number];
 
@@ -345,10 +362,13 @@ function travel(runs: Run[]) {
     return { x: r.left - off.x, y: r.top - off.y };
   };
   const live = (s: Seg) => s.tl.time() >= s.first && s.tl.time() < s.a.last;
-  const onScreen = (b: DOMRect, p: Pt) => ({
-    x: gsap.utils.clamp(8, innerWidth - 24, b.left + p.x),
-    y: gsap.utils.clamp(8, innerHeight - 24, b.top + p.y),
-  });
+  // A scene point on screen. The root gives the top: the hero's layer is fixed, its content isn't.
+  const origin = (d: Director) => ({ x: d.overlay.getBoundingClientRect().left, y: d.root.getBoundingClientRect().top });
+  const onPage = (d: Director, p: Pt) => {
+    const o = origin(d);
+    return { x: o.x + p.x, y: o.y + p.y };
+  };
+  const visible = (q: Pt) => q.y > 40 && q.y < innerHeight - 60;
   const show = (lane: (typeof lanes)[number], seg: Seg | null) => {
     if (lane.shown) lane.shown.a.el.style.visibility = "hidden";
     if (seg) seg.a.el.style.visibility = "";
@@ -358,12 +378,40 @@ function travel(runs: Run[]) {
   let lastY = scrollY;
   let down = true;
 
+  type Lane = (typeof lanes)[number];
+  // Streak: speed measured against the agent's scene (so scrolling the page doesn't count), drawn
+  // behind the arrow tip along the direction of travel, longer the faster it goes.
+  const streak = (lane: Lane, at: Pt, frame: Director, dt: number) => {
+    const o = origin(frame);
+    const rel = { x: at.x - o.x, y: at.y - o.y };
+    if (lane.frame !== frame || !lane.rel) lane.speed = { x: 0, y: 0 };
+    else {
+      const k = 1 - Math.exp(-dt / 0.06);
+      lane.speed.x += ((rel.x - lane.rel.x) / dt - lane.speed.x) * k;
+      lane.speed.y += ((rel.y - lane.rel.y) / dt - lane.speed.y) * k;
+    }
+    lane.frame = frame;
+    lane.rel = rel;
+    const v = Math.hypot(lane.speed.x, lane.speed.y);
+    const len = Math.min(150, (v - 500) * 0.08);
+    if (len < 6) {
+      lane.trail.style.opacity = "0";
+      return;
+    }
+    lane.trail.style.opacity = String(Math.min(1, len / 60));
+    lane.trail.style.width = `${len}px`;
+    lane.trail.style.transform = `translate(${at.x + off.x + 1}px, ${at.y + off.y + 1}px) rotate(${Math.atan2(lane.speed.y, lane.speed.x)}rad) translateX(-100%)`;
+  };
+
   const tick = (_: number, dtMs: number) => {
     if (scrollY !== lastY) down = scrollY > lastY;
     lastY = scrollY;
-    const dt = Math.min(dtMs, 50) / 1000;
+    const dt = Math.max(1, Math.min(dtMs, 50)) / 1000;
     for (const lane of lanes) {
-      if (lane.shown && live(lane.shown)) continue;
+      if (lane.shown && live(lane.shown)) {
+        streak(lane, where(lane.shown), lane.shown.d, dt);
+        continue;
+      }
       if (lane.shown) {
         // Its copy just stopped working here: pick up from exactly where it is.
         lane.pos = where(lane.shown);
@@ -372,17 +420,26 @@ function travel(runs: Run[]) {
       }
       const next = lane.segs.find(live);
       let goal: Pt | null = next ? where(next) : null;
+      let frame = next?.d ?? null;
       if (!next) {
         const i = lane.segs.findLastIndex((s) => s.tl.time() >= s.a.last);
         const from = lane.segs[i];
         const to = lane.segs[i + 1];
-        // Like a purposeful agent: head straight for the spot it works at next (or, scrolling back,
-        // the one it came from) and wait there, kept on screen until that spot scrolls into view.
-        if (from && to) goal = down ? onScreen(to.d.overlay.getBoundingClientRect(), to.a.firstPos!) : onScreen(from.d.overlay.getBoundingClientRect(), from.a.lastPos!);
+        // Like a purposeful agent: stay by the work it just finished until the spot of its next task
+        // (scrolling back: the previous one) is on screen, then dart there and wait, riding along
+        // with the page. Only when neither spot is visible does it wait off screen.
+        if (from && to) {
+          const ahead = down ? { d: to.d, p: onPage(to.d, to.a.firstPos!) } : { d: from.d, p: onPage(from.d, from.a.lastPos!) };
+          const behind = down ? { d: from.d, p: onPage(from.d, from.a.lastPos!) } : { d: to.d, p: onPage(to.d, to.a.firstPos!) };
+          const pick = visible(ahead.p) || !visible(behind.p) ? ahead : behind;
+          frame = pick.d;
+          goal = pick.p;
+        }
       }
-      if (!goal) {
+      if (!goal || !frame) {
         lane.pos = null;
         lane.el.style.visibility = "hidden";
+        lane.trail.style.opacity = "0";
         continue;
       }
       // Critically damped spring: quick, with a smooth start and stop (settles in about 0.5s).
@@ -398,6 +455,7 @@ function travel(runs: Run[]) {
       }
       lane.el.style.visibility = "";
       lane.el.style.transform = `translate(${lane.pos.x}px, ${lane.pos.y}px)`;
+      streak(lane, lane.pos, frame, dt);
     }
   };
   gsap.ticker.add(tick);

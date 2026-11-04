@@ -89,9 +89,11 @@ revealed or painted), and the divider drawn.
 **Agents never vanish between sections.** Each scene still compiles its own copy of every agent it
 uses, but a copy is only shown during that agent's working window there (from arriving at its first
 task until the scene's exit). Outside it, one shared traveller per agent (`travel()` in `index.ts`,
-a fixed full-screen layer) takes over exactly where the copy was and flies (a critically damped
-spring, ~0.5s) to the spot the agent works at next, or back where it came from when scrolling up,
-and waits there; it hands back once it sits on top of the next copy. Moves inside a scene are short
+a fixed full-screen layer) takes over exactly where the copy was and stays by the finished work
+until the spot of the agent's next task (scrolling up: the previous one) is on screen, then zips
+there (a critically damped spring, ~0.5s) and waits riding along with the page; it hands back once it sits on top of
+the next copy. Any fast move (measured against the agent's scene, so plain scrolling doesn't count)
+leaves a short streak in the agent's colour. Moves inside a scene are short
 darts (`power3.inOut`, 0.2–0.55 units) so agents read as quick and purposeful; the work itself keeps
 its pace. Scenes scrub with a 0.4s lag. Every scene layer also spans the full
 screen width, so cursors and notes are never cut off at the content column.
