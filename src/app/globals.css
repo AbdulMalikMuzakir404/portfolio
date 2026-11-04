@@ -122,6 +122,15 @@ html.swarm:not(.swarm-ready) [data-swarm-header] {
   pointer-events: none;
   contain: layout style;
 }
+/* Travelling cursors: carry each agent between sections (see travel() in src/lib/swarm/index.ts). */
+.sw-travel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sw-travel > *,
 .sw-overlay > * {
   position: absolute;
   left: 0;

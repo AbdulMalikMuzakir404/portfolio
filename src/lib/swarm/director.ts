@@ -13,7 +13,17 @@ type Agent = {
   t: number;
   side: 1 | -1;
   sel?: Sel;
+  // The agent's working window in this scene (timeline time), for the traveller in index.ts: from
+  // arriving at its first task (or 0 if it starts here) until the scene's exit begins.
+  first?: number;
+  firstPos?: Pt;
+  last: number;
+  lastPos?: Pt;
 };
+
+/** A cursor's arrow and name tag; shared with the travelling cursors in index.ts. */
+export const cursorMarkup = (spec: CursorSpec) =>
+  `<svg width="22" height="24" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span>`;
 
 const ICONS: Record<Tool, string> = {
   move: '<path d="M5 3l11 5.2-4.7 1.6L9.6 14.5z"/>',
@@ -62,7 +72,10 @@ export class Director {
     private alias: Record<string, string>,
     private mode: "desktop" | "tablet",
   ) {
-    this.base = root.getBoundingClientRect();
+    // The layer spans the full screen width, so cursors and notes aren't cut off at the content column.
+    const r = root.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    this.base = new DOMRect(0, r.top, vw, r.height);
     root.querySelectorAll("[data-build], [data-ch]").forEach((el) => this.rects.set(el, this.measure(el)));
     // Steps may target elements outside the root (the hero builds the fixed header): measure those
     // and their parts now too, before any build state is applied.
@@ -80,10 +93,8 @@ export class Director {
     // hero is its own stacking context and could never draw over the header from inside).
     const editor = scene.chrome === "editor";
     this.overlay = div("sw-overlay", editor ? document.body : root);
-    if (editor) {
-      const { left, width, height } = this.base;
-      Object.assign(this.overlay.style, { position: "fixed", inset: `0 auto auto ${left}px`, width: `${width}px`, height: `${height}px`, zIndex: "60" });
-    }
+    if (editor) Object.assign(this.overlay.style, { position: "fixed", inset: "0 auto auto 0", width: `${vw}px`, height: `${r.height}px`, zIndex: "60" });
+    else Object.assign(this.overlay.style, { left: `${-r.left}px`, right: "auto", width: `${vw}px` });
     this.overlay.setAttribute("aria-hidden", "true");
     this.overlay.inert = true;
 
@@ -205,6 +216,10 @@ export class Director {
     const mid = { x: f.x + dx / 2 - (dy / d) * bend, y: f.y + dy / 2 + (dx / d) * bend };
     this.tl.to(a.el, { motionPath: { path: [f, mid, p], curviness: 1.1 }, duration: dur, ease }, t);
     a.pos = p;
+    if (a.first === undefined) {
+      a.first = t + dur;
+      a.firstPos = p;
+    }
     return t + dur;
   }
 
@@ -833,7 +848,9 @@ export class Director {
     let end = t;
     [...this.agents.values()].forEach((a, i) => {
       if (a.sel) this.tl.set(a.sel.el, { autoAlpha: 0 }, t);
-      end = Math.max(end, this.move(a, this.exitPt(a.spec), t + i * 0.07, "power2.in"));
+      a.last = t + i * 0.07;
+      a.lastPos = a.pos;
+      end = Math.max(end, this.move(a, this.exitPt(a.spec), a.last, "power2.in"));
     });
     if (this.chrome.length) this.tl.to(this.chrome, { autoAlpha: 0, duration: 0.4, ease: "none" }, t + 0.1);
     return Math.max(end, t + 0.5);
@@ -932,7 +949,7 @@ export class Director {
   private cursor(spec: CursorSpec, i: number): Agent {
     const el = div("sw-cursor", this.overlay);
     const inner = div("sw-inner", el);
-    inner.innerHTML = `<svg width="22" height="24" viewBox="0 0 18 20"><path d="M1.2 1.2v15.2l4.1-3.9 2.8 6.3 2.7-1.2-2.7-6.2 5.9-.2z" fill="${spec.color}" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg><span class="sw-tag" style="background:${spec.color}">${spec.label}</span>`;
+    inner.innerHTML = cursorMarkup(spec);
     const ring = div("sw-ring", inner);
     ring.style.borderColor = spec.color;
     gsap.set(ring, { autoAlpha: 0 });
@@ -941,7 +958,7 @@ export class Director {
     const start = this.scene.start?.[spec.id];
     const pos = start ? this.frac(start) : this.exitPt(spec);
     gsap.set(el, { x: pos.x, y: pos.y });
-    return { spec, el, inner, svg, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1 };
+    return { spec, el, inner, svg, ring, pos, home: pos, t: 0, side: i % 2 ? -1 : 1, last: Infinity, ...(start ? { first: 0, firstPos: pos } : {}) };
   }
 
   private sel(a: Agent, from: Rect, t: number, final: Rect): Sel {

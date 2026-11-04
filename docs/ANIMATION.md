@@ -86,6 +86,14 @@ revealed or painted), and the divider drawn.
 | Contact | heading written line by line once it is on screen, "amazing" highlighted, each contact button and social link stamped in, thread, everyone gathers for Publish, then the swarm rings up beside the heading and keeps orbiting (galaxy, pointer-reactive) |
 | Footer | no cursor: the copyright is wiped in and Back to top slides in as the footer scrolls into view (CSS scroll-driven animation; static where unsupported) |
 
+**Agents never vanish between sections.** Each scene still compiles its own copy of every agent it
+uses, but a copy is only shown during that agent's working window there (from arriving at its first
+task until the scene's exit). Outside it, one shared traveller per agent (`travel()` in `index.ts`,
+a fixed full-screen layer) takes over exactly where the copy was and glides on: towards where the
+agent starts next, driven by scroll so it rewinds, or straight to the next copy if that one is
+already working, handing back once it sits on top of it. Every scene layer also spans the full
+screen width, so cursors and notes are never cut off at the content column.
+
 Long sections are split into one short scene per row (root `[data-swarm-row]`), so each row is
 built while it is actually on screen instead of on one long, loosely synced timeline.
 The hero's overlay is fixed to the screen (z-index above the header) because the pinned hero is its own

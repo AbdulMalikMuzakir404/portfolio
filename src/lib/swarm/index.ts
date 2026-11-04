@@ -2,7 +2,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import Lenis from "lenis";
-import { Director } from "./director";
+import { Director, cursorMarkup } from "./director";
+import type { Pt } from "./types";
 import { cursors, scenes, tabletAlias } from "./scenes";
 
 type Mode = "desktop" | "tablet";
@@ -115,6 +116,7 @@ export function startSwarm(): () => void {
       const overlays: HTMLElement[] = [];
       const stops: (() => void)[] = [];
       const alias = mode === "tablet" ? tabletAlias : {};
+      const runs: Run[] = [];
 
       for (const scene of scenes) {
         const root = document.querySelector<HTMLElement>(scene.root);
@@ -182,10 +184,12 @@ export function startSwarm(): () => void {
           animation: tl,
           onUpdate: editor || finale ? (self) => sync(self.progress) : undefined,
         });
+        runs.push({ d, st, tl });
         if (editor) hero = st;
         if (editor || finale) sync(st.progress);
       }
 
+      stops.push(travel(runs));
       html.classList.add("swarm-ready");
       return () => {
         stops.forEach((stop) => stop());
@@ -298,6 +302,112 @@ function galaxy(d: Director, anchor: "home" | "end", enter: boolean) {
  */
 function clearBuildStyles() {
   gsap.set(document.querySelectorAll("[data-build], [data-build-part], [data-ch]"), { clearProps: "opacity,visibility,transform,clipPath,color" });
+}
+
+type Run = { d: Director; st: ScrollTrigger; tl: gsap.core.Timeline };
+
+/**
+ * Agents never vanish between sections. A scene shows its own copy of an agent only while the agent
+ * works there (from arriving at its first task until the scene's exit). Whenever an agent leaves one
+ * copy, a shared traveller takes over exactly where that copy was and glides on: towards where the
+ * agent starts next (driven by scroll, so it rewinds), or straight to the next copy if that one is
+ * already working, handing back to it once it's on top of it. No hand-off ever jumps.
+ */
+function travel(runs: Run[]) {
+  const layer = document.createElement("div");
+  layer.className = "sw-travel";
+  layer.setAttribute("aria-hidden", "true");
+  layer.inert = true;
+  document.body.append(layer);
+
+  const ids = [...new Set(runs.flatMap((r) => [...r.d.agents.keys()]))];
+  const lanes = ids.map((id) => {
+    const all = runs.flatMap((r) => {
+      const a = r.d.agents.get(id);
+      return a ? [{ ...r, a }] : [];
+    });
+    all.forEach((s) => (s.a.el.style.visibility = "hidden"));
+    const segs = all.flatMap((s) => (s.a.first !== undefined && s.a.first < s.a.last ? [{ ...s, first: s.a.first }] : []));
+    const el = document.createElement("div");
+    el.className = "sw-cursor";
+    el.innerHTML = `<div class="sw-inner">${cursorMarkup(all[0].a.spec)}</div>`;
+    el.style.visibility = "hidden";
+    layer.append(el);
+    return { segs, el, shown: null as (typeof segs)[number] | null, pos: null as Pt | null };
+  });
+  type Seg = (typeof lanes)[number]["segs"][number];
+
+  // Where the arrow sits inside a cursor element, so a traveller can be laid exactly over a scene copy.
+  const svg0 = lanes[0]?.el.querySelector("svg")?.getBoundingClientRect();
+  const off = { x: svg0?.left ?? 0, y: svg0?.top ?? 0 };
+  const where = (s: Seg) => {
+    const r = s.a.svg.getBoundingClientRect();
+    return { x: r.left - off.x, y: r.top - off.y };
+  };
+  const live = (s: Seg) => s.tl.time() >= s.first && s.tl.time() < s.a.last;
+  // Scroll position where a scene's timeline is at time t (ignoring the scrub lag), and where it is now.
+  const at = (s: Seg, t: number) => s.st.start + (s.st.end - s.st.start) * Math.min(1, t / s.tl.duration());
+  const now = (s: Seg) => s.st.start + (s.st.end - s.st.start) * s.tl.progress();
+  const onScreen = (b: DOMRect, p: Pt) => ({
+    x: gsap.utils.clamp(8, innerWidth - 24, b.left + p.x),
+    y: gsap.utils.clamp(8, innerHeight - 24, b.top + p.y),
+  });
+  const ease = gsap.parseEase("sine.inOut");
+  const show = (lane: (typeof lanes)[number], seg: Seg | null) => {
+    if (lane.shown) lane.shown.a.el.style.visibility = "hidden";
+    if (seg) seg.a.el.style.visibility = "";
+    lane.shown = seg;
+    lane.el.style.visibility = seg ? "hidden" : "";
+  };
+  let smooth = scrollY;
+
+  const tick = (_: number, dt: number) => {
+    // Between scenes nothing is scrubbing, so follow scroll with a similar lag.
+    smooth += (scrollY - smooth) * (1 - Math.exp(-dt / 200));
+    const k = 1 - Math.exp(-dt / 90);
+    for (const lane of lanes) {
+      if (lane.shown && live(lane.shown)) continue;
+      if (lane.shown) {
+        // Its copy just stopped working here: pick up from exactly where it is.
+        lane.pos = where(lane.shown);
+        show(lane, null);
+      }
+      const next = lane.segs.find(live);
+      let goal: Pt | null = next ? where(next) : null;
+      if (!next) {
+        const i = lane.segs.findLastIndex((s) => s.tl.time() >= s.a.last);
+        const from = lane.segs[i];
+        const to = lane.segs[i + 1];
+        if (from && to) {
+          const s0 = at(from, from.a.last);
+          const s1 = at(to, to.first);
+          const y = to.tl.progress() > 0 ? now(to) : from.tl.progress() < 1 ? now(from) : smooth;
+          const f = ease(s1 > s0 ? gsap.utils.clamp(0, 1, (y - s0) / (s1 - s0)) : 1);
+          const a = onScreen(from.d.overlay.getBoundingClientRect(), from.a.lastPos!);
+          const b = onScreen(to.d.overlay.getBoundingClientRect(), to.a.firstPos!);
+          goal = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+        }
+      }
+      if (!goal) {
+        lane.pos = null;
+        lane.el.style.visibility = "hidden";
+        continue;
+      }
+      const p = lane.pos ?? goal;
+      lane.pos = { x: p.x + (goal.x - p.x) * k, y: p.y + (goal.y - p.y) * k };
+      if (next && Math.hypot(goal.x - lane.pos.x, goal.y - lane.pos.y) < 3) {
+        show(lane, next);
+        continue;
+      }
+      lane.el.style.visibility = "";
+      lane.el.style.transform = `translate(${lane.pos.x}px, ${lane.pos.y}px)`;
+    }
+  };
+  gsap.ticker.add(tick);
+  return () => {
+    gsap.ticker.remove(tick);
+    layer.remove();
+  };
 }
 
 /** Pin spacers shift every section down, so deep links need re-resolving once they exist. */
